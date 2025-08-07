@@ -138,7 +138,7 @@ EOF
 
 						# Test application on port 5174
 						echo "Testing application..."
-						if curl -f --connect-timeout 10 --max-time 30 -s http://localhost:5174 >/dev/null 2>&1; then
+						if curl -f --connect-timeout 10 --max-time 30 -s http://localhost:80 >/dev/null 2>&1; then
 							echo "✅ Application is accessible on port 5174"
 						else
 							echo "❌ Application health check failed"
