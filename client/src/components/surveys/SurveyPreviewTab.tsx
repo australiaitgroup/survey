@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useMemo, useRef, useStat
 import { useTranslation } from 'react-i18next';
 import type { Survey, Question } from '../../types/admin';
 import OneQuestionPerPageView from '../survey/OneQuestionPerPageView';
-import { NAVIGATION_MODE, QUESTION_TYPE } from '../../constants';
+import { NAVIGATION_MODE, QUESTION_TYPE, SOURCE_TYPE } from '../../constants';
 
 interface SurveyPreviewTabProps {
 	survey: Survey;
@@ -76,9 +76,12 @@ const LeftPane: React.FC<{ survey: Survey; onFocusQuestion: (q: Question) => voi
 	const { t } = useTranslation();
 	const [query, setQuery] = useState('');
 	const questions = (survey.questions || []) as unknown as Question[];
-	const filtered = questions.filter(q => {
+  const filtered = questions.filter(q => {
 		if (!query) return true;
-		const text = [q.text, q.description].filter(Boolean).join(' ').toLowerCase();
+    const text = [q.text, (q as any).description]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
 		return text.includes(query.toLowerCase());
 	});
 
@@ -271,7 +274,48 @@ const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number }> = ({
 		);
 	}
 
-	// Display modes
+  // Empty state in preview when no questions
+  if (!questions || questions.length === 0) {
+    const isBankBased =
+      survey.sourceType === SOURCE_TYPE.QUESTION_BANK ||
+      survey.sourceType === SOURCE_TYPE.MULTI_QUESTION_BANK ||
+      survey.sourceType === SOURCE_TYPE.MANUAL_SELECTION;
+    const title = isBankBased
+      ? t('preview.empty.bank.title', 'Question bank in use')
+      : t('preview.empty.title', 'No questions yet');
+    const subtitle = isBankBased
+      ? t(
+          'preview.empty.bank.subtitle',
+          'Questions will be selected from the question bank when respondents start the test.'
+        )
+      : t(
+          'preview.empty.subtitle',
+          'Add questions to see a live preview of your assessment.'
+        );
+    return (
+      <div className='h-full w-full flex items-center justify-center p-8'>
+        <div className='text-center max-w-md'>
+          <div className='mx-auto mb-4 w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400'>
+            {isBankBased ? (
+              // Dice icon for randomized selection
+              <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor' className='h-8 w-8'>
+                <path d='M21 7.5V18a3 3 0 01-3 3H7.5a3 3 0 01-3-3V6a3 3 0 013-3H18a3 3 0 013 3v1.5zM9 8.25a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5zM15 8.25a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5zM9 14.25a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5zM15 14.25a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5z' />
+              </svg>
+            ) : (
+              // Chat bubble icon for manual questions
+              <svg xmlns='http://www.w3.org/2000/svg' className='h-8 w-8' viewBox='0 0 20 20' fill='currentColor'>
+                <path d='M2 5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H9l-4 4v-4H4a2 2 0 01-2-2V5z' />
+              </svg>
+            )}
+          </div>
+          <h3 className='text-lg font-semibold text-gray-800 mb-1'>{title}</h3>
+          <p className='text-gray-500 text-sm'>{subtitle}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Display modes
 	if (survey.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
 		return (
 			<OneQuestionPerPageView
@@ -299,9 +343,9 @@ const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number }> = ({
 						</span>
 						{q.text}
 					</label>
-					{q.description && (
-						<div className='mb-6 text-sm text-gray-700'>{q.description}</div>
-					)}
+          {(q as any).description && (
+            <div className='mb-6 text-sm text-gray-700'>{(q as any).description}</div>
+          )}
 					{q.type === QUESTION_TYPE.SHORT_TEXT ? (
 						<textarea
 							className='input-field resize-none'
