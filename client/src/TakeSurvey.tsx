@@ -372,8 +372,12 @@ const TakeSurvey: React.FC = () => {
 					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4'></div>
 					<p className='text-gray-600'>Loading survey...</p>
 				</div>
-			</div>
-		);
+            {/* Footer: Powered by SigmaQ */}
+            <div className='mt-8 py-6 text-center text-xs text-[#767676]'>
+                Powered by <a href='https://sigmaq.ai' target='_blank' rel='noopener noreferrer' className='text-[#FF5A5F] hover:underline'>SigmaQ</a>
+            </div>
+        </div>
+    );
 	}
 
 	if (error) {
