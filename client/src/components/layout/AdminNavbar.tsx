@@ -11,8 +11,8 @@ import {
 } from '@heroicons/react/24/outline';
 
 const AdminNavbar: React.FC = () => {
-	const { logout, navigate, profileData } = useAdmin();
-	const { t } = useTranslation('admin');
+  const { logout, navigate, profileData, setShowCreateModal } = useAdmin();
+  const { t } = useTranslation('admin');
 	const { t: tCommon } = useTranslation();
 	const companyName = profileData?.company?.name || 'SigmaQ';
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -57,6 +57,13 @@ const AdminNavbar: React.FC = () => {
 					{/* Desktop right controls */}
 					<div className='hidden md:flex items-center space-x-4'>
 						<LanguageSwitcher />
+
+                <button
+                  className='btn-primary h-9 px-3 py-1.5 text-sm'
+                  onClick={() => setShowCreateModal(true)}
+                >
+                  + {t('survey.createSurvey', { defaultValue: 'Create Survey' })}
+                </button>
 
 						<button
 							onClick={handleProfileClick}

@@ -19,11 +19,7 @@ const AdminHeader: React.FC = () => {
 			{/* Desktop Layout */}
 			<div className='hidden md:flex justify-between items-center'>
 				<div />
-				<div className='flex items-center gap-3'>
-					<button className='btn-primary' onClick={() => setShowCreateModal(true)}>
-						+ {t('survey.createSurvey', { defaultValue: 'Create Survey' })}
-					</button>
-				</div>
+                <div className='flex items-center gap-3' />
 			</div>
 
 			{/* Mobile Layout */}
@@ -57,11 +53,7 @@ const AdminHeader: React.FC = () => {
 					</div>
 				</div>
 
-				<div className='mb-4'>
-					<button className='w-full btn-primary' onClick={() => setShowCreateModal(true)}>
-						+ {t('survey.createSurvey', { defaultValue: 'Create Survey' })}
-					</button>
-				</div>
+                <div className='mb-4' />
 			</div>
 		</div>
 	);
