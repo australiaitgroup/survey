@@ -18,19 +18,7 @@ const AdminHeader: React.FC = () => {
 		<div className='mb-6'>
 			{/* Desktop Layout */}
 			<div className='hidden md:flex justify-between items-center'>
-				<div>
-					<h1 className='text-3xl font-bold text-gray-900'>
-						{t('dashboard.title', {
-							companyName,
-							defaultValue: `${companyName} Admin Dashboard`,
-						})}
-					</h1>
-					<p className='text-gray-600 mt-1'>
-						{t('dashboard.subtitle', {
-							defaultValue: 'Manage your surveys, assessments and view responses',
-						})}
-					</p>
-				</div>
+				<div />
 				<div className='flex items-center gap-3'>
 					<button className='btn-primary' onClick={() => setShowCreateModal(true)}>
 						+ {t('survey.createSurvey', { defaultValue: 'Create Survey' })}
@@ -42,20 +30,7 @@ const AdminHeader: React.FC = () => {
 			<div className='md:hidden'>
 				<div className='mb-4'>
 					<div className='flex justify-between items-start mb-2'>
-						<div className='flex-1'>
-							<h1 className='text-2xl font-bold text-gray-900'>
-								{t('dashboard.title', {
-									companyName,
-									defaultValue: `${companyName} Admin Dashboard`,
-								})}
-							</h1>
-							<p className='text-gray-600 text-sm mt-1'>
-								{t('dashboard.subtitle', {
-									defaultValue:
-										'Manage your surveys, assessments and view responses',
-								})}
-							</p>
-						</div>
+						<div className='flex-1' />
 						{/* Mobile Language Switcher */}
 						<div className='flex bg-gray-100 rounded-md p-1 ml-3'>
 							<button
