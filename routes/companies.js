@@ -26,46 +26,46 @@ router.get('/current', jwtAuth, async (req, res) => {
 			user = await User.findById(req.user.id).populate('companyId');
 		}
 
-    if (!user.companyId) {
+		if (!user.companyId) {
 			return res.status(404).json({
 				success: false,
 				error: 'No company associated with this user',
 			});
 		}
 
-    // Ensure company has a slug (auto-generate for legacy companies)
-    const companyDoc = await Company.findById(user.companyId);
-    if (companyDoc && !companyDoc.slug) {
-      const generateSlug = name => {
-        return (name || 'company')
-          .toLowerCase()
-          .replace(/[^a-z0-9\s-]/g, '')
-          .replace(/\s+/g, '-')
-          .replace(/-+/g, '-')
-          .replace(/(^-)|(-$)/g, '');
-      };
+		// Ensure company has a slug (auto-generate for legacy companies)
+		const companyDoc = await Company.findById(user.companyId);
+		if (companyDoc && !companyDoc.slug) {
+			const generateSlug = name => {
+				return (name || 'company')
+					.toLowerCase()
+					.replace(/[^a-z0-9\s-]/g, '')
+					.replace(/\s+/g, '-')
+					.replace(/-+/g, '-')
+					.replace(/(^-)|(-$)/g, '');
+			};
 
-      let slug = generateSlug(companyDoc.name);
-      const originalSlug = slug;
-      let counter = 1;
-      // Ensure uniqueness
-      // eslint-disable-next-line no-await-in-loop
-      while (await Company.findOne({ slug, _id: { $ne: companyDoc._id } })) {
-        slug = `${originalSlug}-${counter}`;
-        counter++;
-      }
+			let slug = generateSlug(companyDoc.name);
+			const originalSlug = slug;
+			let counter = 1;
+			// Ensure uniqueness
+			// eslint-disable-next-line no-await-in-loop
+			while (await Company.findOne({ slug, _id: { $ne: companyDoc._id } })) {
+				slug = `${originalSlug}-${counter}`;
+				counter++;
+			}
 
-      companyDoc.slug = slug;
-      await companyDoc.save();
-    }
+			companyDoc.slug = slug;
+			await companyDoc.save();
+		}
 
-    // Reload lean doc for response
-    const companyForResponse = await Company.findById(user.companyId).lean();
+		// Reload lean doc for response
+		const companyForResponse = await Company.findById(user.companyId).lean();
 
-    res.json({
-      success: true,
-      company: companyForResponse,
-    });
+		res.json({
+			success: true,
+			company: companyForResponse,
+		});
 	} catch (error) {
 		console.error('Error fetching company:', error);
 		res.status(500).json({

@@ -23,8 +23,6 @@ export const QUESTION_TYPE = {
 // Navigation mode constants
 export const NAVIGATION_MODE = {
 	STEP_BY_STEP: 'step-by-step',
-	PAGINATED: 'paginated',
-	ALL_IN_ONE: 'all-in-one',
 	ONE_QUESTION_PER_PAGE: 'one-question-per-page',
 } as const;
 
@@ -41,6 +39,7 @@ export const TAB_TYPES = {
 	STATISTICS: 'statistics',
 	LIST: 'list',
 	QUESTION_BANKS: 'question-banks',
+	PREVIEW: 'preview',
 } as const;
 
 // Stats view constants

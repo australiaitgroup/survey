@@ -58,7 +58,6 @@
 			"Bash(then)",
 			"Bash(else)",
 			"Bash(fi)",
-			"Bash(__NEW_LINE__ echo \"Checking docker-compose.aws.yml:\")",
 			"Bash(__NEW_LINE__ echo \"Checking if MONGODB_URI is required (no fallback):\")",
 			"WebFetch(domain:airbnb.design)",
 			"WebFetch(domain:www.airbnb.com)",

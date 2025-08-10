@@ -133,8 +133,17 @@ router.post(
 			throw new AppError('Question bank not found', HTTP_STATUS.NOT_FOUND);
 		}
 
-		const { text, description, type, options, correctAnswer, explanation, points, tags, difficulty } =
-			req.body;
+		const {
+			text,
+			description,
+			type,
+			options,
+			correctAnswer,
+			explanation,
+			points,
+			tags,
+			difficulty,
+		} = req.body;
 
 		questionBank.questions.push({
 			text,
@@ -220,7 +229,16 @@ router.put(
 	jwtAuth,
 	asyncHandler(async (req, res) => {
 		const { id } = req.params;
-		const { text, description, imageUrl, descriptionImage, options, correctAnswer, points, type } = req.body;
+		const {
+			text,
+			description,
+			imageUrl,
+			descriptionImage,
+			options,
+			correctAnswer,
+			points,
+			type,
+		} = req.body;
 
 		// Debug: Log the received data
 		console.log('Add question request body:', req.body);
@@ -431,7 +449,16 @@ router.patch(
 	jwtAuth,
 	asyncHandler(async (req, res) => {
 		const { id, questionIndex } = req.params;
-		const { text, description, imageUrl, descriptionImage, type, options, correctAnswer, points } = req.body;
+		const {
+			text,
+			description,
+			imageUrl,
+			descriptionImage,
+			type,
+			options,
+			correctAnswer,
+			points,
+		} = req.body;
 
 		// Validate input - only validate fields that are provided (PATCH method)
 		if (text !== undefined && typeof text !== DATA_TYPES.STRING) {

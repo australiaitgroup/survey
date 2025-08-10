@@ -2,6 +2,7 @@ import React from 'react';
 import { QuestionForm } from '../../types/admin';
 import ImageUpload from '../common/ImageUpload';
 import SimpleQuillEditor from '../common/SimpleQuillEditor';
+import Drawer from '../Drawer';
 
 interface EditQuestionModalProps {
 	isOpen: boolean;
@@ -28,8 +29,6 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
 	loading = false,
 	questionIndex,
 }) => {
-	if (!isOpen) return null;
-
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		onSubmit(form);
@@ -69,237 +68,173 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
 		onChange('correctAnswer', newCorrectAnswer);
 	};
 
-	const isFormValid = () => {
-		if (!form.text.trim()) return false;
+	const getValidationErrors = () => {
+		const errors: string[] = [];
 
-		if (form.type === 'short_text') {
-			return true; // Short text questions only need question text
+		if (!form.text.trim()) {
+			errors.push('Question text is required');
 		}
 
-		return (
-			form.options &&
-			form.options.filter(opt => {
-				const text = typeof opt === 'string' ? opt : opt.text || '';
-				return text.trim();
-			}).length >= 2 &&
-			form.correctAnswer !== undefined
-		);
+		if (form.type !== 'short_text') {
+			const validOptions =
+				form.options?.filter(opt => {
+					const text = typeof opt === 'string' ? opt : opt.text || '';
+					return text.trim();
+				}) || [];
+
+			if (validOptions.length < 2) {
+				errors.push('At least 2 valid options are required');
+			}
+
+			if (form.correctAnswer === undefined) {
+				errors.push('Please select a correct answer');
+			}
+		}
+
+		return errors;
+	};
+
+	const isFormValid = () => {
+		return getValidationErrors().length === 0;
 	};
 
 	return (
-		<div className='fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50'>
-			<div className='bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto'>
-				<div className='flex justify-between items-center p-6 border-b'>
-					<h2 className='text-xl font-semibold text-gray-800'>
-						Edit Question {questionIndex !== undefined ? `#${questionIndex + 1}` : ''}
-					</h2>
-					<button onClick={onClose} className='text-gray-400 hover:text-gray-600 text-xl'>
-						×
+		<Drawer
+			show={isOpen}
+			onClose={onClose}
+			title={`Edit Question ${questionIndex !== undefined ? `#${questionIndex + 1}` : ''}`}
+			actions={
+				<div className='flex justify-end gap-3'>
+					<button type='button' onClick={onClose} className='btn-secondary'>
+						Cancel
+					</button>
+					<button
+						type='submit'
+						form='edit-question-form'
+						className='btn-primary'
+						disabled={!isFormValid() || loading}
+					>
+						{loading ? 'Saving...' : 'Save Changes'}
 					</button>
 				</div>
-
-				<form onSubmit={handleSubmit} className='p-6 space-y-4'>
-					<div>
-						<label className='block text-sm font-medium text-gray-700 mb-2'>
-							Question Text *
-						</label>
-						<textarea
-							className='input-field w-full'
-							placeholder='Enter question text'
-							value={form.text}
-							onChange={e => onChange('text', e.target.value)}
-							rows={3}
-							required
-						/>
-					</div>
-
-					<div>
-						<label className='block text-sm font-medium text-gray-700 mb-2'>
-							Question Type *
-						</label>
-						<select
-							className='input-field'
-							value={form.type}
-							onChange={e => onChange('type', e.target.value)}
-						>
-							<option value='single_choice'>Single Choice</option>
-							<option value='multiple_choice'>Multiple Choice</option>
-							<option value='short_text'>Short Text</option>
-						</select>
-						<div className='text-xs text-gray-500 mt-1'>
-							{form.type === 'single_choice' &&
-								'Students can select only one correct answer'}
-							{form.type === 'multiple_choice' &&
-								'Students can select multiple correct answers'}
-							{form.type === 'short_text' && 'Students can enter a text response'}
-						</div>
-					</div>
-
-					{/* Question Description (Rich Text) */}
-					<div>
-						<label className='block text-sm font-medium text-gray-700 mb-2'>
-							Question Description (Optional)
-						</label>
-						<SimpleQuillEditor
-							value={form.description || ''}
-							onChange={value => onChange('description', value)}
-							placeholder='Enter scenario or context for the question...'
-							className='w-full'
-						/>
-					</div>
-
-					<div>
-						<label className='block text-sm font-medium text-gray-700 mb-2'>
-							Description Image (Optional)
-						</label>
-						<ImageUpload
-							imageUrl={form.descriptionImage || null}
-							onImageUpload={url => onChange('descriptionImage', url)}
-							onImageRemove={() => onChange('descriptionImage', '')}
-							placeholder='Upload image to illustrate question content'
-							uploadMethod='cloudinary'
-							className='w-full'
-						/>
-						<div className='text-xs text-gray-500 mt-1'>
-							Add an image to help explain the question context (charts, diagrams,
-							scenarios, etc.)
-						</div>
-					</div>
-
-					{form.type !== 'short_text' && (
-						<div>
-							<div className='flex items-center justify-between mb-2'>
-								<label className='block text-sm font-medium text-gray-700'>
-									Options *
-								</label>
-								<button
-									className='btn-secondary text-sm'
-									onClick={onAddOption}
-									type='button'
-								>
-									+ Add Option
-								</button>
-							</div>
-							{form.options && form.options.length > 0 ? (
-								<div className='space-y-4'>
-									{form.options.map((option, index) => {
-										const optionText =
-											typeof option === 'string' ? option : option.text || '';
-										const optionImageUrl =
-											typeof option === 'object'
-												? option.imageUrl
-												: undefined;
-
-										return (
-											<div
-												key={index}
-												className='border border-gray-200 rounded-lg p-3 space-y-3'
-											>
-												<div className='flex items-center gap-2'>
-													<input
-														className='input-field flex-1'
-														placeholder={`Option ${index + 1} text`}
-														value={optionText}
-														onChange={e => {
-															const newOption =
-																typeof option === 'string'
-																	? e.target.value
-																	: {
-																		...option,
-																		text: e.target.value,
-																	};
-															onOptionChange(index, newOption);
-														}}
-													/>
-													{form.options && form.options.length > 2 && (
-														<button
-															className='px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors'
-															onClick={() => onRemoveOption(index)}
-															type='button'
-														>
-															Remove
-														</button>
-													)}
-												</div>
-
-												<div>
-													<label className='block text-xs font-medium text-gray-600 mb-1'>
-														Option Image (Optional)
-													</label>
-													<ImageUpload
-														imageUrl={optionImageUrl || null}
-														onImageUpload={url => {
-															const newOption =
-																typeof option === 'string'
-																	? {
-																		text: option,
-																		imageUrl: url,
-																	}
-																	: { ...option, imageUrl: url };
-															onOptionChange(index, newOption);
-														}}
-														onImageRemove={() => {
-															const newOption =
-																typeof option === 'string'
-																	? option
-																	: {
-																		...option,
-																		imageUrl: undefined,
-																	};
-															onOptionChange(index, newOption);
-														}}
-														placeholder='Add image for this option'
-														uploadMethod='cloudinary'
-														className='w-full'
-													/>
-												</div>
-											</div>
-										);
-									})}
-								</div>
-							) : (
-								<div className='text-gray-500 text-sm p-3 border-2 border-dashed border-gray-300 rounded-lg text-center'>
-									No options added yet. Click "Add Option" to start.
-								</div>
-							)}
-						</div>
-					)}
-
-					{form.type === 'short_text' ? (
+			}
+		>
+			<form id='edit-question-form' onSubmit={handleSubmit} className='space-y-6'>
+				{/* Two Column Layout */}
+				<div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
+					{/* Left Column - Question Description & Configuration */}
+					<div className='space-y-6'>
+						{/* Question Text */}
 						<div>
 							<label className='block text-sm font-medium text-gray-700 mb-2'>
-								Expected Answer (Optional)
+								Question Text *
 							</label>
-							<input
-								type='text'
+							<textarea
 								className='input-field w-full'
-								placeholder='Enter expected answer for scoring (optional)'
-								value={
-									typeof form.correctAnswer === 'string' ? form.correctAnswer : ''
-								}
-								onChange={e => onChange('correctAnswer', e.target.value)}
+								placeholder='Enter question text'
+								value={form.text}
+								onChange={e => onChange('text', e.target.value)}
+								rows={3}
+								required
 							/>
+						</div>
+
+						{/* Question Type */}
+						<div>
+							<label className='block text-sm font-medium text-gray-700 mb-2'>
+								Question Type *
+							</label>
+							<select
+								className='input-field'
+								value={form.type}
+								onChange={e => onChange('type', e.target.value)}
+							>
+								<option value='single_choice'>Single Choice</option>
+								<option value='multiple_choice'>Multiple Choice</option>
+								<option value='short_text'>Short Text</option>
+							</select>
 							<div className='text-xs text-gray-500 mt-1'>
-								For assessments/quizzes, you can specify an expected answer for
-								automatic scoring
+								{form.type === 'single_choice' &&
+									'Students can select only one correct answer'}
+								{form.type === 'multiple_choice' &&
+									'Students can select multiple correct answers'}
+								{form.type === 'short_text' && 'Students can enter a text response'}
 							</div>
 						</div>
-					) : (
-						form.options &&
-						form.options.filter(opt => {
-							const text = typeof opt === 'string' ? opt : opt.text || '';
-							return text.trim();
-						}).length >= 2 && (
+
+						{/* Question Description (Rich Text) */}
+						<div>
+							<label className='block text-sm font-medium text-gray-700 mb-2'>
+								Question Description (Optional)
+							</label>
+							<SimpleQuillEditor
+								value={form.description || ''}
+								onChange={value => onChange('description', value)}
+								placeholder='Enter scenario or context for the question...'
+								className='w-full'
+							/>
+						</div>
+
+						{/* Description Image */}
+						<div>
+							<label className='block text-sm font-medium text-gray-700 mb-2'>
+								Description Image (Optional)
+							</label>
+							<ImageUpload
+								imageUrl={form.descriptionImage || null}
+								onImageUpload={url => onChange('descriptionImage', url)}
+								onImageRemove={() => onChange('descriptionImage', '')}
+								placeholder='Upload image to illustrate question content'
+								uploadMethod='cloudinary'
+								className='w-full'
+							/>
+							<div className='text-xs text-gray-500 mt-1'>
+								Add an image to help explain the question context (charts, diagrams,
+								scenarios, etc.)
+							</div>
+						</div>
+
+						{/* Answer Configuration for Short Text */}
+						{form.type === 'short_text' && (
 							<div>
 								<label className='block text-sm font-medium text-gray-700 mb-2'>
-									Select Correct Answer(s) *
+									Expected Answer (Optional)
+								</label>
+								<input
+									type='text'
+									className='input-field w-full'
+									placeholder='Enter expected answer for scoring (optional)'
+									value={
+										typeof form.correctAnswer === 'string'
+											? form.correctAnswer
+											: ''
+									}
+									onChange={e => onChange('correctAnswer', e.target.value)}
+								/>
+								<div className='text-xs text-gray-500 mt-1'>
+									For assessments/quizzes, you can specify an expected answer for
+									automatic scoring
+								</div>
+							</div>
+						)}
+
+						{/* Correct Answer Selection for Choice Questions */}
+						{form.type !== 'short_text' &&
+							form.options &&
+							form.options.filter(opt => {
+								const text = typeof opt === 'string' ? opt : opt.text || '';
+								return text.trim();
+							}).length >= 2 && (
+							<div>
+								<label className='block text-sm font-medium text-gray-700 mb-2'>
+										Select Correct Answer(s) *
 								</label>
 								<div className='space-y-2'>
 									{form.options.map((opt, idx) => {
 										const optionText =
-											typeof opt === 'string' ? opt : opt.text || '';
+												typeof opt === 'string' ? opt : opt.text || '';
 										const optionImageUrl =
-											typeof opt === 'object' ? opt.imageUrl : undefined;
+												typeof opt === 'object' ? opt.imageUrl : undefined;
 										if (!optionText.trim()) return null;
 										const isCorrect = Array.isArray(form.correctAnswer)
 											? form.correctAnswer.includes(idx)
@@ -353,44 +288,198 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
 										: 'Click the checkboxes to select multiple correct answers'}
 								</div>
 							</div>
-						)
-					)}
+						)}
 
-					<div>
-						<label className='block text-sm font-medium text-gray-700 mb-2'>
-							Points
-						</label>
-						<input
-							type='number'
-							className='input-field w-full'
-							placeholder='Points for this question'
-							value={form.points || ''}
-							onChange={e =>
-								onChange('points', e.target.value ? parseInt(e.target.value) : 1)
-							}
-							min='1'
-							max='100'
-						/>
-						<div className='text-xs text-gray-500 mt-1'>
-							Points awarded for answering this question correctly
+						{/* Points */}
+						<div>
+							<label className='block text-sm font-medium text-gray-700 mb-2'>
+								Points
+							</label>
+							<input
+								type='number'
+								className='input-field w-full'
+								placeholder='Points for this question'
+								value={form.points || ''}
+								onChange={e =>
+									onChange(
+										'points',
+										e.target.value ? parseInt(e.target.value) : 1
+									)
+								}
+								min='1'
+								max='100'
+							/>
+							<div className='text-xs text-gray-500 mt-1'>
+								Points awarded for answering this question correctly
+							</div>
 						</div>
 					</div>
 
-					<div className='flex justify-end gap-3 pt-4 border-t'>
-						<button type='button' onClick={onClose} className='btn-secondary'>
-							Cancel
-						</button>
-						<button
-							type='submit'
-							className='btn-primary'
-							disabled={!isFormValid() || loading}
-						>
-							{loading ? 'Saving...' : 'Save Changes'}
-						</button>
+					{/* Right Column - Options Management */}
+					<div className='space-y-6'>
+						{form.type !== 'short_text' && (
+							<div>
+								<div className='flex items-center justify-between mb-4'>
+									<label className='block text-lg font-medium text-gray-700'>
+										Options Management
+									</label>
+									<button
+										className='btn-primary btn-small'
+										onClick={onAddOption}
+										type='button'
+									>
+										+ Add Option
+									</button>
+								</div>
+								{form.options && form.options.length > 0 ? (
+									<div className='space-y-4'>
+										{form.options.map((option, index) => {
+											const optionText =
+												typeof option === 'string'
+													? option
+													: option.text || '';
+											const optionImageUrl =
+												typeof option === 'object'
+													? option.imageUrl
+													: undefined;
+
+											return (
+												<div
+													key={index}
+													className='border border-gray-200 rounded-lg p-4 space-y-3 bg-gray-50'
+												>
+													<div className='flex items-center gap-2'>
+														<span className='text-sm font-medium text-gray-500 min-w-[80px]'>
+															Option {index + 1}
+														</span>
+														<input
+															className='input-field flex-1'
+															placeholder={`Enter option ${index + 1} text`}
+															value={optionText}
+															onChange={e => {
+																const newOption =
+																	typeof option === 'string'
+																		? e.target.value
+																		: {
+																			...option,
+																			text: e.target
+																				.value,
+																		};
+																onOptionChange(index, newOption);
+															}}
+														/>
+														{form.options &&
+															form.options.length > 2 && (
+															<button
+																className='btn-secondary btn-small text-red-600 hover:bg-red-50'
+																onClick={() =>
+																	onRemoveOption(index)
+																}
+																type='button'
+															>
+																	Remove
+															</button>
+														)}
+													</div>
+
+													<div>
+														<label className='block text-xs font-medium text-gray-600 mb-2'>
+															Option Image (Optional)
+														</label>
+														<ImageUpload
+															imageUrl={optionImageUrl || null}
+															onImageUpload={url => {
+																const newOption =
+																	typeof option === 'string'
+																		? {
+																			text: option,
+																			imageUrl: url,
+																		}
+																		: {
+																			...option,
+																			imageUrl: url,
+																		};
+																onOptionChange(index, newOption);
+															}}
+															onImageRemove={() => {
+																const newOption =
+																	typeof option === 'string'
+																		? option
+																		: {
+																			...option,
+																			imageUrl: undefined,
+																		};
+																onOptionChange(index, newOption);
+															}}
+															placeholder='Add image for this option'
+															uploadMethod='cloudinary'
+															className='w-full'
+														/>
+													</div>
+												</div>
+											);
+										})}
+										{/* Add Option Button at Bottom */}
+										<div className='flex justify-center pt-2'>
+											<button
+												className='btn-outline btn-small flex items-center gap-2'
+												onClick={onAddOption}
+												type='button'
+											>
+												<svg
+													className='w-4 h-4'
+													fill='none'
+													stroke='currentColor'
+													viewBox='0 0 24 24'
+												>
+													<path
+														strokeLinecap='round'
+														strokeLinejoin='round'
+														strokeWidth={2}
+														d='M12 6v6m0 0v6m0-6h6m-6 0H6'
+													/>
+												</svg>
+												Add Option
+											</button>
+										</div>
+									</div>
+								) : (
+									<div className='text-gray-500 text-sm p-6 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50'>
+										<div className='mb-2'>📝</div>
+										<div>No options added yet</div>
+										<div className='text-xs mt-1'>
+											Click "Add Option" to start creating answer choices
+										</div>
+									</div>
+								)}
+							</div>
+						)}
+
+						{/* Short Text Type Info */}
+						{form.type === 'short_text' && (
+							<div className='text-gray-500 text-sm p-6 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50'>
+								<div className='mb-2'>✍️</div>
+								<div>Short Text Question</div>
+								<div className='text-xs mt-1'>
+									Users will be able to enter their own text response
+								</div>
+							</div>
+						)}
 					</div>
-				</form>
-			</div>
-		</div>
+				</div>
+
+				{/* Validation Errors */}
+				{!isFormValid() && (
+					<div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg'>
+						<ul className='list-disc list-inside space-y-1'>
+							{getValidationErrors().map((error, index) => (
+								<li key={index}>{error}</li>
+							))}
+						</ul>
+					</div>
+				)}
+			</form>
+		</Drawer>
 	);
 };
 

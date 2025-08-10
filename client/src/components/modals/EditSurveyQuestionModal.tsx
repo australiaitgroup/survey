@@ -7,6 +7,7 @@ import {
 } from '../../constants';
 import ImageUpload from '../common/ImageUpload';
 import SimpleQuillEditor from '../common/SimpleQuillEditor';
+import Drawer from '../Drawer';
 
 interface SurveyQuestionForm {
 	text: string;
@@ -88,21 +89,29 @@ const EditSurveyQuestionModal: React.FC<EditSurveyQuestionModalProps> = ({
 		return validOptions.length >= 2;
 	};
 
-	if (!isOpen) return null;
+    if (!isOpen) return null;
 
-	return (
-		<div className='fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50'>
-			<div className='bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto'>
-				<div className='flex justify-between items-center p-6 border-b'>
-					<h2 className='text-xl font-semibold text-gray-800'>
-						Edit Question {questionIndex + 1}
-					</h2>
-					<button onClick={onClose} className='text-gray-400 hover:text-gray-600 text-xl'>
-						×
-					</button>
-				</div>
-
-				<form onSubmit={handleSubmit} className='p-6 space-y-4'>
+    return (
+        <Drawer
+            show={isOpen}
+            onClose={onClose}
+            title={`Edit Question ${questionIndex + 1}`}
+            actions={
+                <div className='flex justify-end gap-3'>
+                    <button type='button' onClick={onClose} className='btn-secondary'>
+                        Cancel
+                    </button>
+                    <button type='submit' form='edit-survey-question-form' className='btn-primary' disabled={loading || !isFormValid()}>
+                        {loading ? 'Saving...' : 'Save Changes'}
+                    </button>
+                </div>
+            }
+        >
+            <form id='edit-survey-question-form' onSubmit={handleSubmit} className='space-y-6'>
+                {/* Two Column Layout to match Add drawer */}
+                <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
+                    {/* Left Column - Question Description & Configuration */}
+                    <div className='space-y-6'>
 					<div>
 						<label className='block text-sm font-medium text-gray-700 mb-2'>
 							Question Text *
@@ -171,112 +180,9 @@ const EditSurveyQuestionModal: React.FC<EditSurveyQuestionModalProps> = ({
 						</div>
 					</div>
 
-					{form.type !== QUESTION_TYPE.SHORT_TEXT && (
-						<div>
-							<div className='flex items-center justify-between mb-2'>
-								<label className='block text-sm font-medium text-gray-700'>
-									Options *
-								</label>
-								<button
-									className='btn-secondary text-sm'
-									onClick={onAddOption}
-									type='button'
-								>
-									+ Add Option
-								</button>
-							</div>
-							{form.options && form.options.length > 0 ? (
-								<div className='space-y-3'>
-									{form.options.map((option, index) => {
-										const isStringOption = typeof option === 'string';
-										const optionText = isStringOption
-											? option
-											: (option as { text?: string; imageUrl?: string })
-												?.text || '';
-										const optionImageUrl = isStringOption
-											? null
-											: (option as { text?: string; imageUrl?: string })
-												?.imageUrl;
+                        {/* Options moved to right column for a single source of truth */}
 
-										return (
-											<div
-												key={index}
-												className='border border-gray-200 rounded-lg p-3'
-											>
-												<div className='flex items-center gap-2 mb-2'>
-													<span className='text-sm font-medium text-gray-700'>
-														Option {index + 1}
-													</span>
-													{form.options && form.options.length > 2 && (
-														<button
-															className='ml-auto px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition-colors'
-															onClick={() => onRemoveOption(index)}
-															type='button'
-														>
-															Remove
-														</button>
-													)}
-												</div>
-
-												<div className='space-y-2'>
-													<input
-														className='input-field w-full'
-														placeholder={`Option ${index + 1} text`}
-														value={optionText}
-														onChange={e => {
-															const newOption = isStringOption
-																? e.target.value
-																: {
-																	text: e.target.value,
-																	imageUrl:
-																			optionImageUrl ||
-																			undefined,
-																};
-															onOptionChange(index, newOption);
-														}}
-													/>
-
-													<div>
-														<label className='block text-xs font-medium text-gray-600 mb-1'>
-															Option Image (Optional)
-														</label>
-														<ImageUpload
-															imageUrl={optionImageUrl}
-															onImageUpload={url => {
-																const newOption = {
-																	text: optionText,
-																	imageUrl: url,
-																};
-																onOptionChange(index, newOption);
-															}}
-															onImageRemove={() => {
-																const newOption = isStringOption
-																	? optionText
-																	: {
-																		text: optionText,
-																		imageUrl: undefined,
-																	};
-																onOptionChange(index, newOption);
-															}}
-															placeholder='Upload option image'
-															className='text-xs'
-															uploadMethod='cloudinary'
-														/>
-													</div>
-												</div>
-											</div>
-										);
-									})}
-								</div>
-							) : (
-								<div className='text-gray-500 text-sm p-3 border-2 border-dashed border-gray-300 rounded-lg text-center'>
-									No options added yet. Click "Add Option" to start.
-								</div>
-							)}
-						</div>
-					)}
-
-					{form.type === QUESTION_TYPE.SHORT_TEXT && isAssessmentType && (
+                    {form.type === QUESTION_TYPE.SHORT_TEXT && isAssessmentType && (
 						<div>
 							<label className='block text-sm font-medium text-gray-700 mb-2'>
 								Expected Answer (Optional)
@@ -297,7 +203,7 @@ const EditSurveyQuestionModal: React.FC<EditSurveyQuestionModalProps> = ({
 						</div>
 					)}
 
-					{form.type !== QUESTION_TYPE.SHORT_TEXT &&
+                    {form.type !== QUESTION_TYPE.SHORT_TEXT &&
 						isAssessmentType &&
 						form.options &&
 						form.options.filter(opt =>
@@ -368,7 +274,7 @@ const EditSurveyQuestionModal: React.FC<EditSurveyQuestionModalProps> = ({
 						</div>
 					)}
 
-					{isAssessmentType && isCustomScoringEnabled && (
+                    {isAssessmentType && isCustomScoringEnabled && (
 						<div>
 							<label className='block text-sm font-medium text-gray-700 mb-2'>
 								Question Points
@@ -392,22 +298,90 @@ const EditSurveyQuestionModal: React.FC<EditSurveyQuestionModalProps> = ({
 							</div>
 						</div>
 					)}
+                </div>
+                    {/* Right Column - Options Management mirrors Add drawer layout */}
+                    <div className='space-y-6'>
+                        {form.type !== QUESTION_TYPE.SHORT_TEXT && (
+                            <div>
+                                <div className='flex items-center justify-between mb-4'>
+                                    <label className='block text-lg font-medium text-gray-700'>
+                                        Options Management
+                                    </label>
+                                    <button className='btn-primary btn-small' onClick={onAddOption} type='button'>
+                                        + Add Option
+                                    </button>
+                                </div>
+                                {form.options && form.options.length > 0 ? (
+                                    <div className='space-y-4'>
+                                        {form.options.map((option, index) => {
+                                            const isStringOption = typeof option === 'string';
+                                            const optionText = isStringOption ? option : (option as { text?: string; imageUrl?: string })?.text || '';
+                                            const optionImageUrl = isStringOption ? undefined : (option as { text?: string; imageUrl?: string })?.imageUrl;
 
-					<div className='flex justify-end gap-3 pt-4 border-t'>
-						<button type='button' onClick={onClose} className='btn-secondary'>
-							Cancel
-						</button>
-						<button
-							type='submit'
-							className='btn-primary'
-							disabled={!isFormValid() || loading}
-						>
-							{loading ? 'Saving...' : 'Save Changes'}
-						</button>
-					</div>
-				</form>
-			</div>
-		</div>
+                                            return (
+                                                <div key={index} className='border border-gray-200 rounded-lg p-4 space-y-3 bg-gray-50'>
+                                                    <div className='flex items-center gap-2'>
+                                                        <span className='text-sm font-medium text-gray-500 min-w-[80px]'>
+                                                            Option {index + 1}
+                                                        </span>
+                                                        <input
+                                                            className='input-field flex-1'
+                                                            placeholder={`Enter option ${index + 1} text`}
+                                                            value={optionText}
+                                                            onChange={e => {
+                                                                const newOption = isStringOption
+                                                                    ? e.target.value
+                                                                    : { ...option, text: e.target.value };
+                                                                onOptionChange(index, newOption as any);
+                                                            }}
+                                                        />
+                                                        {form.options && form.options.length > 2 && (
+                                                            <button className='btn-secondary btn-small text-red-600 hover:bg-red-50' onClick={() => onRemoveOption(index)} type='button'>
+                                                                Remove
+                                                            </button>
+                                                        )}
+                                                    </div>
+
+                                                    <div>
+                                                        <label className='block text-xs font-medium text-gray-600 mb-2'>
+                                                            Option Image (Optional)
+                                                        </label>
+                                                        <ImageUpload
+                                                            imageUrl={optionImageUrl || null}
+                                                            onImageUpload={url => {
+                                                                const newOption = isStringOption
+                                                                    ? { text: optionText, imageUrl: url }
+                                                                    : { ...(option as any), imageUrl: url };
+                                                                onOptionChange(index, newOption);
+                                                            }}
+                                                            onImageRemove={() => {
+                                                                const newOption = isStringOption
+                                                                    ? optionText
+                                                                    : { ...(option as any), imageUrl: undefined };
+                                                                onOptionChange(index, newOption);
+                                                            }}
+                                                            placeholder='Add image for this option'
+                                                            uploadMethod='cloudinary'
+                                                            className='w-full'
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className='text-gray-500 text-sm p-6 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50'>
+                                        <div className='mb-2'>📝</div>
+                                        <div>No options added yet</div>
+                                        <div className='text-xs mt-1'>Click "Add Option" to start creating answer choices</div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </form>
+        </Drawer>
 	);
 };
 

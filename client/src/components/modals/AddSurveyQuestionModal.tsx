@@ -208,7 +208,6 @@ const AddSurveyQuestionModal: React.FC<AddSurveyQuestionModalProps> = ({
 							/>
 						</div>
 
-
 						{/* Description Image */}
 						<div>
 							<label className='block text-sm font-medium text-gray-700 mb-2'>

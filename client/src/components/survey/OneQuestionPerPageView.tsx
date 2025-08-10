@@ -24,6 +24,9 @@ interface OneQuestionPerPageViewProps {
 	loading?: boolean;
 	antiCheatEnabled?: boolean;
 	getInputProps?: () => any;
+	// Preview support
+	externalPageIndex?: number;
+	ignoreRequiredForNavigation?: boolean;
 }
 
 const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
@@ -34,6 +37,8 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 	loading = false,
 	antiCheatEnabled = false,
 	getInputProps = () => ({}),
+	externalPageIndex,
+	ignoreRequiredForNavigation = false,
 }) => {
 	const { t } = useTranslation();
 	const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -45,11 +50,20 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 		setCurrentQuestionIndex(0);
 	}, [questions]);
 
+	// Sync external page index
+	useEffect(() => {
+		if (typeof externalPageIndex === 'number') {
+			setCurrentQuestionIndex(
+				Math.max(0, Math.min(externalPageIndex, (questions?.length || 1) - 1))
+			);
+		}
+	}, [externalPageIndex, questions?.length]);
+
 	const currentQuestion = questions?.[currentQuestionIndex];
 	const currentAnswer = answers[currentQuestion?._id] || '';
 
 	// Check if current question is answered (required for proceeding)
-	const canProceed = currentAnswer.trim() !== '';
+	const canProceed = ignoreRequiredForNavigation || currentAnswer.trim() !== '';
 
 	const handleNext = () => {
 		if (currentQuestionIndex < (questions?.length || 0) - 1 && canProceed) {
@@ -171,34 +185,49 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 				</div>
 
 				{/* Question Description (Markdown) */}
-                {currentQuestion.description && (
-                    <div className='mb-6 prose prose-sm max-w-none'>
-                        <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[
-                                rehypeRaw,
-                                [
-                                    rehypeSanitize,
-                                    {
-                                        tagNames: [
-                                            'p', 'br', 'span',
-                                            'strong', 'em', 'del', 'code', 'pre', 'blockquote', 'a',
-                                            'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                                            'ul', 'ol', 'li'
-                                        ],
-                                        attributes: {
-                                            a: ['href', 'title', 'rel', 'target'],
-                                            code: ['className'],
-                                            span: ['className'],
-                                        },
-                                    },
-                                ],
-                            ]}
-                        >
-                            {currentQuestion.description}
-                        </ReactMarkdown>
-                    </div>
-                )}
+				{currentQuestion.description && (
+					<div className='mb-6 prose prose-sm max-w-none'>
+						<ReactMarkdown
+							remarkPlugins={[remarkGfm]}
+							rehypePlugins={[
+								rehypeRaw,
+								[
+									rehypeSanitize,
+									{
+										tagNames: [
+											'p',
+											'br',
+											'span',
+											'strong',
+											'em',
+											'del',
+											'code',
+											'pre',
+											'blockquote',
+											'a',
+											'h1',
+											'h2',
+											'h3',
+											'h4',
+											'h5',
+											'h6',
+											'ul',
+											'ol',
+											'li',
+										],
+										attributes: {
+											a: ['href', 'title', 'rel', 'target'],
+											code: ['className'],
+											span: ['className'],
+										},
+									},
+								],
+							]}
+						>
+							{currentQuestion.description}
+						</ReactMarkdown>
+					</div>
+				)}
 
 				{/* Description Image */}
 				{currentQuestion.descriptionImage && (

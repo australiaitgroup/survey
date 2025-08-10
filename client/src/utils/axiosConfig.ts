@@ -23,6 +23,15 @@ api.interceptors.request.use(
 		if (token) {
 			config.headers.Authorization = `Bearer ${token}`;
 		}
+		// Suppress writes in preview mode
+		const isWrite = ['post', 'put', 'patch', 'delete'].includes(
+			(config.method || '').toLowerCase()
+		);
+		if ((window as any).__PREVIEW__ === true && isWrite) {
+			console.debug('Preview mode: write suppressed');
+			// Cancel by throwing a special axios cancel which will be handled below
+			return Promise.reject({ __previewSuppressed: true });
+		}
 		return config;
 	},
 	error => {
@@ -36,6 +45,10 @@ api.interceptors.response.use(
 		return response;
 	},
 	error => {
+		// Swallow suppressed preview writes as successful no-ops
+		if (error && error.__previewSuppressed) {
+			return Promise.resolve({ data: { success: true, preview: true } } as any);
+		}
 		if (error.response?.status === 401) {
 			// Only redirect on token expiration for authenticated endpoints
 			// Skip redirect for login/register endpoints

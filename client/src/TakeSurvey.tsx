@@ -88,10 +88,10 @@ const TakeSurvey: React.FC = () => {
 	const [submitted, setSubmitted] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
-    const [assessmentResults, setAssessmentResults] = useState<AssessmentResult[]>([]);
+	const [assessmentResults, setAssessmentResults] = useState<AssessmentResult[]>([]);
 	const [scoringResult, setScoringResult] = useState<ScoringResult | null>(null);
-    // For one-question-per-page: gate questions behind an initial personal info step
-    const [infoStepDone, setInfoStepDone] = useState(false);
+	// For one-question-per-page: gate questions behind an initial personal info step
+	const [infoStepDone, setInfoStepDone] = useState(false);
 
 	// Enable anti-cheating measures for assessments and quizzes
 	const isAssessmentType = survey && TYPES_REQUIRING_ANSWERS.includes(survey.type);
@@ -141,7 +141,7 @@ const TakeSurvey: React.FC = () => {
 		setQuestionsLoaded(true);
 	};
 
-    useEffect(() => {
+	useEffect(() => {
 		// If slug is provided, fetch that specific survey
 		if (slug) {
 			setLoading(true);
@@ -165,16 +165,16 @@ const TakeSurvey: React.FC = () => {
 			// Otherwise fetch all surveys for selection
 			axios.get<Survey[]>(getApiPath('/surveys')).then(res => setSurveys(res.data));
 		}
-    }, [slug]);
+	}, [slug]);
 
-    // Reset info step when survey or navigation mode changes
-    useEffect(() => {
-        if (survey?.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
-            setInfoStepDone(false);
-        } else {
-            setInfoStepDone(true);
-        }
-    }, [survey?.navigationMode, survey?._id]);
+	// Reset info step when survey or navigation mode changes
+	useEffect(() => {
+		if (survey?.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
+			setInfoStepDone(false);
+		} else {
+			setInfoStepDone(true);
+		}
+	}, [survey?.navigationMode, survey?._id]);
 
 	const handleAnswerChange = (qid: string, value: string) => {
 		setForm({ ...form, answers: { ...form.answers, [qid]: value } });
@@ -184,31 +184,26 @@ const TakeSurvey: React.FC = () => {
 		setForm({ ...form, email });
 
 		// For question bank surveys, load questions when email is entered
-		if (
-			survey &&
-			isBankBasedSource(survey.sourceType) &&
-			email &&
-			!questionsLoaded
-		) {
+		if (survey && isBankBasedSource(survey.sourceType) && email && !questionsLoaded) {
 			loadQuestions(survey, email);
 		}
 	};
 
-    const canStart = () => {
-        const hasName = form.name && form.name.trim().length > 0;
-        const hasEmail = form.email && form.email.includes('@');
-        return Boolean(hasName && hasEmail);
-    };
+	const canStart = () => {
+		const hasName = form.name && form.name.trim().length > 0;
+		const hasEmail = form.email && form.email.includes('@');
+		return Boolean(hasName && hasEmail);
+	};
 
-    const handleStart = async () => {
+	const handleStart = async () => {
 		if (!survey) return;
-        if (!canStart()) return;
-        // Ensure questions are loaded for question bank surveys before starting
+		if (!canStart()) return;
+		// Ensure questions are loaded for question bank surveys before starting
 		if (isBankBasedSource(survey.sourceType) && form.email && !questionsLoaded) {
-            await loadQuestions(survey, form.email);
-        }
-        setInfoStepDone(true);
-    };
+			await loadQuestions(survey, form.email);
+		}
+		setInfoStepDone(true);
+	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -222,7 +217,12 @@ const TakeSurvey: React.FC = () => {
 				surveyId: survey._id,
 				answers: questions.map(q => form.answers[q._id]),
 			};
-			await axios.post(getApiPath(`/surveys/${survey._id}/responses`), payload);
+			// Preview suppression: if global preview flag is set, skip network write
+			if ((window as any).__PREVIEW__ === true) {
+				console.debug('Preview mode: write suppressed');
+			} else {
+				await axios.post(getApiPath(`/surveys/${survey._id}/responses`), payload);
+			}
 
 			// Calculate assessment results if this is an assessment, quiz, or iq test
 			if (TYPES_REQUIRING_ANSWERS.includes(survey.type)) {
@@ -243,15 +243,18 @@ const TakeSurvey: React.FC = () => {
 							// For single choice, correctAnswer is an index
 							if (typeof q.correctAnswer === 'number') {
 								const userOptionIndex = q.options?.findIndex(opt =>
-									typeof opt === 'string' ? opt === userAnswer : opt.text === userAnswer
+									typeof opt === 'string'
+										? opt === userAnswer
+										: opt.text === userAnswer
 								);
 								isCorrect = userOptionIndex === q.correctAnswer;
 
 								// Get correct answer text
 								const correctOption = q.options?.[q.correctAnswer];
-								correctAnswerText = typeof correctOption === 'string'
-									? correctOption
-									: correctOption?.text || '';
+								correctAnswerText =
+									typeof correctOption === 'string'
+										? correctOption
+										: correctOption?.text || '';
 							} else {
 								// Fallback for direct text comparison
 								isCorrect = userAnswer === q.correctAnswer;
@@ -259,7 +262,9 @@ const TakeSurvey: React.FC = () => {
 							}
 						} else if (q.type === 'multiple_choice' && Array.isArray(q.correctAnswer)) {
 							// Handle multiple choice
-							const userAnswerArray = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
+							const userAnswerArray = Array.isArray(userAnswer)
+								? userAnswer
+								: [userAnswer];
 							const userOptionIndices = userAnswerArray
 								.map(ans =>
 									q.options?.findIndex(opt =>
@@ -438,54 +443,54 @@ const TakeSurvey: React.FC = () => {
 		);
 	}
 
-    // 公司Logo组件（左上角，弱化阴影与边框）
-    const CompanyLogo: React.FC<{ company?: Company }> = ({ company }) => {
-        if (!company?.logoUrl) return null;
+	// 公司Logo组件（左上角，弱化阴影与边框）
+	const CompanyLogo: React.FC<{ company?: Company }> = ({ company }) => {
+		if (!company?.logoUrl) return null;
 
-        return (
-            <div className='flex justify-start mb-6'>
-                <img
-                    src={company.logoUrl}
-                    alt={company.name || 'Company Logo'}
-                    className='h-8 md:h-10 w-auto object-contain'
-                    onError={e => {
-                        e.currentTarget.remove();
-                    }}
-                />
-            </div>
-        );
-    };
+		return (
+			<div className='flex justify-start mb-6'>
+				<img
+					src={company.logoUrl}
+					alt={company.name || 'Company Logo'}
+					className='h-8 md:h-10 w-auto object-contain'
+					onError={e => {
+						e.currentTarget.remove();
+					}}
+				/>
+			</div>
+		);
+	};
 
 	return (
 		<div className='min-h-screen bg-[#F7F7F7] py-12'>
-            <div className={`mx-auto px-4 ${slug ? 'max-w-3xl' : 'max-w-7xl'}`}>
-                {/* 顶部并列：Logo + Survey 标题/描述 */}
-                {survey && (
-                    <div className='flex items-center gap-3 mb-3'>
-                        <img
-                            src={survey.company?.logoUrl || '/SigmaQ-logo.svg'}
-                            alt={(survey.company?.name || 'SigmaQ') + ' Logo'}
-                            className='h-8 md:h-10 w-auto object-contain'
-                            onError={e => {
-                                if (!e.currentTarget.src.includes('/SigmaQ-logo.svg')) {
-                                    e.currentTarget.src = '/SigmaQ-logo.svg';
-                                } else {
-                                    e.currentTarget.remove();
-                                }
-                            }}
-                        />
-                        <div className='min-w-0'>
-                            <h1 className='text-xl md:text-2xl font-semibold text-[#484848] truncate'>
-                                {survey.title}
-                            </h1>
-                            {survey.description && (
-                                <p className='text-sm text-[#767676] truncate'>
-                                    {survey.description}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                )}
+			<div className={`mx-auto px-4 ${slug ? 'max-w-3xl' : 'max-w-7xl'}`}>
+				{/* 顶部并列：Logo + Survey 标题/描述 */}
+				{survey && (
+					<div className='flex items-center gap-3 mb-3'>
+						<img
+							src={survey.company?.logoUrl || '/SigmaQ-logo.svg'}
+							alt={(survey.company?.name || 'SigmaQ') + ' Logo'}
+							className='h-8 md:h-10 w-auto object-contain'
+							onError={e => {
+								if (!e.currentTarget.src.includes('/SigmaQ-logo.svg')) {
+									e.currentTarget.src = '/SigmaQ-logo.svg';
+								} else {
+									e.currentTarget.remove();
+								}
+							}}
+						/>
+						<div className='min-w-0'>
+							<h1 className='text-xl md:text-2xl font-semibold text-[#484848] truncate'>
+								{survey.title}
+							</h1>
+							{survey.description && (
+								<p className='text-sm text-[#767676] truncate'>
+									{survey.description}
+								</p>
+							)}
+						</div>
+					</div>
+				)}
 
 				{!slug && (
 					<div className='mb-12'>
@@ -585,57 +590,67 @@ const TakeSurvey: React.FC = () => {
 					</div>
 				)}
 
-                {survey && !submitted && (
-                    <div className='bg-white rounded-xl border border-[#EBEBEB] p-6'>
-
+				{survey && !submitted && (
+					<div className='bg-white rounded-xl border border-[#EBEBEB] p-6'>
 						<form
 							onSubmit={handleSubmit}
 							className={`space-y-8 ${antiCheatEnabled && isAssessmentType ? 'anti-cheat-container' : ''}`}
 						>
-                            {!(survey?.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE && infoStepDone) && (
-                            <div className='grid md:grid-cols-2 gap-6 animate-slide-down'>
-								<div>
-									<label className='block mb-3 font-medium text-[#484848]'>
-										👤 Full Name *
-									</label>
-									<input
-										className='input-field'
-										value={form.name}
-										onChange={e => setForm({ ...form, name: e.target.value })}
-										required
-										placeholder='Enter your full name'
-										{...getInputProps()}
-									/>
+							{!(
+								survey?.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE &&
+								infoStepDone
+							) && (
+								<div className='grid md:grid-cols-2 gap-6 animate-slide-down'>
+									<div>
+										<label className='block mb-3 font-medium text-[#484848]'>
+											👤 Full Name *
+										</label>
+										<input
+											className='input-field'
+											value={form.name}
+											onChange={e =>
+												setForm({ ...form, name: e.target.value })
+											}
+											required
+											placeholder='Enter your full name'
+											{...getInputProps()}
+										/>
+									</div>
+									<div>
+										<label className='block mb-3 font-medium text-[#484848]'>
+											✉️ Email Address *
+										</label>
+										<input
+											type='email'
+											className='input-field'
+											value={form.email}
+											onChange={e => handleEmailChange(e.target.value)}
+											required
+											placeholder='Enter your email address'
+											{...getInputProps()}
+										/>
+										{survey?.sourceType === 'question_bank' &&
+											form.email &&
+											!questionsLoaded && (
+											<div className='text-sm text-[#00A699] mt-2 flex items-center gap-2'>
+												<div className='w-4 h-4 border-2 border-[#00A699] border-t-transparent rounded-full animate-spin'></div>
+													Loading randomized questions...
+											</div>
+										)}
+									</div>
 								</div>
-								<div>
-									<label className='block mb-3 font-medium text-[#484848]'>
-										✉️ Email Address *
-									</label>
-									<input
-										type='email'
-										className='input-field'
-										value={form.email}
-										onChange={e => handleEmailChange(e.target.value)}
-										required
-										placeholder='Enter your email address'
-										{...getInputProps()}
-									/>
-									{survey?.sourceType === 'question_bank' &&
-										form.email &&
-										!questionsLoaded && (
-										<div className='text-sm text-[#00A699] mt-2 flex items-center gap-2'>
-											<div className='w-4 h-4 border-2 border-[#00A699] border-t-transparent rounded-full animate-spin'></div>
-												Loading randomized questions...
-										</div>
-									)}
-								</div>
-							</div>
-                            )}
+							)}
 
-            {(() => {
-                return questionsLoaded && (survey.navigationMode !== NAVIGATION_MODE.ONE_QUESTION_PER_PAGE || infoStepDone || survey.sourceType === SOURCE_TYPE.QUESTION_BANK);
-            })() && (
-								survey.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE ? (
+							{(() => {
+								return (
+									questionsLoaded &&
+									(survey.navigationMode !==
+										NAVIGATION_MODE.ONE_QUESTION_PER_PAGE ||
+										infoStepDone ||
+										survey.sourceType === SOURCE_TYPE.QUESTION_BANK)
+								);
+							})() &&
+								(survey.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE ? (
 									<OneQuestionPerPageView
 										questions={questions}
 										answers={form.answers}
@@ -646,268 +661,302 @@ const TakeSurvey: React.FC = () => {
 										getInputProps={getInputProps}
 									/>
 								) : (
-                                    <div className='space-y-8'>
+									<div className='space-y-8'>
 										<div className='flex items-center justify-between border-b border-[#EBEBEB] pb-4'>
 											<h3 className='heading-sm'>📝 Survey Questions</h3>
 											{survey.sourceType === 'question_bank' && (
-                                                <div className='text-sm text-[#FC642D] bg-[#FC642D] bg-opacity-10 px-3 py-1.5 rounded-lg font-medium'>
+												<div className='text-sm text-[#FC642D] bg-[#FC642D] bg-opacity-10 px-3 py-1.5 rounded-lg font-medium'>
 													🎲 Randomized Questions
 												</div>
 											)}
 										</div>
-                                        {questions && questions.length > 0 ? questions.map((q, index) => (
-											<div
-												key={q._id}
-                                                className={`bg-white rounded-xl p-6 border border-[#EBEBEB] ${antiCheatEnabled && isAssessmentType ? 'anti-cheat-container' : ''}`}
-											>
-												<label className='block mb-5 font-medium text-[#484848] text-lg leading-relaxed'>
-													<span className='inline-flex items-center justify-center w-7 h-7 bg-[#FF5A5F] bg-opacity-10 text-[#FF5A5F] rounded-full text-sm font-bold mr-3'>
-														{index + 1}
-													</span>
-													{q.text}
-												</label>
+										{questions && questions.length > 0 ? (
+											questions.map((q, index) => (
+												<div
+													key={q._id}
+													className={`bg-white rounded-xl p-6 border border-[#EBEBEB] ${antiCheatEnabled && isAssessmentType ? 'anti-cheat-container' : ''}`}
+												>
+													<label className='block mb-5 font-medium text-[#484848] text-lg leading-relaxed'>
+														<span className='inline-flex items-center justify-center w-7 h-7 bg-[#FF5A5F] bg-opacity-10 text-[#FF5A5F] rounded-full text-sm font-bold mr-3'>
+															{index + 1}
+														</span>
+														{q.text}
+													</label>
 
-												{/* Question Description (Markdown) */}
-                                                {q.description && (
-                                                    <div className='mb-6 prose prose-sm max-w-none'>
-                                                        <ReactMarkdown
-                                                            remarkPlugins={[remarkGfm]}
-                                                            rehypePlugins={[
-                                                                rehypeRaw,
-                                                                [
-                                                                    rehypeSanitize,
-                                                                    {
-                                                                        tagNames: [
-                                                                            'p', 'br', 'span',
-                                                                            'strong', 'em', 'del', 'code', 'pre', 'blockquote', 'a',
-                                                                            'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                                                                            'ul', 'ol', 'li'
-                                                                        ],
-                                                                        attributes: {
-                                                                            a: ['href', 'title', 'rel', 'target'],
-                                                                            code: ['className'],
-                                                                            span: ['className'],
-                                                                        },
-                                                                    },
-                                                                ],
-                                                            ]}
-                                                        >
-                                                            {q.description}
-                                                        </ReactMarkdown>
-                                                    </div>
-                                                )}
+													{/* Question Description (Markdown) */}
+													{q.description && (
+														<div className='mb-6 prose prose-sm max-w-none'>
+															<ReactMarkdown
+																remarkPlugins={[remarkGfm]}
+																rehypePlugins={[
+																	rehypeRaw,
+																	[
+																		rehypeSanitize,
+																		{
+																			tagNames: [
+																				'p',
+																				'br',
+																				'span',
+																				'strong',
+																				'em',
+																				'del',
+																				'code',
+																				'pre',
+																				'blockquote',
+																				'a',
+																				'h1',
+																				'h2',
+																				'h3',
+																				'h4',
+																				'h5',
+																				'h6',
+																				'ul',
+																				'ol',
+																				'li',
+																			],
+																			attributes: {
+																				a: [
+																					'href',
+																					'title',
+																					'rel',
+																					'target',
+																				],
+																				code: ['className'],
+																				span: ['className'],
+																			},
+																		},
+																	],
+																]}
+															>
+																{q.description}
+															</ReactMarkdown>
+														</div>
+													)}
 
-												{/* Main question image */}
-												{q.imageUrl && (
-													<div className='mb-4'>
-                                                <img
-															src={q.imageUrl}
-															alt='Question image'
-                                                        className='max-w-full h-auto rounded-lg border border-gray-200'
-                                                    onLoad={() => {}}
-															onError={e => {
-																e.currentTarget.style.display =
-																	'none';
-															}}
-														/>
-													</div>
-												)}
+													{/* Main question image */}
+													{q.imageUrl && (
+														<div className='mb-4'>
+															<img
+																src={q.imageUrl}
+																alt='Question image'
+																className='max-w-full h-auto rounded-lg border border-gray-200'
+																onLoad={() => {}}
+																onError={e => {
+																	e.currentTarget.style.display =
+																		'none';
+																}}
+															/>
+														</div>
+													)}
 
-												{/* Description image */}
-												{q.descriptionImage && (
-													<div className='mb-4'>
-                                                <img
-															src={q.descriptionImage}
-															alt='Question illustration'
-															className='max-w-full h-auto rounded-lg border border-gray-300'
-                                                    onLoad={() => {}}
-															onError={e => {
-																e.currentTarget.style.display =
-																	'none';
-															}}
-														/>
-													</div>
-												)}
-                                                {/* image debug removed */}
-												{q.type === QUESTION_TYPE.SHORT_TEXT ? (
-													<div className='space-y-4'>
-														<textarea
-															className='input-field resize-none'
-															placeholder='Share your thoughts here...'
-															rows={5}
-															value={form.answers[q._id] || ''}
-															onChange={e =>
-																handleAnswerChange(
-																	q._id,
-																	e.target.value
-																)
-															}
-															required
-															{...getInputProps()}
-														/>
-													</div>
-												) : (
-                                                    <div className='space-y-4'>
-														{q.options &&
-															q.options.map((opt, optIndex) => {
-																const optionValue =
-																	typeof opt === 'string'
-																		? opt
-																		: opt.text;
-																const optionText =
-																	typeof opt === 'string'
-																		? opt
-																		: opt.text;
-																const optionImage =
-																	typeof opt === 'object'
-																		? opt.imageUrl
-																		: null;
-																const isSelected =
-																	form.answers[q._id] ===
-																	optionValue;
-																return (
-																	<label
-																		key={`${q._id}-${optIndex}-${optionText}`}
-                                                                className={`group flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-																			isSelected
-                                                                        ? 'border-[#FF5A5F] bg-[#FFF5F5]'
-                                                                        : 'border-[#EBEBEB] bg-white hover:border-[#FF5A5F] hover:border-opacity-20'
-																		}`}
-																	>
-																		<div className='flex items-center justify-center relative'>
-																			<input
-																				type='radio'
-																				name={q._id}
-																				className='sr-only'
-																				value={optionValue}
-																				checked={isSelected}
-																				onChange={() =>
-																					handleAnswerChange(
-																						q._id,
+													{/* Description image */}
+													{q.descriptionImage && (
+														<div className='mb-4'>
+															<img
+																src={q.descriptionImage}
+																alt='Question illustration'
+																className='max-w-full h-auto rounded-lg border border-gray-300'
+																onLoad={() => {}}
+																onError={e => {
+																	e.currentTarget.style.display =
+																		'none';
+																}}
+															/>
+														</div>
+													)}
+													{/* image debug removed */}
+													{q.type === QUESTION_TYPE.SHORT_TEXT ? (
+														<div className='space-y-4'>
+															<textarea
+																className='input-field resize-none'
+																placeholder='Share your thoughts here...'
+																rows={5}
+																value={form.answers[q._id] || ''}
+																onChange={e =>
+																	handleAnswerChange(
+																		q._id,
+																		e.target.value
+																	)
+																}
+																required
+																{...getInputProps()}
+															/>
+														</div>
+													) : (
+														<div className='space-y-4'>
+															{q.options &&
+																q.options.map((opt, optIndex) => {
+																	const optionValue =
+																		typeof opt === 'string'
+																			? opt
+																			: opt.text;
+																	const optionText =
+																		typeof opt === 'string'
+																			? opt
+																			: opt.text;
+																	const optionImage =
+																		typeof opt === 'object'
+																			? opt.imageUrl
+																			: null;
+																	const isSelected =
+																		form.answers[q._id] ===
+																		optionValue;
+																	return (
+																		<label
+																			key={`${q._id}-${optIndex}-${optionText}`}
+																			className={`group flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+																				isSelected
+																					? 'border-[#FF5A5F] bg-[#FFF5F5]'
+																					: 'border-[#EBEBEB] bg-white hover:border-[#FF5A5F] hover:border-opacity-20'
+																			}`}
+																		>
+																			<div className='flex items-center justify-center relative'>
+																				<input
+																					type='radio'
+																					name={q._id}
+																					className='sr-only'
+																					value={
 																						optionValue
-																					)
-																				}
-																				required
-																			/>
-																			<div
-																				className={`w-4 h-4 rounded-full border-2 mr-3 flex items-center justify-center transition-all ${
-																					isSelected
-																						? 'border-[#FF5A5F] bg-[#FF5A5F]'
-																						: 'border-[#DDDDDD] group-hover:border-[#FF5A5F]'
-																				}`}
-																			>
-																				{isSelected && (
-																					<div className='w-1.5 h-1.5 rounded-full bg-white'></div>
-																				)}
-																			</div>
-																		</div>
-																		<div className='flex-1'>
-																			{optionText && (
-																				<span
-																					className={`block text-base leading-relaxed font-medium transition-colors ${
+																					}
+																					checked={
 																						isSelected
-																							? 'text-[#484848] font-semibold'
-																							: 'text-[#484848] group-hover:text-[#FF5A5F]'
+																					}
+																					onChange={() =>
+																						handleAnswerChange(
+																							q._id,
+																							optionValue
+																						)
+																					}
+																					required
+																				/>
+																				<div
+																					className={`w-4 h-4 rounded-full border-2 mr-3 flex items-center justify-center transition-all ${
+																						isSelected
+																							? 'border-[#FF5A5F] bg-[#FF5A5F]'
+																							: 'border-[#DDDDDD] group-hover:border-[#FF5A5F]'
 																					}`}
 																				>
-																					{optionText}
-																				</span>
-																			)}
-																			{optionImage && (
-																				<div className='mt-3'>
-																					<img
-																						src={
-																							optionImage
-																						}
-																						alt={`Option ${optIndex + 1}`}
-                                                                                className='max-w-full h-auto rounded-lg border border-[#EBEBEB]'
-																						style={{
-																							maxHeight:
-																								'200px',
-																						}}
-                                                                                        onLoad={() => {}}
-                                                                                        onError={e => {
-                                                                                            e.currentTarget.style.display =
-                                                                                                'none';
-                                                                                        }}
-																					/>
+																					{isSelected && (
+																						<div className='w-1.5 h-1.5 rounded-full bg-white'></div>
+																					)}
 																				</div>
-																			)}
-																		</div>
-																	</label>
-																);
-															})}
-													</div>
-												)}
-											</div>
-										)) : (
+																			</div>
+																			<div className='flex-1'>
+																				{optionText && (
+																					<span
+																						className={`block text-base leading-relaxed font-medium transition-colors ${
+																							isSelected
+																								? 'text-[#484848] font-semibold'
+																								: 'text-[#484848] group-hover:text-[#FF5A5F]'
+																						}`}
+																					>
+																						{optionText}
+																					</span>
+																				)}
+																				{optionImage && (
+																					<div className='mt-3'>
+																						<img
+																							src={
+																								optionImage
+																							}
+																							alt={`Option ${optIndex + 1}`}
+																							className='max-w-full h-auto rounded-lg border border-[#EBEBEB]'
+																							style={{
+																								maxHeight:
+																									'200px',
+																							}}
+																							onLoad={() => {}}
+																							onError={e => {
+																								e.currentTarget.style.display =
+																									'none';
+																							}}
+																						/>
+																					</div>
+																				)}
+																			</div>
+																		</label>
+																	);
+																})}
+														</div>
+													)}
+												</div>
+											))
+										) : (
 											<div className='text-center py-8'>
-												<div className='text-gray-500 text-4xl mb-4'>⚠️</div>
+												<div className='text-gray-500 text-4xl mb-4'>
+													⚠️
+												</div>
 												<h3 className='text-lg font-semibold text-gray-700 mb-2'>
 													No Questions Available
 												</h3>
 												<p className='text-gray-500'>
-													{loading ? 'Loading questions...' : 'Questions could not be loaded.'}
+													{loading
+														? 'Loading questions...'
+														: 'Questions could not be loaded.'}
 												</p>
 											</div>
 										)}
 									</div>
-							)
-							)}
+								))}
 
-                            {/* Start button for one-question-per-page before entering questions */}
-                            {survey?.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE && !infoStepDone && (
-                                <div className='flex justify-center pt-4'>
-                                    <button
-                                        type='button'
-                                        onClick={handleStart}
-                                        disabled={!canStart()}
-                                        className='btn-primary px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed'
-                                    >
-                                        Start
-                                    </button>
-                                </div>
-                            )}
+							{/* Start button for one-question-per-page before entering questions */}
+							{survey?.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE &&
+								!infoStepDone && (
+								<div className='flex justify-center pt-4'>
+									<button
+										type='button'
+										onClick={handleStart}
+										disabled={!canStart()}
+										className='btn-primary px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed'
+									>
+											Start
+									</button>
+								</div>
+							)}
 
 							{/* Submit button - only show for non-one-question-per-page modes */}
 							{survey?.navigationMode !== NAVIGATION_MODE.ONE_QUESTION_PER_PAGE && (
 								<div className='flex justify-center pt-8 border-t border-[#EBEBEB] mt-8'>
-                                    <button
-                            className='btn-primary px-8 py-3 text-base font-medium'
-							type='submit'
-							disabled={
-								loading || (isBankBasedSource(survey?.sourceType) ? !form.email : !questionsLoaded)
-							}
-							onClick={e => {
-								// For bank-based sources, if questions aren't loaded yet, load them on button click
-								if (
-									survey &&
-									isBankBasedSource(survey.sourceType) &&
-									!questionsLoaded
-								) {
-									e.preventDefault();
-									if (form.email) {
-										void loadQuestions(survey, form.email);
-									}
-								}
-							}}
-						>
-							{loading
-								? '✨ Submitting...'
-								: isBankBasedSource(survey?.sourceType) && !questionsLoaded
-									? '🎲 Load Questions'
-									: !questionsLoaded
-										? '🎲 Loading...'
-										: '🚀 Submit Response'}
-						</button>
+									<button
+										className='btn-primary px-8 py-3 text-base font-medium'
+										type='submit'
+										disabled={
+											loading ||
+											(isBankBasedSource(survey?.sourceType)
+												? !form.email
+												: !questionsLoaded)
+										}
+										onClick={e => {
+											// For bank-based sources, if questions aren't loaded yet, load them on button click
+											if (
+												survey &&
+												isBankBasedSource(survey.sourceType) &&
+												!questionsLoaded
+											) {
+												e.preventDefault();
+												if (form.email) {
+													void loadQuestions(survey, form.email);
+												}
+											}
+										}}
+									>
+										{loading
+											? '✨ Submitting...'
+											: isBankBasedSource(survey?.sourceType) &&
+												  !questionsLoaded
+												? '🎲 Load Questions'
+												: !questionsLoaded
+													? '🎲 Loading...'
+													: '🚀 Submit Response'}
+									</button>
 								</div>
 							)}
 						</form>
 					</div>
 				)}
 
-                {submitted && (
-                    <div className='card animate-fade-in'>
+				{submitted && (
+					<div className='card animate-fade-in'>
 						{TYPES_REQUIRING_ANSWERS.includes(survey?.type || '') &&
 						assessmentResults.length > 0 &&
 						scoringResult &&
@@ -970,34 +1019,54 @@ const TakeSurvey: React.FC = () => {
 													</div>
 
 													{/* Question Description (Markdown) */}
-                                                    {result.questionDescription && (
-                                                        <div className='mb-4 prose prose-sm max-w-none'>
-                                                            <ReactMarkdown
-                                                                remarkPlugins={[remarkGfm]}
-                                                                rehypePlugins={[
-                                                                    rehypeRaw,
-                                                                    [
-                                                                        rehypeSanitize,
-                                                                        {
-                                                                            tagNames: [
-                                                                                'p', 'br', 'span',
-                                                                                'strong', 'em', 'del', 'code', 'pre', 'blockquote', 'a',
-                                                                                'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                                                                                'ul', 'ol', 'li'
-                                                                            ],
-                                                                            attributes: {
-                                                                                a: ['href', 'title', 'rel', 'target'],
-                                                                                code: ['className'],
-                                                                                span: ['className'],
-                                                                            },
-                                                                        },
-                                                                    ],
-                                                                ]}
-                                                            >
-                                                                {result.questionDescription}
-                                                            </ReactMarkdown>
-                                                        </div>
-                                                    )}
+													{result.questionDescription && (
+														<div className='mb-4 prose prose-sm max-w-none'>
+															<ReactMarkdown
+																remarkPlugins={[remarkGfm]}
+																rehypePlugins={[
+																	rehypeRaw,
+																	[
+																		rehypeSanitize,
+																		{
+																			tagNames: [
+																				'p',
+																				'br',
+																				'span',
+																				'strong',
+																				'em',
+																				'del',
+																				'code',
+																				'pre',
+																				'blockquote',
+																				'a',
+																				'h1',
+																				'h2',
+																				'h3',
+																				'h4',
+																				'h5',
+																				'h6',
+																				'ul',
+																				'ol',
+																				'li',
+																			],
+																			attributes: {
+																				a: [
+																					'href',
+																					'title',
+																					'rel',
+																					'target',
+																				],
+																				code: ['className'],
+																				span: ['className'],
+																			},
+																		},
+																	],
+																]}
+															>
+																{result.questionDescription}
+															</ReactMarkdown>
+														</div>
+													)}
 
 													{/* Description Image */}
 													{result.descriptionImage && (
@@ -1007,7 +1076,8 @@ const TakeSurvey: React.FC = () => {
 																alt='Question illustration'
 																className='max-w-full h-auto rounded-lg border border-gray-300'
 																onError={e => {
-																	e.currentTarget.style.display = 'none';
+																	e.currentTarget.style.display =
+																	'none';
 																}}
 															/>
 														</div>
@@ -1075,18 +1145,18 @@ const TakeSurvey: React.FC = () => {
 											)}
 										</div>
 									</div>
-                                ) : (
-                                    <div className='text-center py-8'>
-                                        <div className='text-[#FF5A5F] text-7xl mb-6'>🎉</div>
-                                        <h2 className='heading-lg mb-4 gradient-text'>Thank You!</h2>
-                                        <p className='body-lg mb-2 max-w-2xl mx-auto'>
-                                            Your response has been submitted successfully.
-                                        </p>
-                                        <p className='body-md text-[#767676] max-w-2xl mx-auto'>
-                                            We truly appreciate your time and valuable insights!
-                                        </p>
-                                    </div>
-                                )}
+								) : (
+									<div className='text-center py-8'>
+										<div className='text-[#FF5A5F] text-7xl mb-6'>🎉</div>
+										<h2 className='heading-lg mb-4 gradient-text'>Thank You!</h2>
+										<p className='body-lg mb-2 max-w-2xl mx-auto'>
+									Your response has been submitted successfully.
+										</p>
+										<p className='body-md text-[#767676] max-w-2xl mx-auto'>
+									We truly appreciate your time and valuable insights!
+										</p>
+									</div>
+								)}
 					</div>
 				)}
 			</div>

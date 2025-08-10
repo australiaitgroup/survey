@@ -167,6 +167,18 @@ const EditSurveyModal: React.FC = () => {
 												setEditForm({
 													...editForm,
 													type: e.target.value as any,
+													// Sanitize navigationMode when switching to survey
+													navigationMode:
+														e.target.value === 'survey' &&
+														![
+															'step-by-step',
+															'one-question-per-page',
+														].includes(
+															(editForm.navigationMode as string) ||
+																'step-by-step'
+														)
+															? 'step-by-step'
+															: editForm.navigationMode,
 												})
 											}
 										>
@@ -477,27 +489,38 @@ const EditSurveyModal: React.FC = () => {
 								<label className='block text-sm font-medium text-gray-700 mb-1'>
 									Navigation Mode
 								</label>
-								<select
-									value={editForm.navigationMode || 'step-by-step'}
-									onChange={e =>
-										setEditForm({
-											...editForm,
-											navigationMode: e.target.value as
-												| 'step-by-step'
-												| 'paginated'
-												| 'all-in-one'
-												| 'one-question-per-page',
-										})
-									}
-									className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-								>
-									<option value='step-by-step'>Step by Step</option>
-									<option value='paginated'>Paginated</option>
-									<option value='all-in-one'>All in One</option>
-									<option value='one-question-per-page'>
-										One Question Per Page (Typeform-like)
-									</option>
-								</select>
+                                <select
+                                    value={editForm.navigationMode || 'step-by-step'}
+                                    onChange={e => {
+                                        const next = e.target.value as 'step-by-step' | 'one-question-per-page';
+                                        // Enforce type-specific restrictions
+                                        if (editForm.type === 'survey') {
+                                            if (!['step-by-step', 'one-question-per-page'].includes(next)) return;
+                                        } else {
+                                            // assessment-like types → only one-question-per-page
+                                            if (next !== 'one-question-per-page') return;
+                                        }
+                                        setEditForm({
+                                            ...editForm,
+                                            navigationMode: next,
+                                        });
+                                    }}
+                                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                                    disabled={editForm.type !== 'survey'}
+                                >
+                                    {editForm.type === 'survey' ? (
+                                        <>
+                                            <option value='step-by-step'>Step by Step</option>
+                                            <option value='one-question-per-page'>
+                                                One Question Per Page (Typeform-like)
+                                            </option>
+                                        </>
+                                    ) : (
+                                        <option value='one-question-per-page'>
+                                            One Question Per Page (Typeform-like)
+                                        </option>
+                                    )}
+                                </select>
 							</div>
 						</div>
 
