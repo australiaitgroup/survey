@@ -87,6 +87,8 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 	const [search, setSearch] = useState('');
 	const [filterLoading, setFilterLoading] = useState(false);
 	const [responsePage, setResponsePage] = useState(1);
+	// Inline preview toggle within Assessment Details
+	const [showInlinePreview, setShowInlinePreview] = useState<boolean>(false);
 	const PAGE_SIZE = 10;
 	const RESPONSE_PAGE_SIZE = 5;
 
@@ -724,7 +726,6 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 
 	// Handle question reordering
 	const handleQuestionsReorder = async (surveyId: string, newQuestions: Question[]) => {
-
 		// Set loading state to prevent multiple reorders
 		setLoading(true);
 
@@ -757,7 +758,6 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 		}
 
 		try {
-
 			// Update backend with just the IDs
 			const response = await api.patch(`/admin/surveys/${surveyId}/questions-reorder`, {
 				questionIds: questionIds,
@@ -774,7 +774,6 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 
 			// Also update selectedSurvey if it's the current survey
 			setSelectedSurvey(updatedSurvey);
-
 		} catch (err: any) {
 			const errorMessage =
 				err.response?.data?.error ||
@@ -832,325 +831,304 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 					>
 						Statistics
 					</button>
-					<button
-						className={`py-2 px-4 font-semibold border-b-2 transition-colors ${tabLocal === TAB_TYPES.PREVIEW ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 hover:text-blue-600'}`}
-						onClick={() => setTabLocal(TAB_TYPES.PREVIEW)}
-					>
-						Preview
-					</button>
+					{/* Preview moved inline into Assessment Details via toggle */}
 				</div>
 				{/* Tab content */}
 				{tabLocal === TAB_TYPES.DETAIL && (
-					<>
-						<div className='card'>
-							<div className='flex justify-between items-start mb-4'>
-								<div className='flex-1'>
-									<div className='flex items-center gap-3 mb-2'>
-										<h3 className='text-xl font-bold text-gray-800'>
-											{s.title}
-										</h3>
-										<span
-											className={`px-2 py-1 text-xs font-medium rounded-full ${
-												s.type === SURVEY_TYPE.ASSESSMENT
-													? 'bg-blue-100 text-blue-800'
+					<div
+						className={
+							showInlinePreview ? 'flex flex-col lg:flex-row gap-4 items-stretch' : ''
+						}
+					>
+						<div className={showInlinePreview ? 'w-full lg:w-1/2' : ''}>
+							<div className='card'>
+								<div className='flex justify-between items-start mb-4'>
+									<div className='flex-1'>
+										<div className='flex items-center gap-3 mb-2'>
+											<h3 className='text-xl font-bold text-gray-800'>
+												{s.title}
+											</h3>
+											<span
+												className={`px-2 py-1 text-xs font-medium rounded-full ${
+													s.type === SURVEY_TYPE.ASSESSMENT
+														? 'bg-blue-100 text-blue-800'
+														: s.type === SURVEY_TYPE.QUIZ
+															? 'bg-green-100 text-green-800'
+															: s.type === SURVEY_TYPE.IQ
+																? 'bg-purple-100 text-purple-800'
+																: 'bg-gray-100 text-gray-800'
+												}`}
+											>
+												{s.type === SURVEY_TYPE.ASSESSMENT
+													? 'Assessment'
 													: s.type === SURVEY_TYPE.QUIZ
-														? 'bg-green-100 text-green-800'
+														? 'Quiz'
 														: s.type === SURVEY_TYPE.IQ
-															? 'bg-purple-100 text-purple-800'
-															: 'bg-gray-100 text-gray-800'
-											}`}
-										>
-											{s.type === SURVEY_TYPE.ASSESSMENT
-												? 'Assessment'
-												: s.type === SURVEY_TYPE.QUIZ
-													? 'Quiz'
-													: s.type === SURVEY_TYPE.IQ
-														? 'IQ Test'
-														: 'Survey'}
-										</span>
-										<span
-											className={`px-2 py-1 text-xs font-medium rounded-full ${
-												s.status === SURVEY_STATUS.ACTIVE
-													? 'bg-green-100 text-green-800'
+															? 'IQ Test'
+															: 'Survey'}
+											</span>
+											<span
+												className={`px-2 py-1 text-xs font-medium rounded-full ${
+													s.status === SURVEY_STATUS.ACTIVE
+														? 'bg-green-100 text-green-800'
+														: s.status === SURVEY_STATUS.DRAFT
+															? 'bg-yellow-100 text-yellow-800'
+															: 'bg-red-100 text-red-800'
+												}`}
+											>
+												{s.status === SURVEY_STATUS.ACTIVE
+													? 'Active'
 													: s.status === SURVEY_STATUS.DRAFT
-														? 'bg-yellow-100 text-yellow-800'
-														: 'bg-red-100 text-red-800'
-											}`}
+														? 'Draft'
+														: 'Closed'}
+											</span>
+										</div>
+										{s.description && (
+											<p className='text-gray-600 mb-3'>{s.description}</p>
+										)}
+									</div>
+									<div className='flex items-center gap-2'>
+										<button
+											className='btn-secondary text-sm px-3 py-1'
+											onClick={() => openEditModal(s)}
+										>
+											Edit
+										</button>
+										<button
+											className='btn-secondary text-sm px-3 py-1'
+											onClick={() => toggleSurveyStatus(s._id)}
 										>
 											{s.status === SURVEY_STATUS.ACTIVE
-												? 'Active'
-												: s.status === SURVEY_STATUS.DRAFT
-													? 'Draft'
-													: 'Closed'}
-										</span>
-									</div>
-									{s.description && (
-										<p className='text-gray-600 mb-3'>{s.description}</p>
-									)}
-								</div>
-								<div className='flex items-center gap-2'>
-									<button
-										className='btn-secondary text-sm px-3 py-1'
-										onClick={() => openEditModal(s)}
-									>
-										Edit
-									</button>
-									<button
-										className='btn-secondary text-sm px-3 py-1'
-										onClick={() => toggleSurveyStatus(s._id)}
-									>
-										{s.status === SURVEY_STATUS.ACTIVE
-											? 'Deactivate'
-											: 'Activate'}
-									</button>
-									<button
-										className='px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors'
-										onClick={() => duplicateSurvey(s._id)}
-									>
-										{t('buttons.duplicate')}
-									</button>
-									<button
-										className='px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors'
-										onClick={() => deleteSurvey(s._id)}
-									>
-										Delete
-									</button>
-								</div>
-							</div>
-
-							{/* Assessment Configuration Display */}
-							{(s.timeLimit ||
-								s.maxAttempts !== 1 ||
-								s.instructions ||
-								s.navigationMode !== NAVIGATION_MODE.STEP_BY_STEP) && (
-								<div className='bg-blue-50 rounded-lg p-3 mb-3'>
-									<h5 className='font-medium text-gray-800 mb-2'>
-										Assessment Configuration
-									</h5>
-									<div className='grid grid-cols-2 gap-2 text-sm'>
-										{s.timeLimit && (
-											<div className='flex justify-between'>
-												<span className='text-gray-600'>Time Limit:</span>
-												<span className='font-medium text-blue-600'>
-													{s.timeLimit} minutes
-												</span>
-											</div>
-										)}
-										{s.maxAttempts !== 1 && (
-											<div className='flex justify-between'>
-												<span className='text-gray-600'>Max Attempts:</span>
-												<span className='font-medium text-blue-600'>
-													{s.maxAttempts} times
-												</span>
-											</div>
-										)}
-										{s.navigationMode !== NAVIGATION_MODE.STEP_BY_STEP && (
-											<div className='flex justify-between'>
-												<span className='text-gray-600'>
-													Navigation Mode:
-												</span>
-												<span className='font-medium text-blue-600'>
-													{s.navigationMode === NAVIGATION_MODE.PAGINATED
-														? 'Paginated'
-														: s.navigationMode ===
-															  NAVIGATION_MODE.ALL_IN_ONE
-															? 'All-in-one'
-															: s.navigationMode ===
-																  NAVIGATION_MODE.ONE_QUESTION_PER_PAGE
-																? 'One Question Per Page'
-																: 'Step-by-step'}
-												</span>
-											</div>
-										)}
-									</div>
-									{s.instructions && (
-										<div className='mt-2 pt-2 border-t border-blue-200'>
-											<div className='text-xs text-gray-600 mb-1'>
-												Special Instructions:
-											</div>
-											<div className='text-sm text-gray-700'>
-												{s.instructions}
-											</div>
-										</div>
-									)}
-								</div>
-							)}
-
-							{/* Scoring Settings Display */}
-							{TYPES_REQUIRING_ANSWERS.includes(s.type as any) &&
-								s.scoringSettings && (
-								<div className='bg-green-50 rounded-lg p-3 mb-3'>
-									<div className='flex items-center justify-between mb-2'>
-										<h5 className='font-medium text-gray-800'>
-												Scoring Rules
-										</h5>
+												? 'Deactivate'
+												: 'Activate'}
+										</button>
 										<button
-											className='text-sm text-blue-600 hover:text-blue-800'
-											onClick={() => setShowScoringModal(true)}
+											className='px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors'
+											onClick={() => duplicateSurvey(s._id)}
 										>
-												Edit Scoring Rules
+											{t('buttons.duplicate')}
+										</button>
+										<button
+											className='px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors'
+											onClick={() => deleteSurvey(s._id)}
+										>
+											Delete
+										</button>
+										<button
+											className='btn-outline text-sm px-3 py-1'
+											onClick={() => setShowInlinePreview(prev => !prev)}
+										>
+											{showInlinePreview ? 'Hide Preview' : 'Show Preview'}
 										</button>
 									</div>
-									<div className='grid grid-cols-2 gap-2 text-sm'>
-										<div className='flex justify-between'>
-											<span className='text-gray-600'>Scoring Mode:</span>
-											<span className='font-medium text-green-600'>
-												{s.scoringSettings.scoringMode ===
-													SCORING_MODE.PERCENTAGE
-													? 'Percentage'
-													: 'Accumulated'}
-											</span>
-										</div>
-										<div className='flex justify-between'>
-											<span className='text-gray-600'>
-													Passing Threshold:
-											</span>
-											<span className='font-medium text-green-600'>
-												{s.scoringSettings.passingThreshold} points
-											</span>
-										</div>
-										<div className='flex justify-between'>
-											<span className='text-gray-600'>Total Score:</span>
-											<span className='font-medium text-green-600'>
-												{s.scoringSettings.scoringMode ===
-													SCORING_MODE.PERCENTAGE
-													? '100'
-													: s.scoringSettings.totalPoints}{' '}
-													points
-											</span>
-										</div>
-										<div className='flex justify-between'>
-											<span className='text-gray-600'>
-													Custom Points:
-											</span>
-											<span className='font-medium text-green-600'>
-												{s.scoringSettings.customScoringRules
-													?.useCustomPoints
-													? 'Yes'
-													: 'No'}
-											</span>
-										</div>
-									</div>
 								</div>
-							)}
 
-							{/* Question Source Display */}
-							{s.sourceType === SOURCE_TYPE.QUESTION_BANK && (
-								<div className='bg-purple-50 rounded-lg p-3 mb-3'>
-									<h5 className='font-medium text-gray-800 mb-2'>
-										Question Bank Configuration
-									</h5>
-									<div className='grid grid-cols-2 gap-2 text-sm'>
-										<div className='flex justify-between'>
-											<span className='text-gray-600'>Source:</span>
-											<span className='font-medium text-purple-600'>
-												{(() => {
-													// Extract ID if questionBankId is an object
-													const questionBankId =
-														s.questionBankId &&
-														typeof s.questionBankId === 'object'
-															? (s.questionBankId as any)._id ||
-																(s.questionBankId as any).id
-															: s.questionBankId;
-
-													return (
-														questionBanks.find(
-															bank => bank._id === questionBankId
-														)?.name || 'Unknown Question Bank'
-													);
-												})()}
-											</span>
+								{/* Assessment Configuration Display */}
+								{(s.timeLimit ||
+									s.maxAttempts !== 1 ||
+									s.instructions ||
+									s.navigationMode !== NAVIGATION_MODE.STEP_BY_STEP) && (
+									<div className='bg-blue-50 rounded-lg p-3 mb-3'>
+										<h5 className='font-medium text-gray-800 mb-2'>
+											Assessment Configuration
+										</h5>
+										<div className='grid grid-cols-2 gap-2 text-sm'>
+											{s.timeLimit && (
+												<div className='flex justify-between'>
+													<span className='text-gray-600'>
+														Time Limit:
+													</span>
+													<span className='font-medium text-blue-600'>
+														{s.timeLimit} minutes
+													</span>
+												</div>
+											)}
+											{s.maxAttempts !== 1 && (
+												<div className='flex justify-between'>
+													<span className='text-gray-600'>
+														Max Attempts:
+													</span>
+													<span className='font-medium text-blue-600'>
+														{s.maxAttempts} times
+													</span>
+												</div>
+											)}
+											{s.navigationMode !== NAVIGATION_MODE.STEP_BY_STEP && (
+												<div className='flex justify-between'>
+													<span className='text-gray-600'>
+														Navigation Mode:
+													</span>
+													<span className='font-medium text-blue-600'>
+														{s.navigationMode ===
+														NAVIGATION_MODE.PAGINATED
+															? 'Paginated'
+															: s.navigationMode ===
+																  NAVIGATION_MODE.ALL_IN_ONE
+																? 'All-in-one'
+																: s.navigationMode ===
+																	  NAVIGATION_MODE.ONE_QUESTION_PER_PAGE
+																	? 'One Question Per Page'
+																	: 'Step-by-step'}
+													</span>
+												</div>
+											)}
 										</div>
-										<div className='flex justify-between'>
-											<span className='text-gray-600'>
-												Questions to Select:
-											</span>
-											<span className='font-medium text-purple-600'>
-												{s.questionCount} random
-											</span>
-										</div>
-									</div>
-								</div>
-							)}
-
-							<div className='text-sm text-gray-500'>
-								Created: {new Date(s.createdAt).toLocaleDateString()}
-							</div>
-
-							{/* Actions moved next to Edit button above */}
-
-							{/* Survey URLs */}
-							<div className='bg-gray-50 rounded-lg p-4 mb-4'>
-								<div className='space-y-3'>
-									{s.type === SURVEY_TYPE.ASSESSMENT ? (
-										// Assessment type: only show enhanced URL
-										<div className='flex items-center justify-between'>
-											<div>
-												<label className='block text-sm font-medium text-gray-700 mb-1'>
-													Enhanced Assessment URL
-												</label>
-												<div className='text-sm text-gray-600 font-mono'>
-													{getAssessmentUrl(s.slug, companySlug)}
+										{s.instructions && (
+											<div className='mt-2 pt-2 border-t border-blue-200'>
+												<div className='text-xs text-gray-600 mb-1'>
+													Special Instructions:
+												</div>
+												<div className='text-sm text-gray-700'>
+													{s.instructions}
 												</div>
 											</div>
-											<div className='flex gap-2'>
-												<button
-													className='btn-secondary text-sm'
-													onClick={() =>
-														copyToClipboard(
-															getAssessmentUrl(s.slug, companySlug)
-														)
-													}
-												>
-													Copy URL
-												</button>
-												<button
-													className='btn-outline text-sm'
-													onClick={() =>
-														window.open(
-															getAssessmentUrl(s.slug, companySlug),
-															'_blank'
-														)
-													}
-												>
-													Open
-												</button>
-												<button
-													className='btn-primary text-sm'
-													onClick={() => toggleQR(s._id)}
-												>
-													{showQR[s._id] ? 'Hide QR' : 'Show QR'}
-												</button>
+										)}
+									</div>
+								)}
+
+								{/* Scoring Settings Display */}
+								{TYPES_REQUIRING_ANSWERS.includes(s.type as any) &&
+									s.scoringSettings && (
+									<div className='bg-green-50 rounded-lg p-3 mb-3'>
+										<div className='flex items-center justify-between mb-2'>
+											<h5 className='font-medium text-gray-800'>
+													Scoring Rules
+											</h5>
+											<button
+												className='text-sm text-blue-600 hover:text-blue-800'
+												onClick={() => setShowScoringModal(true)}
+											>
+													Edit Scoring Rules
+											</button>
+										</div>
+										<div className='grid grid-cols-2 gap-2 text-sm'>
+											<div className='flex justify-between'>
+												<span className='text-gray-600'>
+														Scoring Mode:
+												</span>
+												<span className='font-medium text-green-600'>
+													{s.scoringSettings.scoringMode ===
+														SCORING_MODE.PERCENTAGE
+														? 'Percentage'
+														: 'Accumulated'}
+												</span>
+											</div>
+											<div className='flex justify-between'>
+												<span className='text-gray-600'>
+														Passing Threshold:
+												</span>
+												<span className='font-medium text-green-600'>
+													{s.scoringSettings.passingThreshold} points
+												</span>
+											</div>
+											<div className='flex justify-between'>
+												<span className='text-gray-600'>
+														Total Score:
+												</span>
+												<span className='font-medium text-green-600'>
+													{s.scoringSettings.scoringMode ===
+														SCORING_MODE.PERCENTAGE
+														? '100'
+														: s.scoringSettings.totalPoints}{' '}
+														points
+												</span>
+											</div>
+											<div className='flex justify-between'>
+												<span className='text-gray-600'>
+														Custom Points:
+												</span>
+												<span className='font-medium text-green-600'>
+													{s.scoringSettings.customScoringRules
+														?.useCustomPoints
+														? 'Yes'
+														: 'No'}
+												</span>
 											</div>
 										</div>
-									) : (
-										// Non-assessment types: show classic URL and optionally enhanced URL
-										<>
+									</div>
+								)}
+
+								{/* Question Source Display */}
+								{s.sourceType === SOURCE_TYPE.QUESTION_BANK && (
+									<div className='bg-purple-50 rounded-lg p-3 mb-3'>
+										<h5 className='font-medium text-gray-800 mb-2'>
+											Question Bank Configuration
+										</h5>
+										<div className='grid grid-cols-2 gap-2 text-sm'>
+											<div className='flex justify-between'>
+												<span className='text-gray-600'>Source:</span>
+												<span className='font-medium text-purple-600'>
+													{(() => {
+														// Extract ID if questionBankId is an object
+														const questionBankId =
+															s.questionBankId &&
+															typeof s.questionBankId === 'object'
+																? (s.questionBankId as any)._id ||
+																	(s.questionBankId as any).id
+																: s.questionBankId;
+
+														return (
+															questionBanks.find(
+																bank => bank._id === questionBankId
+															)?.name || 'Unknown Question Bank'
+														);
+													})()}
+												</span>
+											</div>
+											<div className='flex justify-between'>
+												<span className='text-gray-600'>
+													Questions to Select:
+												</span>
+												<span className='font-medium text-purple-600'>
+													{s.questionCount} random
+												</span>
+											</div>
+										</div>
+									</div>
+								)}
+
+								<div className='text-sm text-gray-500'>
+									Created: {new Date(s.createdAt).toLocaleDateString()}
+								</div>
+
+								{/* Actions moved next to Edit button above */}
+
+								{/* Survey URLs */}
+								<div className='bg-gray-50 rounded-lg p-4 mb-4'>
+									<div className='space-y-3'>
+										{s.type === SURVEY_TYPE.ASSESSMENT ? (
+											// Assessment type: only show enhanced URL
 											<div className='flex items-center justify-between'>
 												<div>
 													<label className='block text-sm font-medium text-gray-700 mb-1'>
-														Classic Survey URL
+														Enhanced Assessment URL
 													</label>
 													<div className='text-sm text-gray-600 font-mono'>
-														{getSurveyUrl(s.slug, companySlug)}
+														{getAssessmentUrl(s.slug, companySlug)}
 													</div>
 												</div>
-												<div className='flex gap-2'>
+												<div className='flex flex-wrap items-center gap-1 sm:gap-2'>
 													<button
-														className='btn-secondary text-sm'
+														className='btn-secondary btn-small'
 														onClick={() =>
 															copyToClipboard(
-																getSurveyUrl(s.slug, companySlug)
+																getAssessmentUrl(
+																	s.slug,
+																	companySlug
+																)
 															)
 														}
 													>
 														Copy URL
 													</button>
 													<button
-														className='btn-outline text-sm'
+														className='btn-outline btn-small'
 														onClick={() =>
 															window.open(
-																getSurveyUrl(s.slug, companySlug),
+																getAssessmentUrl(
+																	s.slug,
+																	companySlug
+																),
 																'_blank'
 															)
 														}
@@ -1158,45 +1136,44 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 														Open
 													</button>
 													<button
-														className='btn-primary text-sm'
+														className='btn-primary btn-small'
 														onClick={() => toggleQR(s._id)}
 													>
 														{showQR[s._id] ? 'Hide QR' : 'Show QR'}
 													</button>
 												</div>
 											</div>
-
-											{[SURVEY_TYPE.QUIZ, SURVEY_TYPE.IQ].includes(
-												s.type
-											) && (
-												<div className='flex items-center justify-between pt-3 border-t border-gray-200'>
+										) : (
+											// Non-assessment types: show classic URL and optionally enhanced URL
+											<>
+												<div className='flex items-center justify-between'>
 													<div>
 														<label className='block text-sm font-medium text-gray-700 mb-1'>
-															Enhanced Assessment URL
+															Classic Survey URL
 														</label>
 														<div className='text-sm text-gray-600 font-mono'>
-															{getAssessmentUrl(s.slug, companySlug)}
+															{getSurveyUrl(s.slug, companySlug)}
 														</div>
 													</div>
-													<div className='flex gap-2'>
+													<div className='flex flex-wrap items-center gap-1 sm:gap-2'>
 														<button
-															className='btn-secondary text-sm'
+															className='btn-secondary btn-small'
 															onClick={() =>
 																copyToClipboard(
-																	getAssessmentUrl(
+																	getSurveyUrl(
 																		s.slug,
 																		companySlug
 																	)
 																)
 															}
 														>
-															Copy Enhanced URL
+															Copy URL
 														</button>
 														<button
-															className='btn-outline text-sm'
+															className='btn-outline btn-small'
 															onClick={() =>
 																window.open(
-																	getAssessmentUrl(
+																	getSurveyUrl(
 																		s.slug,
 																		companySlug
 																	),
@@ -1206,157 +1183,219 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 														>
 															Open
 														</button>
+														<button
+															className='btn-primary btn-small'
+															onClick={() => toggleQR(s._id)}
+														>
+															{showQR[s._id] ? 'Hide QR' : 'Show QR'}
+														</button>
 													</div>
 												</div>
-											)}
-										</>
-									)}
-								</div>
-								{showQR[s._id] && (
-									<div className='border-t border-gray-200 pt-4'>
-										<QRCodeComponent
-											url={
-												s.type === SURVEY_TYPE.ASSESSMENT
-													? getAssessmentUrl(s.slug, companySlug)
-													: getSurveyUrl(s.slug, companySlug)
-											}
-										/>
-									</div>
-								)}
-							</div>
 
-							{/* Question Management */}
-							{s.sourceType === SOURCE_TYPE.MANUAL ? (
-								// Manual Question Management with Drag & Drop
-								<DroppableQuestionList
-									questions={s.questions || []}
-									surveyId={s._id}
-									surveyType={s.type}
-									onQuestionsReorder={newQuestions =>
-										handleQuestionsReorder(s._id, newQuestions)
-									}
-									onEditQuestion={index => startEditQuestion(s._id, index)}
-									onDeleteQuestion={index => deleteQuestion(s._id, index)}
-									onAddQuestion={() => setShowAddQuestionModal(true)}
-									loading={loading}
-								/>
-							) : s.sourceType === SOURCE_TYPE.QUESTION_BANK ? (
-								// Single Question Bank Survey Information
-								<div className='mb-4'>
-									<h4 className='font-semibold text-gray-800 mb-3'>
-										Question Bank Survey
-									</h4>
-									<div className='bg-purple-50 rounded-lg p-4'>
-										<div className='flex items-center justify-between mb-3'>
-											<div>
-												<div className='font-medium text-gray-800'>
-													Random Question Selection
-												</div>
-												<div className='text-sm text-gray-600'>
-													This survey will randomly select{' '}
-													{s.questionCount} questions from the linked
-													question bank for each student.
-												</div>
-											</div>
-											<div className='text-lg font-bold text-purple-600'>
-												{s.questionCount} questions
-											</div>
-										</div>
-										<div className='text-xs text-gray-500'>
-											💡 Questions are randomized per student to ensure
-											assessment fairness
-										</div>
-									</div>
-								</div>
-							) : s.sourceType === SOURCE_TYPE.MULTI_QUESTION_BANK ? (
-								// Multi-Question Bank Survey Information
-								<div className='mb-4'>
-									<h4 className='font-semibold text-gray-800 mb-3'>
-										Multi-Question Bank Survey
-									</h4>
-									<div className='bg-blue-50 rounded-lg p-4'>
-										<div className='space-y-3'>
-											{s.multiQuestionBankConfig &&
-											s.multiQuestionBankConfig.length > 0 ? (
-													s.multiQuestionBankConfig.map(
-														(config: any, index: number) => {
-															const bank = questionBanks.find(
-																b => b._id === config.questionBankId
-															);
-															return (
-																<div
-																	key={index}
-																	className='flex items-center justify-between p-3 bg-white rounded-lg border'
-																>
-																	<div>
-																		<div className='font-medium text-gray-800'>
-																			{bank?.name ||
-																			'Unknown Bank'}
-																		</div>
-																		<div className='text-sm text-gray-600'>
-																			{config.questionCount}{' '}
-																		questions
-																			{config.filters &&
-																			Object.keys(
-																				config.filters
-																			).length > 0 && (
-																				<span className='text-blue-600'>
-																					{' '}
-																					(with filters)
-																				</span>
-																			)}
-																		</div>
-																	</div>
-																	<div className='text-lg font-bold text-blue-600'>
-																		{config.questionCount}
-																	</div>
-																</div>
-															);
-														}
-													)
-												) : (
-													<div className='text-gray-500 text-sm text-center py-4'>
-													No question bank configurations set
+												{[SURVEY_TYPE.QUIZ, SURVEY_TYPE.IQ].includes(
+													s.type
+												) && (
+													<div className='flex items-center justify-between pt-3 border-t border-gray-200'>
+														<div>
+															<label className='block text-sm font-medium text-gray-700 mb-1'>
+																Enhanced Assessment URL
+															</label>
+															<div className='text-sm text-gray-600 font-mono'>
+																{getAssessmentUrl(
+																	s.slug,
+																	companySlug
+																)}
+															</div>
+														</div>
+														<div className='flex flex-wrap items-center gap-1 sm:gap-2'>
+															<button
+																className='btn-secondary btn-small'
+																onClick={() =>
+																	copyToClipboard(
+																		getAssessmentUrl(
+																			s.slug,
+																			companySlug
+																		)
+																	)
+																}
+															>
+																Copy Enhanced URL
+															</button>
+															<button
+																className='btn-outline btn-small'
+																onClick={() =>
+																	window.open(
+																		getAssessmentUrl(
+																			s.slug,
+																			companySlug
+																		),
+																		'_blank'
+																	)
+																}
+															>
+																Open
+															</button>
+														</div>
 													</div>
 												)}
-											<div className='text-xs text-gray-500 mt-2'>
-												💡 Questions are selected based on configured rules
-												for each bank
+											</>
+										)}
+									</div>
+									{showQR[s._id] && (
+										<div className='border-t border-gray-200 pt-4'>
+											<QRCodeComponent
+												url={
+													s.type === SURVEY_TYPE.ASSESSMENT
+														? getAssessmentUrl(s.slug, companySlug)
+														: getSurveyUrl(s.slug, companySlug)
+												}
+											/>
+										</div>
+									)}
+								</div>
+
+								{/* Question Management */}
+								{s.sourceType === SOURCE_TYPE.MANUAL ? (
+									// Manual Question Management with Drag & Drop
+									<DroppableQuestionList
+										questions={s.questions || []}
+										surveyId={s._id}
+										surveyType={s.type}
+										onQuestionsReorder={newQuestions =>
+											handleQuestionsReorder(s._id, newQuestions)
+										}
+										onEditQuestion={index => startEditQuestion(s._id, index)}
+										onDeleteQuestion={index => deleteQuestion(s._id, index)}
+										onAddQuestion={() => setShowAddQuestionModal(true)}
+										loading={loading}
+									/>
+								) : s.sourceType === SOURCE_TYPE.QUESTION_BANK ? (
+									// Single Question Bank Survey Information
+									<div className='mb-4'>
+										<h4 className='font-semibold text-gray-800 mb-3'>
+											Question Bank Survey
+										</h4>
+										<div className='bg-purple-50 rounded-lg p-4'>
+											<div className='flex items-center justify-between mb-3'>
+												<div>
+													<div className='font-medium text-gray-800'>
+														Random Question Selection
+													</div>
+													<div className='text-sm text-gray-600'>
+														This survey will randomly select{' '}
+														{s.questionCount} questions from the linked
+														question bank for each student.
+													</div>
+												</div>
+												<div className='text-lg font-bold text-purple-600'>
+													{s.questionCount} questions
+												</div>
+											</div>
+											<div className='text-xs text-gray-500'>
+												💡 Questions are randomized per student to ensure
+												assessment fairness
 											</div>
 										</div>
 									</div>
-								</div>
-							) : s.sourceType === SOURCE_TYPE.MANUAL_SELECTION ? (
-								// Manual Selection Survey Information
-								<div className='mb-4'>
-									<h4 className='font-semibold text-gray-800 mb-3'>
-										Manual Question Selection Survey
-									</h4>
-									<div className='bg-green-50 rounded-lg p-4'>
-										<div className='flex items-center justify-between mb-3'>
-											<div>
-												<div className='font-medium text-gray-800'>
-													Pre-selected Questions
-												</div>
-												<div className='text-sm text-gray-600'>
-													This survey uses{' '}
-													{s.selectedQuestions?.length || 0} manually
-													selected questions from various question banks.
+								) : s.sourceType === SOURCE_TYPE.MULTI_QUESTION_BANK ? (
+									// Multi-Question Bank Survey Information
+									<div className='mb-4'>
+										<h4 className='font-semibold text-gray-800 mb-3'>
+											Multi-Question Bank Survey
+										</h4>
+										<div className='bg-blue-50 rounded-lg p-4'>
+											<div className='space-y-3'>
+												{s.multiQuestionBankConfig &&
+												s.multiQuestionBankConfig.length > 0 ? (
+														s.multiQuestionBankConfig.map(
+															(config: any, index: number) => {
+																const bank = questionBanks.find(
+																	b => b._id === config.questionBankId
+																);
+																return (
+																	<div
+																		key={index}
+																		className='flex items-center justify-between p-3 bg-white rounded-lg border'
+																	>
+																		<div>
+																			<div className='font-medium text-gray-800'>
+																				{bank?.name ||
+																				'Unknown Bank'}
+																			</div>
+																			<div className='text-sm text-gray-600'>
+																				{config.questionCount}{' '}
+																			questions
+																				{config.filters &&
+																				Object.keys(
+																					config.filters
+																				).length > 0 && (
+																					<span className='text-blue-600'>
+																						{' '}
+																						(with
+																						filters)
+																					</span>
+																				)}
+																			</div>
+																		</div>
+																		<div className='text-lg font-bold text-blue-600'>
+																			{config.questionCount}
+																		</div>
+																	</div>
+																);
+															}
+														)
+													) : (
+														<div className='text-gray-500 text-sm text-center py-4'>
+														No question bank configurations set
+														</div>
+													)}
+												<div className='text-xs text-gray-500 mt-2'>
+													💡 Questions are selected based on configured
+													rules for each bank
 												</div>
 											</div>
-											<div className='text-lg font-bold text-green-600'>
-												{s.selectedQuestions?.length || 0} questions
-											</div>
-										</div>
-										<div className='text-xs text-gray-500'>
-											💡 Questions are pre-selected and will be the same for
-											all students
 										</div>
 									</div>
-								</div>
-							) : null}
+								) : s.sourceType === SOURCE_TYPE.MANUAL_SELECTION ? (
+									// Manual Selection Survey Information
+									<div className='mb-4'>
+										<h4 className='font-semibold text-gray-800 mb-3'>
+											Manual Question Selection Survey
+										</h4>
+										<div className='bg-green-50 rounded-lg p-4'>
+											<div className='flex items-center justify-between mb-3'>
+												<div>
+													<div className='font-medium text-gray-800'>
+														Pre-selected Questions
+													</div>
+													<div className='text-sm text-gray-600'>
+														This survey uses{' '}
+														{s.selectedQuestions?.length || 0} manually
+														selected questions from various question
+														banks.
+													</div>
+												</div>
+												<div className='text-lg font-bold text-green-600'>
+													{s.selectedQuestions?.length || 0} questions
+												</div>
+											</div>
+											<div className='text-xs text-gray-500'>
+												💡 Questions are pre-selected and will be the same
+												for all students
+											</div>
+										</div>
+									</div>
+								) : null}
+							</div>
 						</div>
-					</>
+						{showInlinePreview && (
+							<div className='w-full lg:flex-1'>
+								<div className='card'>
+									<SurveyPreviewTab survey={s} hideLeftPane />
+								</div>
+							</div>
+						)}
+					</div>
 				)}
 				{tabLocal === TAB_TYPES.STATISTICS && (
 					<div className='card'>
@@ -1985,11 +2024,7 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 						)}
 					</div>
 				)}
-				{tabLocal === TAB_TYPES.PREVIEW && (
-					<div className='card'>
-						<SurveyPreviewTab survey={s} />
-					</div>
-				)}
+				{/* Preview tab removed in favor of inline toggle in Assessment Details */}
 				{/* Only show modal when showInviteModal is true */}
 				{showInviteModal && (
 					<InviteAssessmentModal

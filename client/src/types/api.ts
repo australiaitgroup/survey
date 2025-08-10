@@ -22,7 +22,7 @@ export interface QuestionOption {
 export interface Company {
 	_id: string;
 	name: string;
-  	slug?: string;
+	slug?: string;
 	industry?: string;
 	logoUrl?: string;
 	description?: string;

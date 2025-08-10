@@ -167,6 +167,18 @@ const EditSurveyModal: React.FC = () => {
 												setEditForm({
 													...editForm,
 													type: e.target.value as any,
+													// Sanitize navigationMode when switching to survey
+													navigationMode:
+														e.target.value === 'survey' &&
+														![
+															'step-by-step',
+															'one-question-per-page',
+														].includes(
+															(editForm.navigationMode as string) ||
+																'step-by-step'
+														)
+															? 'step-by-step'
+															: editForm.navigationMode,
 												})
 											}
 										>
@@ -479,21 +491,35 @@ const EditSurveyModal: React.FC = () => {
 								</label>
 								<select
 									value={editForm.navigationMode || 'step-by-step'}
-									onChange={e =>
+									onChange={e => {
+										const next = e.target.value as
+											| 'step-by-step'
+											| 'paginated'
+											| 'all-in-one'
+											| 'one-question-per-page';
+										// When type is 'survey', restrict to 'step-by-step' and 'one-question-per-page'
+										if (
+											editForm.type === 'survey' &&
+											!['step-by-step', 'one-question-per-page'].includes(
+												next
+											)
+										) {
+											return; // ignore invalid selection
+										}
 										setEditForm({
 											...editForm,
-											navigationMode: e.target.value as
-												| 'step-by-step'
-												| 'paginated'
-												| 'all-in-one'
-												| 'one-question-per-page',
-										})
-									}
+											navigationMode: next,
+										});
+									}}
 									className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
 								>
 									<option value='step-by-step'>Step by Step</option>
-									<option value='paginated'>Paginated</option>
-									<option value='all-in-one'>All in One</option>
+									{editForm.type !== 'survey' && (
+										<option value='paginated'>Paginated</option>
+									)}
+									{editForm.type !== 'survey' && (
+										<option value='all-in-one'>All in One</option>
+									)}
 									<option value='one-question-per-page'>
 										One Question Per Page (Typeform-like)
 									</option>

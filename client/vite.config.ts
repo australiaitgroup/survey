@@ -25,13 +25,13 @@ export default defineConfig({
 				changeOrigin: true,
 				secure: false,
 			},
-      // Support multi-tenant API routes like /:companySlug/api/* during local dev
-      '^/[^/]+/api': {
-        target: 'http://localhost:5050',
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path: string) => path.replace(/^\/[^/]+\/api/, '/api'),
-      },
+			// Support multi-tenant API routes like /:companySlug/api/* during local dev
+			'^/[^/]+/api': {
+				target: 'http://localhost:5050',
+				changeOrigin: true,
+				secure: false,
+				rewrite: (path: string) => path.replace(/^\/[^/]+\/api/, '/api'),
+			},
 		},
 		allowedHosts: ['localhost', '127.0.0.1', 'survey.jiangren.com.au', '*.jiangren.com.au'],
 	},

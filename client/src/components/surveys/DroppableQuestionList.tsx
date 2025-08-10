@@ -71,7 +71,6 @@ const DroppableQuestionList: React.FC<DroppableQuestionListProps> = ({
 		const newIndex = parseInt(over.id.toString().split('-')[1]);
 
 		if (oldIndex !== newIndex && !isNaN(oldIndex) && !isNaN(newIndex)) {
-
 			const newQuestions = arrayMove(questions, oldIndex, newIndex);
 
 			onQuestionsReorder(newQuestions);

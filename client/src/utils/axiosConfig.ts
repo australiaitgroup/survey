@@ -24,7 +24,9 @@ api.interceptors.request.use(
 			config.headers.Authorization = `Bearer ${token}`;
 		}
 		// Suppress writes in preview mode
-		const isWrite = ['post', 'put', 'patch', 'delete'].includes((config.method || '').toLowerCase());
+		const isWrite = ['post', 'put', 'patch', 'delete'].includes(
+			(config.method || '').toLowerCase()
+		);
 		if ((window as any).__PREVIEW__ === true && isWrite) {
 			console.debug('Preview mode: write suppressed');
 			// Cancel by throwing a special axios cancel which will be handled below

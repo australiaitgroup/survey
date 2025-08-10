@@ -25,13 +25,13 @@ const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
 	const isLastQuestion = currentQuestion === totalQuestions - 1;
 
 	return (
-		<div className='flex justify-between items-center pt-8 mt-8 md:sticky md:bottom-0 md:bg-white md:rounded-t-2xl md:px-4 md:py-3 md:shadow-none'>
+		<div className='flex justify-between items-center pt-6 mt-6 md:sticky md:bottom-0 md:bg-white md:rounded-t-2xl md:px-4 md:py-3 md:shadow-none'>
 			{/* Previous Button */}
 			<button
 				type='button'
 				onClick={onPrevious}
 				disabled={isFirstQuestion || loading}
-				className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+				className={`flex items-center gap-2 px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg font-medium transition-all duration-200 ${
 					isFirstQuestion || loading
 						? 'bg-gray-100 text-gray-400 cursor-not-allowed'
 						: 'bg-white text-[#484848] hover:bg-gray-50'
@@ -73,7 +73,7 @@ const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
 				<button
 					type='submit'
 					disabled={!canProceed || loading}
-					className={`flex items-center gap-2 px-8 py-3 rounded-xl font-medium transition-all duration-200 ${
+					className={`flex items-center gap-2 px-4 py-2 sm:px-7 sm:py-2.5 rounded-lg font-medium transition-all duration-200 ${
 						!canProceed || loading
 							? 'bg-gray-100 text-gray-400 cursor-not-allowed'
 							: 'bg-[#FF5A5F] text-white hover:bg-[#E54A4F]'
@@ -108,7 +108,7 @@ const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
 					type='button'
 					onClick={onNext}
 					disabled={!canProceed || loading}
-					className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+					className={`flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg font-medium transition-all duration-200 ${
 						!canProceed || loading
 							? 'bg-gray-100 text-gray-400 cursor-not-allowed'
 							: 'bg-[#FF5A5F] text-white hover:bg-[#E54A4F]'

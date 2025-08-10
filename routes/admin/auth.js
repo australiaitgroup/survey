@@ -277,7 +277,7 @@ router.post(
 					.trim()
 					.replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric characters with hyphens
 					.replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-				
+
 				// Check if slug already exists and make it unique if needed
 				let slug = baseSlug;
 				let counter = 1;
@@ -285,14 +285,19 @@ router.post(
 					slug = `${baseSlug}-${counter}`;
 					counter++;
 				}
-				
+
 				console.log('Generated slug:', slug);
 				company = new Company({
 					name: companyName,
 					slug: slug,
 				});
 				await company.save();
-				console.log('Company created successfully with ID:', company._id, 'and slug:', slug);
+				console.log(
+					'Company created successfully with ID:',
+					company._id,
+					'and slug:',
+					slug
+				);
 			}
 
 			// Create user

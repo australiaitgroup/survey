@@ -119,13 +119,13 @@ const Step1CompanyInfo: React.FC = () => {
 
 			<div className='bg-white rounded-lg shadow-lg p-8'>
 				<div className='space-y-6'>
-              {/* Slug Preview (read-only) */}
-              {company?.slug && (
-                <div className='flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg'>
-                  <div className='text-sm text-gray-600'>Company URL slug</div>
-                  <div className='text-sm font-mono text-gray-800'>{company.slug}</div>
-                </div>
-              )}
+					{/* Slug Preview (read-only) */}
+					{company?.slug && (
+						<div className='flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg'>
+							<div className='text-sm text-gray-600'>Company URL slug</div>
+							<div className='text-sm font-mono text-gray-800'>{company.slug}</div>
+						</div>
+					)}
 					{/* Company Name */}
 					<div>
 						<label
