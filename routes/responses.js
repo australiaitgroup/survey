@@ -61,30 +61,32 @@ router.post(
 			let pointsAwarded = 0;
 			const maxPoints = question.points || 1;
 
-			if (question.correctAnswer !== undefined && userAnswer !== undefined) {
+            if (question.correctAnswer !== undefined && userAnswer !== undefined) {
 				if (question.type === 'single_choice') {
-					const userOptionIndex = question.options?.findIndex(opt =>
-						typeof opt === 'string' ? opt === userAnswer : opt.text === userAnswer
-					);
+                    const options = Array.isArray(question.options) ? question.options : [];
+                    const userOptionIndex = options.findIndex(opt =>
+                        typeof opt === 'string' ? opt === userAnswer : opt?.text === userAnswer
+                    );
 					isCorrect = userOptionIndex === question.correctAnswer;
 				} else if (
 					question.type === 'multiple_choice' &&
 					Array.isArray(userAnswer) &&
 					Array.isArray(question.correctAnswer)
 				) {
-					const userOptionIndices = userAnswer
-						.map(ans =>
-							question.options?.findIndex(opt =>
-								typeof opt === 'string' ? opt === ans : opt.text === ans
-							)
-						)
-						.filter(idx => idx !== -1);
+                    const options = Array.isArray(question.options) ? question.options : [];
+                    const userOptionIndices = userAnswer
+                        .map(ans =>
+                            options.findIndex(opt =>
+                                typeof opt === 'string' ? opt === ans : opt?.text === ans
+                            )
+                        )
+                        .filter(idx => idx !== -1);
 					const correctIndices = question.correctAnswer;
 					isCorrect =
 						userOptionIndices.length === correctIndices.length &&
 						userOptionIndices.every(idx => correctIndices.includes(idx));
 				} else if (question.type === 'short_text') {
-					isCorrect = userAnswer === question.correctAnswer;
+                    isCorrect = String(userAnswer).trim() === String(question.correctAnswer).trim();
 				}
 
 				if (isCorrect) {

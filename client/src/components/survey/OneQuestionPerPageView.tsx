@@ -165,8 +165,8 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 			</div>
 
 			{/* Question Content */}
-            <div
-                className={`bg-white rounded-xl p-6 transition-all ${
+			<div
+				className={`bg-white rounded-xl p-6 transition-all ${
 					transitionDirection === 'up' ? 'animate-slide-down' : 'animate-slide-up'
 				} ${antiCheatEnabled ? 'anti-cheat-container' : ''}`}
 			>
@@ -177,15 +177,15 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 						</div>
 					</div>
 				)}
-                {/* Question Text */}
-                <div className='mb-6'>
-                    <h3 className='text-xl font-medium text-[#484848] leading-relaxed flex items-center'>
-                        <span className='inline-flex items-center justify-center w-7 h-7 rounded-full mr-3 bg-[#FF5A5F] text-white text-xs font-bold shadow-sm'>
-                            {currentQuestionIndex + 1}
-                        </span>
-                        <span className='min-w-0 break-words'>{currentQuestion.text}</span>
-                    </h3>
-                </div>
+				{/* Question Text */}
+				<div className='mb-6'>
+					<h3 className='text-xl font-medium text-[#484848] leading-relaxed flex items-center'>
+						<span className='inline-flex items-center justify-center w-7 h-7 rounded-full mr-3 bg-[#FF5A5F] text-white text-xs font-bold shadow-sm'>
+							{currentQuestionIndex + 1}
+						</span>
+						<span className='min-w-0 break-words'>{currentQuestion.text}</span>
+					</h3>
+				</div>
 
 				{/* Question Description (Markdown) */}
 				{currentQuestion.description && (

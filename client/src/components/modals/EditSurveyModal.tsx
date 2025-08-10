@@ -481,65 +481,139 @@ const EditSurveyModal: React.FC = () => {
 					{/* Right Column */}
 					<div className='space-y-6'>
 						{/* Display / Navigation */}
-                        <div>
-                            <h3 className='text-lg font-medium text-gray-900 mb-4'>Navigation Mode</h3>
-                            {editForm.type === 'survey' ? (
-                                <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-                                    <label className={`relative flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${editForm.navigationMode === 'step-by-step' ? 'border-blue-500 bg-blue-50/40' : 'border-gray-200 hover:border-blue-300'}`}>
-                                        <input
-                                            type='radio'
-                                            name='navigationModeEdit'
-                                            value='step-by-step'
-                                            checked={editForm.navigationMode === 'step-by-step'}
-                                            onChange={() => setEditForm({ ...editForm, navigationMode: 'step-by-step' })}
-                                            className='sr-only'
-                                        />
-                                        <div className='flex items-start space-x-3 w-full'>
-                                            <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${editForm.navigationMode === 'step-by-step' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
-                                                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 6h16M4 12h10M4 18h6'/></svg>
-                                            </div>
-                                            <div className='flex-1 min-w-0'>
-                                                <div className={`text-sm font-semibold ${editForm.navigationMode === 'step-by-step' ? 'text-blue-600' : 'text-gray-900'}`}>Step by Step</div>
-                                                <div className='text-xs text-gray-500 mt-1'>Sequential list, multiple questions per screen</div>
-                                            </div>
-                                        </div>
-                                    </label>
-                                    <label className={`relative flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${editForm.navigationMode === 'one-question-per-page' ? 'border-blue-500 bg-blue-50/40' : 'border-gray-200 hover:border-blue-300'}`}>
-                                        <input
-                                            type='radio'
-                                            name='navigationModeEdit'
-                                            value='one-question-per-page'
-                                            checked={editForm.navigationMode === 'one-question-per-page'}
-                                            onChange={() => setEditForm({ ...editForm, navigationMode: 'one-question-per-page' })}
-                                            className='sr-only'
-                                        />
-                                        <div className='flex items-start space-x-3 w-full'>
-                                            <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${editForm.navigationMode === 'one-question-per-page' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
-                                                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 6h16M4 10h16M4 14h10'/></svg>
-                                            </div>
-                                            <div className='flex-1 min-w-0'>
-                                                <div className={`text-sm font-semibold ${editForm.navigationMode === 'one-question-per-page' ? 'text-blue-600' : 'text-gray-900'}`}>One Question Per Page</div>
-                                                <div className='text-xs text-gray-500 mt-1'>Typeform-like, focus on one question each step</div>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-                            ) : (
-                                <div className='grid grid-cols-1 gap-3'>
-                                    <div className='relative flex items-start p-4 border-2 rounded-xl bg-gray-50 border-blue-500'>
-                                        <div className='flex items-start space-x-3 w-full'>
-                                            <div className='flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center bg-blue-500 text-white'>
-                                                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 6h16M4 10h16M4 14h10'/></svg>
-                                            </div>
-                                            <div className='flex-1 min-w-0'>
-                                                <div className='text-sm font-semibold text-blue-600'>One Question Per Page</div>
-                                                <div className='text-xs text-gray-500 mt-1'>Required for assessment-like types</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+						<div>
+							<h3 className='text-lg font-medium text-gray-900 mb-4'>
+								Navigation Mode
+							</h3>
+							{editForm.type === 'survey' ? (
+								<div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+									<label
+										className={`relative flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${editForm.navigationMode === 'step-by-step' ? 'border-blue-500 bg-blue-50/40' : 'border-gray-200 hover:border-blue-300'}`}
+									>
+										<input
+											type='radio'
+											name='navigationModeEdit'
+											value='step-by-step'
+											checked={editForm.navigationMode === 'step-by-step'}
+											onChange={() =>
+												setEditForm({
+													...editForm,
+													navigationMode: 'step-by-step',
+												})
+											}
+											className='sr-only'
+										/>
+										<div className='flex items-start space-x-3 w-full'>
+											<div
+												className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${editForm.navigationMode === 'step-by-step' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+											>
+												<svg
+													className='w-5 h-5'
+													fill='none'
+													stroke='currentColor'
+													viewBox='0 0 24 24'
+												>
+													<path
+														strokeLinecap='round'
+														strokeLinejoin='round'
+														strokeWidth={2}
+														d='M4 6h16M4 12h10M4 18h6'
+													/>
+												</svg>
+											</div>
+											<div className='flex-1 min-w-0'>
+												<div
+													className={`text-sm font-semibold ${editForm.navigationMode === 'step-by-step' ? 'text-blue-600' : 'text-gray-900'}`}
+												>
+													Step by Step
+												</div>
+												<div className='text-xs text-gray-500 mt-1'>
+													Sequential list, multiple questions per screen
+												</div>
+											</div>
+										</div>
+									</label>
+									<label
+										className={`relative flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${editForm.navigationMode === 'one-question-per-page' ? 'border-blue-500 bg-blue-50/40' : 'border-gray-200 hover:border-blue-300'}`}
+									>
+										<input
+											type='radio'
+											name='navigationModeEdit'
+											value='one-question-per-page'
+											checked={
+												editForm.navigationMode === 'one-question-per-page'
+											}
+											onChange={() =>
+												setEditForm({
+													...editForm,
+													navigationMode: 'one-question-per-page',
+												})
+											}
+											className='sr-only'
+										/>
+										<div className='flex items-start space-x-3 w-full'>
+											<div
+												className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${editForm.navigationMode === 'one-question-per-page' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+											>
+												<svg
+													className='w-5 h-5'
+													fill='none'
+													stroke='currentColor'
+													viewBox='0 0 24 24'
+												>
+													<path
+														strokeLinecap='round'
+														strokeLinejoin='round'
+														strokeWidth={2}
+														d='M4 6h16M4 10h16M4 14h10'
+													/>
+												</svg>
+											</div>
+											<div className='flex-1 min-w-0'>
+												<div
+													className={`text-sm font-semibold ${editForm.navigationMode === 'one-question-per-page' ? 'text-blue-600' : 'text-gray-900'}`}
+												>
+													One Question Per Page
+												</div>
+												<div className='text-xs text-gray-500 mt-1'>
+													Typeform-like, focus on one question each step
+												</div>
+											</div>
+										</div>
+									</label>
+								</div>
+							) : (
+								<div className='grid grid-cols-1 gap-3'>
+									<div className='relative flex items-start p-4 border-2 rounded-xl bg-gray-50 border-blue-500'>
+										<div className='flex items-start space-x-3 w-full'>
+											<div className='flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center bg-blue-500 text-white'>
+												<svg
+													className='w-5 h-5'
+													fill='none'
+													stroke='currentColor'
+													viewBox='0 0 24 24'
+												>
+													<path
+														strokeLinecap='round'
+														strokeLinejoin='round'
+														strokeWidth={2}
+														d='M4 6h16M4 10h16M4 14h10'
+													/>
+												</svg>
+											</div>
+											<div className='flex-1 min-w-0'>
+												<div className='text-sm font-semibold text-blue-600'>
+													One Question Per Page
+												</div>
+												<div className='text-xs text-gray-500 mt-1'>
+													Required for assessment-like types
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							)}
+						</div>
 
 						{/* Assessment Configuration */}
 						{['quiz', 'assessment', 'iq'].includes(editForm.type) && (

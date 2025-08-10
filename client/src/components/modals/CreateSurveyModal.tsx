@@ -9,12 +9,12 @@ import ManualQuestionSelectionModal from './ManualQuestionSelectionModal';
 import type { SelectedQuestion, MultiQuestionBankConfig } from '../../types/api';
 import { SOURCE_TYPE, SURVEY_TYPE } from '../../constants';
 import {
-    ClipboardDocumentListIcon,
-    AcademicCapIcon,
-    CheckBadgeIcon,
-    PuzzlePieceIcon,
-    ListBulletIcon,
-    RectangleStackIcon,
+	ClipboardDocumentListIcon,
+	AcademicCapIcon,
+	CheckBadgeIcon,
+	PuzzlePieceIcon,
+	ListBulletIcon,
+	RectangleStackIcon,
 } from '@heroicons/react/24/outline';
 
 const CreateSurveyModal: React.FC = () => {
@@ -71,11 +71,9 @@ const CreateSurveyModal: React.FC = () => {
 		setNewSurvey(prev => {
 			// Sanitize navigationMode when type changes to SURVEY
 			if (field === 'type' && value === SURVEY_TYPE.SURVEY) {
-                const current =
-                    (prev.navigationMode as
-                        | 'step-by-step'
-                        | 'one-question-per-page'
-                        | undefined) || 'step-by-step';
+				const current =
+					(prev.navigationMode as 'step-by-step' | 'one-question-per-page' | undefined) ||
+					'step-by-step';
 				const nextNav: 'step-by-step' | 'one-question-per-page' =
 					current === 'one-question-per-page' ? 'one-question-per-page' : 'step-by-step';
 				return { ...prev, type: SURVEY_TYPE.SURVEY, navigationMode: nextNav };
@@ -520,78 +518,106 @@ const CreateSurveyModal: React.FC = () => {
 					</div>
 				</div>
 
-                {/* Display / Navigation */}
-                <div>
-                    <h3 className='text-lg font-medium text-gray-900 mb-4'>
-                        {t('createModal.assessmentConfig.navigationMode', {
-                            defaultValue: 'Navigation Mode',
-                        })}
-                    </h3>
-                    {newSurvey.type === SURVEY_TYPE.SURVEY ? (
-                        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-                            {/* Step by Step */}
-                            <label className={`relative flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${newSurvey.navigationMode === 'step-by-step' ? 'border-blue-500 bg-blue-50/40' : 'border-gray-200 hover:border-blue-300'}`}>
-                                <input
-                                    type='radio'
-                                    name='navigationMode'
-                                    value='step-by-step'
-                                    checked={newSurvey.navigationMode === 'step-by-step'}
-                                    onChange={() => handleInputChange('navigationMode', 'step-by-step')}
-                                    className='sr-only'
-                                />
-                                <div className='flex items-start space-x-3 w-full'>
-                                    <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${newSurvey.navigationMode === 'step-by-step' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
-                                        <ListBulletIcon className='w-5 h-5' />
-                                    </div>
-                                    <div className='flex-1 min-w-0'>
-                                        <div className={`text-sm font-semibold ${newSurvey.navigationMode === 'step-by-step' ? 'text-blue-600' : 'text-gray-900'}`}>Step by Step</div>
-                                        <div className='text-xs text-gray-500 mt-1'>Sequential list, multiple questions per screen</div>
-                                    </div>
-                                    {newSurvey.navigationMode === 'step-by-step' && (
-                                        <div className='absolute top-2 right-2 w-4 h-4 bg-blue-500 rounded-full'></div>
-                                    )}
-                                </div>
-                            </label>
-                            {/* One Question Per Page */}
-                            <label className={`relative flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${newSurvey.navigationMode === 'one-question-per-page' ? 'border-blue-500 bg-blue-50/40' : 'border-gray-200 hover:border-blue-300'}`}>
-                                <input
-                                    type='radio'
-                                    name='navigationMode'
-                                    value='one-question-per-page'
-                                    checked={newSurvey.navigationMode === 'one-question-per-page'}
-                                    onChange={() => handleInputChange('navigationMode', 'one-question-per-page')}
-                                    className='sr-only'
-                                />
-                                <div className='flex items-start space-x-3 w-full'>
-                                    <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${newSurvey.navigationMode === 'one-question-per-page' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
-                                        <RectangleStackIcon className='w-5 h-5' />
-                                    </div>
-                                    <div className='flex-1 min-w-0'>
-                                        <div className={`text-sm font-semibold ${newSurvey.navigationMode === 'one-question-per-page' ? 'text-blue-600' : 'text-gray-900'}`}>One Question Per Page</div>
-                                        <div className='text-xs text-gray-500 mt-1'>Typeform-like, focus on one question each step</div>
-                                    </div>
-                                    {newSurvey.navigationMode === 'one-question-per-page' && (
-                                        <div className='absolute top-2 right-2 w-4 h-4 bg-blue-500 rounded-full'></div>
-                                    )}
-                                </div>
-                            </label>
-                        </div>
-                    ) : (
-                        <div className='grid grid-cols-1 gap-3'>
-                            <div className='relative flex items-start p-4 border-2 rounded-xl bg-gray-50 border-blue-500'>
-                                <div className='flex items-start space-x-3 w-full'>
-                                    <div className='flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center bg-blue-500 text-white'>
-                                        <RectangleStackIcon className='w-5 h-5' />
-                                    </div>
-                                    <div className='flex-1 min-w-0'>
-                                        <div className='text-sm font-semibold text-blue-600'>One Question Per Page</div>
-                                        <div className='text-xs text-gray-500 mt-1'>Required for assessment-like types</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
+				{/* Display / Navigation */}
+				<div>
+					<h3 className='text-lg font-medium text-gray-900 mb-4'>
+						{t('createModal.assessmentConfig.navigationMode', {
+							defaultValue: 'Navigation Mode',
+						})}
+					</h3>
+					{newSurvey.type === SURVEY_TYPE.SURVEY ? (
+						<div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+							{/* Step by Step */}
+							<label
+								className={`relative flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${newSurvey.navigationMode === 'step-by-step' ? 'border-blue-500 bg-blue-50/40' : 'border-gray-200 hover:border-blue-300'}`}
+							>
+								<input
+									type='radio'
+									name='navigationMode'
+									value='step-by-step'
+									checked={newSurvey.navigationMode === 'step-by-step'}
+									onChange={() =>
+										handleInputChange('navigationMode', 'step-by-step')
+									}
+									className='sr-only'
+								/>
+								<div className='flex items-start space-x-3 w-full'>
+									<div
+										className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${newSurvey.navigationMode === 'step-by-step' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+									>
+										<ListBulletIcon className='w-5 h-5' />
+									</div>
+									<div className='flex-1 min-w-0'>
+										<div
+											className={`text-sm font-semibold ${newSurvey.navigationMode === 'step-by-step' ? 'text-blue-600' : 'text-gray-900'}`}
+										>
+											Step by Step
+										</div>
+										<div className='text-xs text-gray-500 mt-1'>
+											Sequential list, multiple questions per screen
+										</div>
+									</div>
+									{newSurvey.navigationMode === 'step-by-step' && (
+										<div className='absolute top-2 right-2 w-4 h-4 bg-blue-500 rounded-full'></div>
+									)}
+								</div>
+							</label>
+							{/* One Question Per Page */}
+							<label
+								className={`relative flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${newSurvey.navigationMode === 'one-question-per-page' ? 'border-blue-500 bg-blue-50/40' : 'border-gray-200 hover:border-blue-300'}`}
+							>
+								<input
+									type='radio'
+									name='navigationMode'
+									value='one-question-per-page'
+									checked={newSurvey.navigationMode === 'one-question-per-page'}
+									onChange={() =>
+										handleInputChange('navigationMode', 'one-question-per-page')
+									}
+									className='sr-only'
+								/>
+								<div className='flex items-start space-x-3 w-full'>
+									<div
+										className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${newSurvey.navigationMode === 'one-question-per-page' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+									>
+										<RectangleStackIcon className='w-5 h-5' />
+									</div>
+									<div className='flex-1 min-w-0'>
+										<div
+											className={`text-sm font-semibold ${newSurvey.navigationMode === 'one-question-per-page' ? 'text-blue-600' : 'text-gray-900'}`}
+										>
+											One Question Per Page
+										</div>
+										<div className='text-xs text-gray-500 mt-1'>
+											Typeform-like, focus on one question each step
+										</div>
+									</div>
+									{newSurvey.navigationMode === 'one-question-per-page' && (
+										<div className='absolute top-2 right-2 w-4 h-4 bg-blue-500 rounded-full'></div>
+									)}
+								</div>
+							</label>
+						</div>
+					) : (
+						<div className='grid grid-cols-1 gap-3'>
+							<div className='relative flex items-start p-4 border-2 rounded-xl bg-gray-50 border-blue-500'>
+								<div className='flex items-start space-x-3 w-full'>
+									<div className='flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center bg-blue-500 text-white'>
+										<RectangleStackIcon className='w-5 h-5' />
+									</div>
+									<div className='flex-1 min-w-0'>
+										<div className='text-sm font-semibold text-blue-600'>
+											One Question Per Page
+										</div>
+										<div className='text-xs text-gray-500 mt-1'>
+											Required for assessment-like types
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					)}
+				</div>
 
 				{/* Assessment Configuration */}
 				{isAssessmentType && (

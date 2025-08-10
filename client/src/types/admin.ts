@@ -102,7 +102,7 @@ export interface NewSurveyForm {
 	timeLimit?: number;
 	maxAttempts?: number;
 	instructions?: string;
-    navigationMode?: 'step-by-step' | 'one-question-per-page';
+	navigationMode?: 'step-by-step' | 'one-question-per-page';
 	sourceType?: 'manual' | 'question_bank' | 'multi_question_bank' | 'manual_selection';
 	questionBankId?: string;
 	questionCount?: number;

@@ -9,36 +9,38 @@ async function saveSurveyResponse(data) {
 		throw new Error('Survey not found');
 	}
 
-	// Check if user already has a response (for question bank surveys)
-	let existingResponse = null;
-	if (survey.sourceType === 'question_bank') {
-		existingResponse = await ResponseModel.findOne({
-			surveyId: data.surveyId,
-			email: data.email,
-		});
-	}
+    // Check if user already has a response (for bank-based surveys)
+    let existingResponse = null;
+    const bankBasedSources = ['question_bank', 'multi_question_bank', 'manual_selection'];
+    if (bankBasedSources.includes(survey.sourceType)) {
+        existingResponse = await ResponseModel.findOne({
+            surveyId: data.surveyId,
+            email: data.email,
+        });
+    }
 
 	// Process answers to convert new format (string values) to old format (indices)
 	const processedAnswers = new Map();
 
-	// For question bank surveys, we need to use the selectedQuestions
-	let questionsToProcess = survey.questions;
-	if (
-		survey.sourceType === 'question_bank' &&
-		existingResponse &&
-		existingResponse.selectedQuestions.length > 0
-	) {
-		questionsToProcess = existingResponse.selectedQuestions.map(sq => sq.questionData);
-	}
+    // For bank-based surveys, we need to use the selectedQuestions
+    let questionsToProcess = survey.questions;
+    if (
+        bankBasedSources.includes(survey.sourceType) &&
+        existingResponse &&
+        Array.isArray(existingResponse.selectedQuestions) &&
+        existingResponse.selectedQuestions.length > 0
+    ) {
+        questionsToProcess = existingResponse.selectedQuestions.map(sq => sq.questionData);
+    }
 
 	// Prepare user answers array for snapshot creation
 	const userAnswersArray = [];
 
-	if (Array.isArray(data.answers)) {
+    if (Array.isArray(data.answers)) {
 		// New format: array of answers (string values)
 		data.answers.forEach((answer, index) => {
 			userAnswersArray[index] = answer;
-			if (answer !== null && answer !== undefined && answer !== '') {
+            if (answer !== null && answer !== undefined && answer !== '') {
 				const question = questionsToProcess[index];
 				if (question) {
 					if (question.type === 'single_choice') {
@@ -67,10 +69,10 @@ async function saveSurveyResponse(data) {
 							});
 						}
 
-						if (optionIndex !== -1) {
+                        if (optionIndex !== -1) {
 							processedAnswers.set(index.toString(), optionIndex);
 						}
-					} else if (question.type === 'multiple_choice' && Array.isArray(answer)) {
+                    } else if (question.type === 'multiple_choice' && Array.isArray(answer)) {
 						// Find the indices of the selected options
 						const optionIndices = answer
 							.map(opt => {
@@ -101,9 +103,12 @@ async function saveSurveyResponse(data) {
 								return idx;
 							})
 							.filter(idx => idx !== -1);
-						if (optionIndices.length > 0) {
+                        if (optionIndices.length > 0) {
 							processedAnswers.set(index.toString(), optionIndices);
 						}
+                    } else if (question.type === 'short_text' && typeof answer === 'string') {
+                        // For short text, persist the raw string so statistics can evaluate correctness
+                        processedAnswers.set(index.toString(), answer.trim());
 					}
 				}
 			}
@@ -216,8 +221,8 @@ async function getSurveyStatistics(surveyId) {
 		statistics.passRate = Math.round((passedCount / totalResponses) * 100 * 100) / 100;
 	}
 
-	// Calculate question-level statistics
-	survey.questions.forEach((question, questionIndex) => {
+    // Calculate question-level statistics
+    survey.questions.forEach((question, questionIndex) => {
 		const questionStats = {
 			questionIndex,
 			questionText: question.text,
@@ -227,40 +232,44 @@ async function getSurveyStatistics(surveyId) {
 			correctAnswerRate: 0,
 		};
 
-		// Initialize option statistics
-		question.options.forEach((option, optionIndex) => {
-			questionStats.optionStatistics.push({
-				optionIndex,
-				optionText: option,
-				count: 0,
-				percentage: 0,
-			});
-		});
+        // Initialize option statistics (only for choice questions)
+        if (Array.isArray(question.options)) {
+            question.options.forEach((option, optionIndex) => {
+                const optionText =
+                    typeof option === 'string' ? option : option?.text ?? '';
+                questionStats.optionStatistics.push({
+                    optionIndex,
+                    optionText,
+                    count: 0,
+                    percentage: 0,
+                });
+            });
+        }
 
-		// Count answers for each option
-		responses.forEach(response => {
-			const answer = response.answers.get(questionIndex.toString());
-			if (answer !== undefined && answer !== null) {
-				questionStats.totalAnswers++;
+        // Count answers for each option (choice questions only)
+        responses.forEach(response => {
+            const answer = response.answers.get(questionIndex.toString());
+            if (answer !== undefined && answer !== null) {
+                questionStats.totalAnswers++;
 
-				if (question.type === 'single_choice') {
-					if (
-						typeof answer === 'number' &&
-						answer < questionStats.optionStatistics.length
-					) {
-						questionStats.optionStatistics[answer].count++;
-					}
-				} else if (question.type === 'multiple_choice') {
-					if (Array.isArray(answer)) {
-						answer.forEach(optionIndex => {
-							if (optionIndex < questionStats.optionStatistics.length) {
-								questionStats.optionStatistics[optionIndex].count++;
-							}
-						});
-					}
-				}
-			}
-		});
+                if (question.type === 'single_choice') {
+                    if (
+                        typeof answer === 'number' &&
+                        answer < questionStats.optionStatistics.length
+                    ) {
+                        questionStats.optionStatistics[answer].count++;
+                    }
+                } else if (question.type === 'multiple_choice') {
+                    if (Array.isArray(answer)) {
+                        answer.forEach(optionIndex => {
+                            if (optionIndex < questionStats.optionStatistics.length) {
+                                questionStats.optionStatistics[optionIndex].count++;
+                            }
+                        });
+                    }
+                }
+            }
+        });
 
 		// Calculate percentages
 		if (questionStats.totalAnswers > 0) {
@@ -270,8 +279,8 @@ async function getSurveyStatistics(surveyId) {
 			});
 		}
 
-		// Calculate correct answer rate for quiz/assessment/iq
-		if (survey.requiresAnswers && question.correctAnswer !== null) {
+        // Calculate correct answer rate for quiz/assessment/iq
+        if (survey.requiresAnswers && question.correctAnswer !== null) {
 			let correctCount = 0;
 
 			responses.forEach(response => {
@@ -289,6 +298,11 @@ async function getSurveyStatistics(surveyId) {
 								userSet.size === correctSet.size &&
 								[...userSet].every(val => correctSet.has(val));
 						}
+                    } else if (question.type === 'short_text') {
+                        // Compare trimmed strings for short text questions
+                        const userText = String(answer).trim();
+                        const correctText = String(question.correctAnswer ?? '').trim();
+                        isCorrect = userText === correctText;
 					}
 
 					if (isCorrect) {

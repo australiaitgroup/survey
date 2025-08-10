@@ -842,8 +842,8 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 					>
 						<div className={showInlinePreview ? 'w-full lg:w-1/2' : ''}>
 							<div className='card'>
-								<div className='flex justify-between items-start mb-4'>
-									<div className='flex-1'>
+                                <div className='flex flex-col xl:flex-row justify-between items-start mb-4 gap-3'>
+									<div className='flex-1 min-w-0'>
 										<div className='flex items-center gap-3 mb-2'>
 											<h3 className='text-xl font-bold text-gray-800'>
 												{s.title}
@@ -887,7 +887,7 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 											<p className='text-gray-600 mb-3'>{s.description}</p>
 										)}
 									</div>
-									<div className='flex items-center gap-2'>
+                                    <div className='flex items-center gap-2 flex-wrap mt-4 sm:mt-3 md:mt-2 xl:mt-0 w-full xl:w-auto justify-start xl:justify-end'>
 										<button
 											className='btn-secondary text-sm px-3 py-1'
 											onClick={() => openEditModal(s)}
@@ -914,12 +914,12 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 										>
 											Delete
 										</button>
-										<button
-											className='btn-outline text-sm px-3 py-1'
-											onClick={() => setShowInlinePreview(prev => !prev)}
-										>
-											{showInlinePreview ? 'Hide Preview' : 'Show Preview'}
-										</button>
+                                        <button
+                                            className='btn-outline text-sm px-3 py-1 shrink-0'
+                                            onClick={() => setShowInlinePreview(prev => !prev)}
+                                        >
+                                            {showInlinePreview ? 'Hide Preview' : 'Show Preview'}
+                                        </button>
 									</div>
 								</div>
 
@@ -953,15 +953,16 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 													</span>
 												</div>
 											)}
-                                            {s.navigationMode !== NAVIGATION_MODE.STEP_BY_STEP && (
+											{s.navigationMode !== NAVIGATION_MODE.STEP_BY_STEP && (
 												<div className='flex justify-between'>
 													<span className='text-gray-600'>
 														Navigation Mode:
 													</span>
 													<span className='font-medium text-blue-600'>
-                                                        {s.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE
-                                                            ? 'One Question Per Page'
-                                                            : 'Step-by-step'}
+														{s.navigationMode ===
+														NAVIGATION_MODE.ONE_QUESTION_PER_PAGE
+															? 'One Question Per Page'
+															: 'Step-by-step'}
 													</span>
 												</div>
 											)}

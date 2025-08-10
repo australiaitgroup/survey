@@ -186,7 +186,20 @@ export const useSurveys = () => {
 	const toggleSurveyStatus = async (surveyId: string) => {
 		try {
 			const response = await api.put(`/admin/surveys/${surveyId}/toggle-status`);
-			const updatedSurvey = response.data;
+			let updatedSurvey = response.data;
+
+			// Handle preview-suppressed writes: synthesize updated survey locally
+			if (updatedSurvey && updatedSurvey.preview === true) {
+				const current = surveys.find(s => s._id === surveyId) || selectedSurvey;
+				if (current) {
+					const nextIsActive = !current.isActive;
+					updatedSurvey = {
+						...current,
+						isActive: nextIsActive,
+						status: nextIsActive ? SURVEY_STATUS.ACTIVE : SURVEY_STATUS.DRAFT,
+					};
+				}
+			}
 			setSurveys(surveys.map(s => (s._id === surveyId ? updatedSurvey : s)));
 			if (selectedSurvey?._id === surveyId) {
 				setSelectedSurvey(updatedSurvey);
