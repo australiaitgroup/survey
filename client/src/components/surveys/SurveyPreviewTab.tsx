@@ -292,15 +292,15 @@ const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number }> = ({
 	return (
 		<div className='space-y-6'>
 			{questions.map((q, idx) => (
-				<div
-					key={q._id}
-					data-question-id={q._id}
-					className='bg-white rounded-xl p-6 border border-[#EBEBEB]'
-				>
-					<label className='block mb-5 font-medium text-[#484848] text-lg leading-relaxed'>
-						<span className='inline-flex items-center justify-center w-7 h-7 bg-[#FF5A5F] bg-opacity-10 text-[#FF5A5F] rounded-full text-sm font-bold mr-3'>
-							{idx + 1}
-						</span>
+                <div
+                    key={q._id}
+                    data-question-id={q._id}
+                    className='bg-white rounded-xl p-6'
+                >
+                    <label className='block mb-5 font-medium text-[#484848] text-lg leading-relaxed'>
+                        <span className='inline-flex items-center justify-center w-7 h-7 rounded-full mr-3 bg-[#FF5A5F] text-white text-xs font-bold shadow-sm'>
+                            {idx + 1}
+                        </span>
 						{q.text}
 					</label>
 					{q.description && (
@@ -440,7 +440,10 @@ const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPan
 								</div>
 							</div>
 						</div>
-						<RightPane survey={survey} externalPageIndex={pageIndex} />
+                        <RightPane survey={survey} externalPageIndex={pageIndex} />
+                        <div className='mt-6 pb-2 text-center text-xs text-[#767676]'>
+                            Powered by <a href='https://sigmaq.ai' target='_blank' rel='noopener noreferrer' className='text-[#FF5A5F] hover:underline'>SigmaQ</a>
+                        </div>
 					</div>
 				</div>
 			</div>

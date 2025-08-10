@@ -87,8 +87,8 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 	const [search, setSearch] = useState('');
 	const [filterLoading, setFilterLoading] = useState(false);
 	const [responsePage, setResponsePage] = useState(1);
-	// Inline preview toggle within Assessment Details
-	const [showInlinePreview, setShowInlinePreview] = useState<boolean>(false);
+	// Inline preview toggle within Assessment Details (default ON)
+	const [showInlinePreview, setShowInlinePreview] = useState<boolean>(true);
 	const PAGE_SIZE = 10;
 	const RESPONSE_PAGE_SIZE = 5;
 
