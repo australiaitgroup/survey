@@ -53,11 +53,6 @@ pipeline {
 					echo "=== File Listing ==="
 					ls -la
 					echo "=== Docker Compose Files Check ==="
-					if [ -f "docker-compose.aws.yml" ]; then
-						echo "✓ docker-compose.aws.yml exists"
-					else
-						echo "✗ docker-compose.aws.yml missing"
-					fi
 					if [ -f "docker-compose.prod.yml" ]; then
 						echo "✓ docker-compose.prod.yml exists"
 					else
@@ -84,7 +79,6 @@ pipeline {
 
 					# Stop and remove existing survey containers
 					docker-compose -f docker-compose.prod.yml down || true
-					docker-compose -f docker-compose.aws.yml down || true
 
 					# Remove only survey-related images
 					docker images | grep survey | awk '{print $3}' | xargs -r docker rmi -f || true

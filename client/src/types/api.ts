@@ -3,7 +3,7 @@
 export type SurveyType = 'survey' | 'assessment' | 'quiz' | 'iq';
 export type SurveyStatus = 'draft' | 'active' | 'closed';
 export type QuestionType = 'single_choice' | 'multiple_choice' | 'short_text';
-export type NavigationMode = 'step-by-step' | 'paginated' | 'all-in-one';
+export type NavigationMode = 'step-by-step' | 'one-question-per-page';
 export type SourceType = 'manual' | 'question_bank' | 'multi_question_bank' | 'manual_selection';
 export type ScoringMode = 'percentage' | 'accumulated';
 export type QuestionDifficulty = 'easy' | 'medium' | 'hard';

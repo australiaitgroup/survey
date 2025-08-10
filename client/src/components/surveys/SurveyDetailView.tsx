@@ -953,22 +953,15 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 													</span>
 												</div>
 											)}
-											{s.navigationMode !== NAVIGATION_MODE.STEP_BY_STEP && (
+                                            {s.navigationMode !== NAVIGATION_MODE.STEP_BY_STEP && (
 												<div className='flex justify-between'>
 													<span className='text-gray-600'>
 														Navigation Mode:
 													</span>
 													<span className='font-medium text-blue-600'>
-														{s.navigationMode ===
-														NAVIGATION_MODE.PAGINATED
-															? 'Paginated'
-															: s.navigationMode ===
-																  NAVIGATION_MODE.ALL_IN_ONE
-																? 'All-in-one'
-																: s.navigationMode ===
-																	  NAVIGATION_MODE.ONE_QUESTION_PER_PAGE
-																	? 'One Question Per Page'
-																	: 'Step-by-step'}
+                                                        {s.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE
+                                                            ? 'One Question Per Page'
+                                                            : 'Step-by-step'}
 													</span>
 												</div>
 											)}

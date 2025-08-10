@@ -349,10 +349,15 @@ const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number }> = ({
 };
 
 const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPane = false }) => {
-	const { t } = useTranslation();
-	// No device control; rely on responsive layout
-	const { clear, scrollToQuestion } = usePreview();
-	const [pageIndex, setPageIndex] = useState<number>(0);
+    const { t } = useTranslation();
+    // No device control; rely on responsive layout
+    const { clear, scrollToQuestion } = usePreview();
+    const [pageIndex, setPageIndex] = useState<number>(0);
+    const navigationLabel = React.useMemo(() => {
+        return survey.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE
+            ? t('preview.navigation.one', 'One Question Per Page')
+            : t('preview.navigation.step', 'Step by Step');
+    }, [survey.navigationMode, t]);
 
 	React.useEffect(() => {
 		(window as any).__PREVIEW__ = true;
@@ -375,12 +380,15 @@ const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPan
 	return (
 		<div className='flex flex-col h-full min-h-[75vh]'>
 			{/* Header */}
-			<div className='flex items-center justify-between pb-3 border-b border-gray-200'>
-				<div className='flex items-center gap-3'>
+            <div className='flex items-center justify-between pb-3 border-b border-gray-200'>
+                <div className='flex items-center gap-3'>
 					<h3 className='text-lg font-semibold'>{survey.title}</h3>
 					<span className='px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700'>
 						{t('preview.badge', 'Preview')}
 					</span>
+                    <span className='px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-700'>
+                        {t('preview.navigation.label', 'Navigation:')} {navigationLabel}
+                    </span>
 				</div>
 				<div className='flex items-center gap-3'>
 					<button

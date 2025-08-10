@@ -69,13 +69,11 @@ const CreateSurveyModal: React.FC = () => {
 		setNewSurvey(prev => {
 			// Sanitize navigationMode when type changes to SURVEY
 			if (field === 'type' && value === SURVEY_TYPE.SURVEY) {
-				const current =
-					(prev.navigationMode as
-						| 'step-by-step'
-						| 'one-question-per-page'
-						| 'paginated'
-						| 'all-in-one'
-						| undefined) || 'step-by-step';
+                const current =
+                    (prev.navigationMode as
+                        | 'step-by-step'
+                        | 'one-question-per-page'
+                        | undefined) || 'step-by-step';
 				const nextNav: 'step-by-step' | 'one-question-per-page' =
 					current === 'one-question-per-page' ? 'one-question-per-page' : 'step-by-step';
 				return { ...prev, type: SURVEY_TYPE.SURVEY, navigationMode: nextNav };
@@ -533,48 +531,43 @@ const CreateSurveyModal: React.FC = () => {
 								defaultValue: 'Navigation Mode',
 							})}
 						</label>
-						<select
-							value={newSurvey.navigationMode}
-							onChange={e => {
-								const next = e.target.value;
-								// When type is 'survey', restrict to 'step-by-step' and 'one-question-per-page'
-								if (
-									newSurvey.type === SURVEY_TYPE.SURVEY &&
-									!['step-by-step', 'one-question-per-page'].includes(
-										next as string
-									)
-								) {
-									return; // ignore invalid selection
-								}
-								handleInputChange('navigationMode', next);
-							}}
-							className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-						>
-							<option value='step-by-step'>
-								{t('createModal.assessmentConfig.stepByStep', {
-									defaultValue: 'Step by Step',
-								})}
-							</option>
-							{newSurvey.type !== SURVEY_TYPE.SURVEY && (
-								<option value='paginated'>
-									{t('createModal.assessmentConfig.paginated', {
-										defaultValue: 'Paginated',
-									})}
-								</option>
-							)}
-							{newSurvey.type !== SURVEY_TYPE.SURVEY && (
-								<option value='all-in-one'>
-									{t('createModal.assessmentConfig.allInOne', {
-										defaultValue: 'All in One',
-									})}
-								</option>
-							)}
-							<option value='one-question-per-page'>
-								{t('createModal.assessmentConfig.oneQuestionPerPage', {
-									defaultValue: 'One Question Per Page (Typeform-like)',
-								})}
-							</option>
-						</select>
+                        <select
+                            value={newSurvey.navigationMode}
+                            onChange={e => {
+                                const next = e.target.value as 'step-by-step' | 'one-question-per-page';
+                                // Enforce type-specific restrictions
+                                if (newSurvey.type === SURVEY_TYPE.SURVEY) {
+                                    if (!['step-by-step', 'one-question-per-page'].includes(next)) return;
+                                } else {
+                                    // assessment-like types → only one-question-per-page
+                                    if (next !== 'one-question-per-page') return;
+                                }
+                                handleInputChange('navigationMode', next);
+                            }}
+                            className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                            disabled={newSurvey.type !== SURVEY_TYPE.SURVEY}
+                        >
+                            {newSurvey.type === SURVEY_TYPE.SURVEY ? (
+                                <>
+                                    <option value='step-by-step'>
+                                        {t('createModal.assessmentConfig.stepByStep', {
+                                            defaultValue: 'Step by Step',
+                                        })}
+                                    </option>
+                                    <option value='one-question-per-page'>
+                                        {t('createModal.assessmentConfig.oneQuestionPerPage', {
+                                            defaultValue: 'One Question Per Page (Typeform-like)',
+                                        })}
+                                    </option>
+                                </>
+                            ) : (
+                                <option value='one-question-per-page'>
+                                    {t('createModal.assessmentConfig.oneQuestionPerPage', {
+                                        defaultValue: 'One Question Per Page (Typeform-like)',
+                                    })}
+                                </option>
+                            )}
+                        </select>
 					</div>
 				</div>
 

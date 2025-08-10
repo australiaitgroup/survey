@@ -23,8 +23,6 @@ export const QUESTION_TYPE = {
 // Navigation mode constants
 export const NAVIGATION_MODE = {
 	STEP_BY_STEP: 'step-by-step',
-	PAGINATED: 'paginated',
-	ALL_IN_ONE: 'all-in-one',
 	ONE_QUESTION_PER_PAGE: 'one-question-per-page',
 } as const;
 
