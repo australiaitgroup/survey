@@ -23,17 +23,17 @@ api.interceptors.request.use(
 		if (token) {
 			config.headers.Authorization = `Bearer ${token}`;
 		}
-    // Suppress writes in preview mode (but NEVER suppress admin writes)
-    const isWrite = ['post', 'put', 'patch', 'delete'].includes(
-        (config.method || '').toLowerCase()
-    );
-    const urlPath = config.url || '';
-    const isAdminEndpoint = urlPath.startsWith('/admin/');
-    if ((window as any).__PREVIEW__ === true && isWrite && !isAdminEndpoint) {
-        console.debug('Preview mode: write suppressed for non-admin endpoint', urlPath);
-        // Cancel by throwing a special axios cancel which will be handled below
-        return Promise.reject({ __previewSuppressed: true });
-    }
+		// Suppress writes in preview mode (but NEVER suppress admin writes)
+		const isWrite = ['post', 'put', 'patch', 'delete'].includes(
+			(config.method || '').toLowerCase()
+		);
+		const urlPath = config.url || '';
+		const isAdminEndpoint = urlPath.startsWith('/admin/');
+		if ((window as any).__PREVIEW__ === true && isWrite && !isAdminEndpoint) {
+			console.debug('Preview mode: write suppressed for non-admin endpoint', urlPath);
+			// Cancel by throwing a special axios cancel which will be handled below
+			return Promise.reject({ __previewSuppressed: true });
+		}
 		return config;
 	},
 	error => {
