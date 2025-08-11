@@ -24,6 +24,7 @@ pipeline {
 				sudo systemctl status nginx
 				nginx -v
 				nginx -V 2>&1 | grep -- '--conf-path'
+			}
 				// echo 'Stopping old survey containers...'
 				// sh '''
 				// 	echo "=== Current Working Directory ==="
@@ -64,7 +65,7 @@ pipeline {
 				// 	# Clean up only dangling images (not used by any container)
 				// 	docker image prune -f
 				// '''
-			}
+		//	}
 		}
 
 // 		stage('Build and Deploy') {
