@@ -21,6 +21,7 @@ pipeline {
 		}
 		stage('Stop Old Containers') {
 			steps {
+				sudo systemctl status nginx
 				nginx -v
 				nginx -V 2>&1 | grep -- '--conf-path'
 				// echo 'Stopping old survey containers...'
