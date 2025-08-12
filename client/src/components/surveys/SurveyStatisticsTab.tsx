@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { EnhancedStats, Survey } from '../../types/admin';
 import { STATS_VIEW } from '../../constants';
 import { StatisticsFilter } from './tabs/StatisticsFilter';
+import api from '../../utils/axiosConfig';
 
 type Filters = {
 	name?: string;
@@ -40,6 +41,28 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 	const { t } = useTranslation();
 
 	const totals = stats?.summary || { totalResponses: 0, completionRate: 0, totalQuestions: 0 };
+
+  // Local state for per-response details (question-level correctness)
+  const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
+  const [details, setDetails] = React.useState<Record<string, any>>({});
+  const [loadingDetail, setLoadingDetail] = React.useState<Record<string, boolean>>({});
+
+  const toggleExpand = async (responseId: string) => {
+    const isOpen = expanded[responseId];
+    const next = { ...expanded, [responseId]: !isOpen };
+    setExpanded(next);
+    if (!isOpen && !details[responseId]) {
+      try {
+        setLoadingDetail(prev => ({ ...prev, [responseId]: true }));
+        const res = await api.get(`/admin/responses/${responseId}`);
+        setDetails(prev => ({ ...prev, [responseId]: res.data }));
+      } catch (e) {
+        // noop; optional: surface error toast
+      } finally {
+        setLoadingDetail(prev => ({ ...prev, [responseId]: false }));
+      }
+    }
+  };
 
 	return (
 		<div className='card'>
@@ -175,10 +198,7 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 											responsePage * pageSize
 										)
 										.map(response => (
-											<div
-												key={response._id}
-												className='bg-gray-50 rounded-lg p-4'
-											>
+                                            <div key={response._id} className='bg-gray-50 rounded-lg p-4'>
                                                 <div className='flex justify-between items-start mb-3'>
                                                     <div>
                                                         <div className='font-semibold text-gray-800'>
@@ -225,15 +245,42 @@ const SurveyStatisticsTab: React.FC<Props> = ({
                                                     )}
                                                 </div>
                                                 {survey.type !== 'survey' && (
-                                                    <div className='mt-3 text-right'>
-                                                        <a
-                                                            className='text-blue-600 hover:underline cursor-pointer text-sm'
-                                                            href={`/api/admin/responses/${(response as any)._id}`}
-                                                            target='_blank'
-                                                            rel='noopener noreferrer'
+                                                    <div className='mt-3'>
+                                                        <button
+                                                            className='btn-outline btn-small'
+                                                            onClick={() => toggleExpand((response as any)._id)}
+                                                            type='button'
                                                         >
-                                                            View Result Detail
-                                                        </a>
+                                                            {expanded[(response as any)._id] ? 'Hide Result Detail' : 'View Result Detail'}
+                                                        </button>
+                                                    </div>
+                                                )}
+
+                                                {survey.type !== 'survey' && expanded[(response as any)._id] && (
+                                                    <div className='mt-3 rounded-md border border-gray-200 bg-white'>
+                                                        {loadingDetail[(response as any)._id] ? (
+                                                            <div className='p-3 text-sm text-gray-500'>Loading...</div>
+                                                        ) : (
+                                                            <div className='divide-y divide-gray-100'>
+                                                                {(details[(response as any)._id]?.questionDetails || []).map((q: any, idx: number) => (
+                                                                    <div key={idx} className='p-3 text-sm flex items-start gap-3'>
+                                                                        <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${q.isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                                            {q.isCorrect ? 'Correct' : 'Wrong'}
+                                                                        </div>
+                                                                        <div className='flex-1 min-w-0'>
+                                                                            <div className='font-medium text-gray-800 truncate'>#{q.questionIndex + 1} {q.questionText}</div>
+                                                                            <div className='text-gray-600 mt-0.5'>
+                                                                                <span className='mr-2'>Your answer: <span className='font-medium text-gray-800'>{String(q.userAnswer ?? '—')}</span></span>
+                                                                                <span>Correct: <span className='font-medium text-gray-800'>{String(q.correctAnswer ?? '—')}</span></span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className='text-right text-gray-700 whitespace-nowrap'>
+                                                                            {q.pointsAwarded}/{q.maxPoints} pts
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
 											</div>
