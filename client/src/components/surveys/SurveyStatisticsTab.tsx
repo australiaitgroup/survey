@@ -179,33 +179,63 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 												key={response._id}
 												className='bg-gray-50 rounded-lg p-4'
 											>
-												<div className='flex justify-between items-start mb-3'>
-													<div>
-														<div className='font-semibold text-gray-800'>
-															{response.name}
-														</div>
-														<div className='text-sm text-gray-500'>
-															{response.email}
-														</div>
-													</div>
-												</div>
-												<div className='grid gap-2'>
-													{Object.entries(response.answers).map(
-														([q, a]) => (
-															<div
-																key={q}
-																className='flex justify-between text-sm'
-															>
-																<div className='text-gray-700 w-1/2 pr-2 truncate'>
-																	{q}
-																</div>
-																<div className='text-gray-900 w-1/2 pl-2 break-words'>
-																	{a}
-																</div>
-															</div>
-														)
-													)}
-												</div>
+                                                <div className='flex justify-between items-start mb-3'>
+                                                    <div>
+                                                        <div className='font-semibold text-gray-800'>
+                                                            {response.name}
+                                                        </div>
+                                                        <div className='text-sm text-gray-500'>
+                                                            {response.email}
+                                                        </div>
+                                                    </div>
+                                                    {survey.type !== 'survey' && response.score && (
+                                                        <div className='flex items-center gap-2'>
+                                                            <span
+                                                                className={`px-2 py-1 text-xs rounded-full ${
+                                                                    response.score.passed
+                                                                        ? 'bg-green-100 text-green-700'
+                                                                        : 'bg-red-100 text-red-700'
+                                                                }`}
+                                                            >
+                                                                {response.score.passed ? 'Passed' : 'Failed'}
+                                                            </span>
+                                                            <span className='text-sm text-gray-700'>
+                                                                {response.score.scoringMode === 'percentage'
+                                                                    ? `${response.score.percentage}%`
+                                                                    : `${response.score.totalPoints}/${response.score.maxPossiblePoints}`}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className='grid gap-2'>
+                                                    {Object.entries(response.answers).map(
+                                                        ([q, a]) => (
+                                                            <div
+                                                                key={q}
+                                                                className='flex justify-between text-sm'
+                                                            >
+                                                                <div className='text-gray-700 w-1/2 pr-2 truncate'>
+                                                                    {q}
+                                                                </div>
+                                                                <div className='text-gray-900 w-1/2 pl-2 break-words'>
+                                                                    {a}
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    )}
+                                                </div>
+                                                {survey.type !== 'survey' && (
+                                                    <div className='mt-3 text-right'>
+                                                        <a
+                                                            className='text-blue-600 hover:underline cursor-pointer text-sm'
+                                                            href={`/api/admin/responses/${(response as any)._id}`}
+                                                            target='_blank'
+                                                            rel='noopener noreferrer'
+                                                        >
+                                                            View Result Detail
+                                                        </a>
+                                                    </div>
+                                                )}
 											</div>
 										))}
 									{stats.userResponses.length > pageSize && (

@@ -58,11 +58,11 @@ const SurveyDetailTab: React.FC<Props> = ({
 	return (
 		<div className={showInlinePreview ? 'flex flex-col lg:flex-row gap-4 items-stretch' : ''}>
 			<div className={showInlinePreview ? 'w-full lg:w-1/2' : ''}>
-				<div className='card'>
-					<div className='flex flex-col xl:flex-row justify-between items-start mb-4 gap-3'>
-						<div className='flex-1 min-w-0'>
-							<div className='flex items-center gap-3 mb-2'>
-								<h3 className='text-xl font-bold text-gray-800'>{s.title}</h3>
+                <div className='card'>
+                    <div className='flex flex-col justify-between items-start mb-4 gap-3'>
+                        <div className='flex-1 min-w-0 w-full'>
+                            <div className='flex items-center gap-3 mb-2'>
+                                <h3 className='text-xl font-bold text-gray-800 truncate flex-1'>{s.title}</h3>
 								<span
 									className={`px-2 py-1 text-xs font-medium rounded-full ${
 										s.type === SURVEY_TYPE.ASSESSMENT
@@ -98,18 +98,42 @@ const SurveyDetailTab: React.FC<Props> = ({
 											: 'Closed'}
 								</span>
 							</div>
-							{s.description && <p className='text-gray-600 mb-3'>{s.description}</p>}
+                            {s.description && (
+                                <p className='text-gray-600 mb-3 line-clamp-2'>{s.description}</p>
+                            )}
 						</div>
-						<SurveyHeaderActions
-							survey={s}
-							onEdit={onEdit}
-							onToggleStatus={onToggleStatus}
-							onDuplicate={onDuplicate}
-							onDelete={onDelete}
-							showInlinePreview={showInlinePreview}
-							setShowInlinePreview={setShowInlinePreview}
-							t={t}
-						/>
+                        {/* Actions + Preview switch on the same row */}
+                        <div className='w-full flex justify-between items-center'>
+                            {/* Left: Edit / Activate / Duplicate / Delete */}
+                            <div className='flex-1'>
+                                <SurveyHeaderActions
+                                    survey={s}
+                                    onEdit={onEdit}
+                                    onToggleStatus={onToggleStatus}
+                                    onDuplicate={onDuplicate}
+                                    onDelete={onDelete}
+                                    showInlinePreview={showInlinePreview}
+                                    setShowInlinePreview={setShowInlinePreview}
+                                    t={t}
+                                    variant='no-preview'
+                                />
+                            </div>
+                            {/* Right: Preview switcher */}
+                            <div className='flex items-center'>
+                                <label className='flex items-center gap-2 text-sm text-gray-700'>
+                                    <span>Preview</span>
+                                    <button
+                                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${showInlinePreview ? 'bg-blue-600' : 'bg-gray-300'}`}
+                                        onClick={() => setShowInlinePreview(!showInlinePreview)}
+                                        type='button'
+                                    >
+                                        <span
+                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showInlinePreview ? 'translate-x-4' : 'translate-x-1'}`}
+                                        />
+                                    </button>
+                                </label>
+                            </div>
+                        </div>
 					</div>
 
 					<SurveyAssessmentConfig survey={s} onEditScoring={onOpenScoringModal} />
