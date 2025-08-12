@@ -77,32 +77,39 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 
 	const { questionBanks } = useQuestionBanks();
 
-// Local question editing moved to hook
-const {
-  // modal visibility + indices
-  showAddQuestionModal,
-  setShowAddQuestionModal,
-  showEditQuestionModal,
-  setShowEditQuestionModal,
-  editingQuestionIndex,
-  setEditingQuestionIndex,
-  // add-question helpers (shared)
-  addOption,
-  removeOption,
-  handleOptionChange,
-  addQuestionModalHandler,
-  // edit-question helpers/state
-  questionEditForms,
-  setQuestionEditForms,
-  startEditQuestion,
-  cancelEditQuestion,
-  handleEditQuestionSubmit,
-  handleQuestionEditChange,
-  handleQuestionEditOptionChange,
-  addQuestionEditOption,
-  removeQuestionEditOption,
-  toggleCorrectAnswer,
-} = useLocalQuestionEditing({ survey, setQuestionForms, addQuestion, updateQuestion, setLoading, setError });
+	// Local question editing moved to hook
+	const {
+		// modal visibility + indices
+		showAddQuestionModal,
+		setShowAddQuestionModal,
+		showEditQuestionModal,
+		setShowEditQuestionModal,
+		editingQuestionIndex,
+		setEditingQuestionIndex,
+		// add-question helpers (shared)
+		addOption,
+		removeOption,
+		handleOptionChange,
+		addQuestionModalHandler,
+		// edit-question helpers/state
+		questionEditForms,
+		setQuestionEditForms,
+		startEditQuestion,
+		cancelEditQuestion,
+		handleEditQuestionSubmit,
+		handleQuestionEditChange,
+		handleQuestionEditOptionChange,
+		addQuestionEditOption,
+		removeQuestionEditOption,
+		toggleCorrectAnswer,
+	} = useLocalQuestionEditing({
+		survey,
+		setQuestionForms,
+		addQuestion,
+		updateQuestion,
+		setLoading,
+		setError,
+	});
 	const [showInviteModal, setShowInviteModal] = useState(false);
 	const [tabLocal, setTabLocal] = useState<'detail' | 'invitations' | 'statistics' | 'preview'>(
 		TAB_TYPES.DETAIL
@@ -114,7 +121,7 @@ const {
 	const [showInlinePreview, setShowInlinePreview] = useState<boolean>(true);
 	const RESPONSE_PAGE_SIZE = 5;
 
-const companySlug = useCompanySlug();
+	const companySlug = useCompanySlug();
 
 	// Handle statistics filter
 	const handleStatisticsFilter = async (filters: {
@@ -207,7 +214,7 @@ const companySlug = useCompanySlug();
 		setShowEditModal(true);
 	};
 
-    // moved to utils/url
+	// moved to utils/url
 
 	const toggleQR = (surveyId: string) => {
 		setShowQR(prev => ({
@@ -252,7 +259,7 @@ const companySlug = useCompanySlug();
 		});
 	};
 
-    // Handlers already provided by the single useLocalQuestionEditing instance above
+	// Handlers already provided by the single useLocalQuestionEditing instance above
 
 	const saveQuestionEdit = async (surveyId: string, questionIndex: number) => {
 		const formKey = `${surveyId}-${questionIndex}`;
@@ -324,7 +331,15 @@ const companySlug = useCompanySlug();
 		}
 	};
 
-const { handleQuestionsReorder } = useQuestionReorder({ survey, setLoading, setError, setSurveys, setSelectedSurvey, loadSurveys, t: (k: string, v?: any) => t(k, v) });
+	const { handleQuestionsReorder } = useQuestionReorder({
+		survey,
+		setLoading,
+		setError,
+		setSurveys,
+		setSelectedSurvey,
+		loadSurveys,
+		t: (k: string, v?: any) => t(k, v),
+	});
 
 	return (
 		<>
@@ -371,29 +386,29 @@ const { handleQuestionsReorder } = useQuestionReorder({ survey, setLoading, setE
 				</div>
 				{/* Tab content */}
 				{tabLocal === TAB_TYPES.DETAIL && (
-                    <SurveyDetailTab
-                        survey={s}
-                        t={t as any}
-                        showInlinePreview={showInlinePreview}
-                        setShowInlinePreview={(next: boolean) => setShowInlinePreview(next)}
-                        questionBanks={questionBanks}
-                        companySlug={companySlug}
-                        showQR={showQR}
-                        toggleQR={toggleQR}
-                        getAssessmentUrl={getAssessmentUrl}
-                        getSurveyUrl={getSurveyUrl}
-                        copyToClipboard={copyToClipboard}
-										loading={loading}
-                        handleQuestionsReorder={handleQuestionsReorder}
-                        startEditQuestion={startEditQuestion}
-                        deleteQuestion={deleteQuestion}
-                        setShowAddQuestionModal={setShowAddQuestionModal}
-                        onEdit={openEditModal}
-                        onToggleStatus={toggleSurveyStatus}
-                        onDuplicate={duplicateSurvey}
-                        onDelete={deleteSurvey}
-                        onOpenScoringModal={() => setShowScoringModal(true)}
-                    />
+					<SurveyDetailTab
+						survey={s}
+						t={t as any}
+						showInlinePreview={showInlinePreview}
+						setShowInlinePreview={(next: boolean) => setShowInlinePreview(next)}
+						questionBanks={questionBanks}
+						companySlug={companySlug}
+						showQR={showQR}
+						toggleQR={toggleQR}
+						getAssessmentUrl={getAssessmentUrl}
+						getSurveyUrl={getSurveyUrl}
+						copyToClipboard={copyToClipboard}
+						loading={loading}
+						handleQuestionsReorder={handleQuestionsReorder}
+						startEditQuestion={startEditQuestion}
+						deleteQuestion={deleteQuestion}
+						setShowAddQuestionModal={setShowAddQuestionModal}
+						onEdit={openEditModal}
+						onToggleStatus={toggleSurveyStatus}
+						onDuplicate={duplicateSurvey}
+						onDelete={deleteSurvey}
+						onOpenScoringModal={() => setShowScoringModal(true)}
+					/>
 				)}
 				{tabLocal === TAB_TYPES.STATISTICS && (
 					<SurveyStatisticsTab
@@ -402,14 +417,14 @@ const { handleQuestionsReorder } = useQuestionReorder({ survey, setLoading, setE
 						statsView={statsView}
 						setStatsView={setStatsView}
 						onRefresh={() => loadStats(s._id)}
-									onFilter={handleStatisticsFilter}
+						onFilter={handleStatisticsFilter}
 						responsePage={responsePage}
 						setResponsePage={setResponsePage}
 						pageSize={RESPONSE_PAGE_SIZE}
 					/>
 				)}
 				{tabLocal === TAB_TYPES.INVITATIONS && (
-                    <SurveyInvitationsTab surveyId={survey._id} companySlug={companySlug} />
+					<SurveyInvitationsTab surveyId={survey._id} companySlug={companySlug} />
 				)}
 				{/* Preview tab removed in favor of inline toggle in Assessment Details */}
 				{/* Only show modal when showInviteModal is true */}
@@ -423,33 +438,39 @@ const { handleQuestionsReorder } = useQuestionReorder({ survey, setLoading, setE
 				)}
 
 				{/* Add Question Modal */}
-                <AddQuestionSection
-                    survey={s}
+				<AddQuestionSection
+					survey={s}
 					form={currentForm}
-                    setForm={setQuestionForms}
-                    onSubmit={addQuestionModalHandler}
-                    open={showAddQuestionModal}
-                    setOpen={setShowAddQuestionModal}
-                    onOptionChange={handleOptionChange}
-                    onAddOption={addOption}
-                    onRemoveOption={removeOption}
+					setForm={setQuestionForms}
+					onSubmit={addQuestionModalHandler}
+					open={showAddQuestionModal}
+					setOpen={setShowAddQuestionModal}
+					onOptionChange={handleOptionChange}
+					onAddOption={addOption}
+					onRemoveOption={removeOption}
 					loading={loading}
 				/>
 
 				{/* Edit Question Modal */}
-                <EditQuestionSection
-                    survey={s}
-                    open={showEditQuestionModal}
-                    questionIndex={editingQuestionIndex}
-                    form={questionEditForms[`${s._id}-${editingQuestionIndex}`]}
-						onClose={cancelEditQuestion}
-						onSubmit={handleEditQuestionSubmit}
-                    onChange={(field, value) => handleQuestionEditChange(s._id, editingQuestionIndex, field, value)}
-                    onOptionChange={(index, value) => handleQuestionEditOptionChange(s._id, editingQuestionIndex, index, value)}
-						onAddOption={() => addQuestionEditOption(s._id, editingQuestionIndex)}
-                    onRemoveOption={index => removeQuestionEditOption(s._id, editingQuestionIndex, index)}
-						loading={loading}
-                />
+				<EditQuestionSection
+					survey={s}
+					open={showEditQuestionModal}
+					questionIndex={editingQuestionIndex}
+					form={questionEditForms[`${s._id}-${editingQuestionIndex}`]}
+					onClose={cancelEditQuestion}
+					onSubmit={handleEditQuestionSubmit}
+					onChange={(field, value) =>
+						handleQuestionEditChange(s._id, editingQuestionIndex, field, value)
+					}
+					onOptionChange={(index, value) =>
+						handleQuestionEditOptionChange(s._id, editingQuestionIndex, index, value)
+					}
+					onAddOption={() => addQuestionEditOption(s._id, editingQuestionIndex)}
+					onRemoveOption={index =>
+						removeQuestionEditOption(s._id, editingQuestionIndex, index)
+					}
+					loading={loading}
+				/>
 			</div>
 		</>
 	);

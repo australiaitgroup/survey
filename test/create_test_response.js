@@ -19,7 +19,7 @@ async function createTestResponse() {
 					name: 'Test User',
 					email: 'test@example.com',
 					password: 'hashedpassword',
-					role: 'admin'
+					role: 'admin',
 				});
 				await user.save();
 				console.log('Created test user');
@@ -38,12 +38,12 @@ async function createTestResponse() {
 							{ text: '3', imageUrl: null },
 							{ text: '4', imageUrl: null },
 							{ text: '5', imageUrl: null },
-							{ text: '6', imageUrl: null }
+							{ text: '6', imageUrl: null },
 						],
 						correctAnswer: 1,
 						points: 10,
 						difficulty: 'easy',
-						tags: ['math']
+						tags: ['math'],
 					},
 					{
 						text: 'What is the capital of France?',
@@ -52,16 +52,16 @@ async function createTestResponse() {
 							{ text: 'London', imageUrl: null },
 							{ text: 'Berlin', imageUrl: null },
 							{ text: 'Paris', imageUrl: null },
-							{ text: 'Madrid', imageUrl: null }
+							{ text: 'Madrid', imageUrl: null },
 						],
 						correctAnswer: 2,
 						points: 10,
 						difficulty: 'medium',
-						tags: ['geography']
-					}
+						tags: ['geography'],
+					},
 				],
 				status: 'active',
-				requiresAnswers: true
+				requiresAnswers: true,
 			});
 			await survey.save();
 			console.log('Created test survey');
@@ -74,7 +74,7 @@ async function createTestResponse() {
 			surveyId: survey._id,
 			answers: new Map([
 				['0', '4'],
-				['1', 'Paris']
+				['1', 'Paris'],
 			]),
 			questionSnapshots: [
 				{
@@ -87,15 +87,15 @@ async function createTestResponse() {
 						correctAnswer: 1,
 						points: 10,
 						difficulty: 'easy',
-						tags: ['math']
+						tags: ['math'],
 					},
 					userAnswer: '4',
 					scoring: {
 						isCorrect: true,
 						pointsAwarded: 10,
-						maxPoints: 10
+						maxPoints: 10,
 					},
-					durationInSeconds: 15
+					durationInSeconds: 15,
 				},
 				{
 					questionId: survey.questions[1]._id,
@@ -107,16 +107,16 @@ async function createTestResponse() {
 						correctAnswer: 2,
 						points: 10,
 						difficulty: 'medium',
-						tags: ['geography']
+						tags: ['geography'],
 					},
 					userAnswer: 'Paris',
 					scoring: {
 						isCorrect: true,
 						pointsAwarded: 10,
-						maxPoints: 10
+						maxPoints: 10,
 					},
-					durationInSeconds: 8
-				}
+					durationInSeconds: 8,
+				},
 			],
 			score: {
 				totalPoints: 20,
@@ -133,34 +133,36 @@ async function createTestResponse() {
 							questionIndex: 0,
 							pointsAwarded: 10,
 							maxPoints: 10,
-							isCorrect: true
+							isCorrect: true,
 						},
 						{
 							questionIndex: 1,
 							pointsAwarded: 10,
 							maxPoints: 10,
-							isCorrect: true
-						}
-					]
-				}
+							isCorrect: true,
+						},
+					],
+				},
 			},
 			timeSpent: 23,
 			isAutoSubmit: false,
 			metadata: {
 				userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
 				ipAddress: '192.168.1.100',
-				deviceType: 'desktop'
+				deviceType: 'desktop',
 			},
-			createdAt: new Date()
+			createdAt: new Date(),
 		});
 
 		await testResponse.save();
 		console.log('Created test response with ID:', testResponse._id);
 		console.log('Survey ID:', survey._id);
-		
-		console.log('\n✅ Test data created successfully!');
-		console.log('You can now test the candidate detail view with response ID:', testResponse._id);
 
+		console.log('\n✅ Test data created successfully!');
+		console.log(
+			'You can now test the candidate detail view with response ID:',
+			testResponse._id
+		);
 	} catch (error) {
 		console.error('Failed to create test data:', error.message);
 	} finally {

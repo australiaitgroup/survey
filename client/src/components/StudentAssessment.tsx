@@ -133,9 +133,9 @@ const StudentAssessment: React.FC = () => {
 					});
 				}
 
-                // For question bank based surveys, defer fetching questions until the user
-                // provides a real email and starts the assessment. This ensures the backend
-                // locks selected questions to the correct email for consistent scoring.
+				// For question bank based surveys, defer fetching questions until the user
+				// provides a real email and starts the assessment. This ensures the backend
+				// locks selected questions to the correct email for consistent scoring.
 
 				setLoading(false);
 			} catch (error) {
@@ -213,34 +213,29 @@ const StudentAssessment: React.FC = () => {
 		return `${mins}:${secs.toString().padStart(2, '0')}`;
 	};
 
-    const startAssessment = async () => {
+	const startAssessment = async () => {
 		setCurrentStep('questions');
 		setStartTime(new Date());
 
-        // If question bank survey and questions not loaded yet, fetch now using email
-        if (
-            survey?.sourceType === 'question_bank' &&
-            (!survey.questions || survey.questions.length === 0)
-        ) {
-            try {
-                const questionsResponse = await axios.get(
-                    getApiPath(`/survey/${slug}/questions`),
-                    {
-                        params: { email: form.email },
-                    }
-                );
-                setSurvey(prev =>
-                    prev
-                        ? { ...prev, questions: questionsResponse.data.questions || [] }
-                        : null
-                );
-            } catch (e) {
-                console.error('Failed to load questions before start:', e);
-            }
-        }
+		// If question bank survey and questions not loaded yet, fetch now using email
+		if (
+			survey?.sourceType === 'question_bank' &&
+			(!survey.questions || survey.questions.length === 0)
+		) {
+			try {
+				const questionsResponse = await axios.get(getApiPath(`/survey/${slug}/questions`), {
+					params: { email: form.email },
+				});
+				setSurvey(prev =>
+					prev ? { ...prev, questions: questionsResponse.data.questions || [] } : null
+				);
+			} catch (e) {
+				console.error('Failed to load questions before start:', e);
+			}
+		}
 
-        // Start timing for the first question
-        if (survey?.questions && survey.questions.length > 0) {
+		// Start timing for the first question
+		if (survey?.questions && survey.questions.length > 0) {
 			const firstQuestionId = survey.questions[0]._id;
 			const startTime = Date.now();
 			setCurrentQuestionStartTime(startTime);
@@ -439,23 +434,20 @@ const StudentAssessment: React.FC = () => {
 			});
 
 			// Submit to backend
-            const responseData: ResponseCreateRequest = {
+			const responseData: ResponseCreateRequest = {
 				name: form.name,
 				email: form.email,
 				surveyId: survey._id,
-                // Ensure payload uses string keys matching question `_id`
-                answers: Object.fromEntries(
-                    Object.entries(form.answers).map(([k, v]) => [String(k), v])
-                ),
+				// Ensure payload uses string keys matching question `_id`
+				answers: Object.fromEntries(
+					Object.entries(form.answers).map(([k, v]) => [String(k), v])
+				),
 				timeSpent,
 				isAutoSubmit,
 				answerDurations,
 			};
 
-            await axios.post(
-                getApiPath(`/surveys/${survey._id}/responses`),
-                responseData
-            );
+			await axios.post(getApiPath(`/surveys/${survey._id}/responses`), responseData);
 
 			// Mark invitation as completed (if accessed through invitation code)
 			if (isInvitationCode(slug) && invitationInfo) {

@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useMemo, useRef, useStat
 import { useTranslation } from 'react-i18next';
 import type { Survey, Question } from '../../types/admin';
 import OneQuestionPerPageView from '../survey/OneQuestionPerPageView';
-import { NAVIGATION_MODE, QUESTION_TYPE, SOURCE_TYPE } from '../../constants';
+import { NAVIGATION_MODE, QUESTION_TYPE, SOURCE_TYPE, SURVEY_TYPE } from '../../constants';
 
 interface SurveyPreviewTabProps {
 	survey: Survey;
@@ -322,8 +322,14 @@ const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number }> = ({
 		);
 	}
 
+	// Determine effective navigation for preview: assessments are always one-per-page
+	const effectiveNavigationMode =
+		survey.type === SURVEY_TYPE.ASSESSMENT
+			? NAVIGATION_MODE.ONE_QUESTION_PER_PAGE
+			: (survey.navigationMode as any);
+
 	// Display modes
-	if (survey.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
+	if (effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
 		return (
 			<OneQuestionPerPageView
 				questions={questions as any}
@@ -400,11 +406,20 @@ const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPan
 	// No device control; rely on responsive layout
 	const { clear, scrollToQuestion } = usePreview();
 	const [pageIndex, setPageIndex] = useState<number>(0);
+	// Use effective navigation mode for label and behaviors in preview
+	const effectiveNavigationMode = React.useMemo(
+		() =>
+			survey.type === SURVEY_TYPE.ASSESSMENT
+				? NAVIGATION_MODE.ONE_QUESTION_PER_PAGE
+				: (survey.navigationMode as any),
+		[survey.type, survey.navigationMode]
+	);
+
 	const navigationLabel = React.useMemo(() => {
-		return survey.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE
+		return effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE
 			? t('preview.navigation.one', 'One Question Per Page')
 			: t('preview.navigation.step', 'Step by Step');
-	}, [survey.navigationMode, t]);
+	}, [effectiveNavigationMode, t]);
 
 	React.useEffect(() => {
 		(window as any).__PREVIEW__ = true;
@@ -414,7 +429,7 @@ const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPan
 	}, []);
 
 	const onFocusQuestion = (q: Question) => {
-		if (survey.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
+		if (effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
 			// Jump to page
 			setPageIndex(
 				(survey.questions || []).findIndex(qq => (qq as any)._id === (q as any)._id)

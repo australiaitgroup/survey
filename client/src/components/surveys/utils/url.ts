@@ -1,9 +1,9 @@
 export const getSurveyUrl = (slug: string, companySlug?: string) => {
-  const basePath = companySlug ? `/${companySlug}` : '';
-  return `${window.location.origin}${basePath}/survey/${slug}`;
+	const basePath = companySlug ? `/${companySlug}` : '';
+	return `${window.location.origin}${basePath}/survey/${slug}`;
 };
 
 export const getAssessmentUrl = (slug: string, companySlug?: string) => {
-  const basePath = companySlug ? `/${companySlug}` : '';
-  return `${window.location.origin}${basePath}/assessment/${slug}`;
+	const basePath = companySlug ? `/${companySlug}` : '';
+	return `${window.location.origin}${basePath}/assessment/${slug}`;
 };

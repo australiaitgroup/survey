@@ -19,7 +19,7 @@ const AdminHeader: React.FC = () => {
 			{/* Desktop Layout */}
 			<div className='hidden md:flex justify-between items-center'>
 				<div />
-                <div className='flex items-center gap-3' />
+				<div className='flex items-center gap-3' />
 			</div>
 		</div>
 	);

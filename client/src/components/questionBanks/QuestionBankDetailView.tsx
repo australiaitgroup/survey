@@ -174,7 +174,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 			text: question.text,
 			description: '',
 			descriptionImage: question.descriptionImage,
-			options: question.options ? [...question.options] as string[] : ['', ''],
+			options: question.options ? ([...question.options] as string[]) : ['', ''],
 			type: question.type || 'single_choice',
 			correctAnswer: question.correctAnswer,
 			points: question.points || 1,
@@ -345,8 +345,6 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 			setLoading(false);
 		}
 	};
-
-
 
 	return (
 		<>

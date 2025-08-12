@@ -1,17 +1,20 @@
 # Candidate Detail View Feature
 
 ## Overview
+
 This feature allows administrators to view detailed statistics and information about individual candidates who have completed surveys/assessments. By clicking on a candidate's name in the statistics view, users can access comprehensive information about that candidate's performance.
 
 ## Features Implemented
 
 ### 1. Backend API Endpoint
+
 - **Endpoint**: `GET /admin/responses/:responseId`
 - **Location**: `/routes/admin/responses.js:34-195`
 - **Authentication**: Required (JWT)
 - **Authorization**: Only survey creators can view responses
 
 #### Response Data Structure:
+
 ```javascript
 {
   _id: "response_id",
@@ -81,78 +84,81 @@ This feature allows administrators to view detailed statistics and information a
 ```
 
 ### 2. Frontend Component
+
 - **Component**: `CandidateDetailView.tsx`
 - **Location**: `/client/src/components/surveys/CandidateDetailView.tsx`
 
 #### Features:
+
 1. **Three Tab Views**:
-   - **Overview Tab**: Displays summary statistics
-     - Completion statistics (questions answered, skipped, completion rate)
-     - Time statistics (total time, average per question, fastest/slowest)
-     - Score breakdown (for assessments/quizzes)
-     - Device information (IP, device type, user agent)
-   
-   - **Answer Details Tab**: Shows question-by-question responses
-     - Question text and type
-     - User's answer vs correct answer
-     - Points awarded
-     - Time spent per question
-     - Difficulty level and tags
-     - Explanations (if available)
-   
-   - **Performance Analysis Tab**: Visual analytics
-     - Question performance chart
-     - Performance by difficulty level
-     - Time distribution analysis
-     - Performance by topic/tags
+    - **Overview Tab**: Displays summary statistics
+        - Completion statistics (questions answered, skipped, completion rate)
+        - Time statistics (total time, average per question, fastest/slowest)
+        - Score breakdown (for assessments/quizzes)
+        - Device information (IP, device type, user agent)
+    - **Answer Details Tab**: Shows question-by-question responses
+        - Question text and type
+        - User's answer vs correct answer
+        - Points awarded
+        - Time spent per question
+        - Difficulty level and tags
+        - Explanations (if available)
+    - **Performance Analysis Tab**: Visual analytics
+        - Question performance chart
+        - Performance by difficulty level
+        - Time distribution analysis
+        - Performance by topic/tags
 
 2. **Visual Indicators**:
-   - Color-coded score indicators (green for pass, red for fail)
-   - Progress bars for question performance
-   - Time indicators with clock icons
-   - Difficulty badges (easy/medium/hard)
+    - Color-coded score indicators (green for pass, red for fail)
+    - Progress bars for question performance
+    - Time indicators with clock icons
+    - Difficulty badges (easy/medium/hard)
 
 3. **Navigation**:
-   - Back button to return to statistics view
-   - Smooth tab transitions
-   - Responsive layout for mobile devices
+    - Back button to return to statistics view
+    - Smooth tab transitions
+    - Responsive layout for mobile devices
 
 ### 3. Integration with Survey Statistics
+
 - **Modified**: `SurveyDetailView.tsx`
 - **Changes**:
-  - Added clickable candidate names in statistics view
-  - Candidate names appear as blue links on hover
-  - Clicking navigates to detailed view
-  - Maintains state for seamless navigation back
+    - Added clickable candidate names in statistics view
+    - Candidate names appear as blue links on hover
+    - Clicking navigates to detailed view
+    - Maintains state for seamless navigation back
 
 ## Common Metrics Tracked
 
 ### 1. Basic Information
+
 - Candidate name and email
 - Submission timestamp
 - Survey/Assessment information
 
 ### 2. Performance Metrics
+
 - **Score**: Total points, percentage, pass/fail status
 - **Accuracy**: Correct vs incorrect answers
 - **Completion**: Questions answered vs skipped
 - **Time Management**: Total time, time per question
 
 ### 3. Detailed Analytics
+
 - **Question-level Analysis**:
-  - Individual question performance
-  - Time spent per question
-  - Points earned vs possible
-  
+    - Individual question performance
+    - Time spent per question
+    - Points earned vs possible
 - **Difficulty Analysis**:
-  - Performance grouped by difficulty
-  - Success rate per difficulty level
-  
+    - Performance grouped by difficulty
+    - Success rate per difficulty level
 - **Topic Performance**:
-  - Performance by question tags
-  - Strengths and weaknesses identification
+    - Performance by question tags
+    - Strengths and weaknesses identification
 
 ### 4. Session Information
+
 - IP address for security tracking
 - Device type (mobile/desktop/tablet)
 - Browser information (user agent)
@@ -161,6 +167,7 @@ This feature allows administrators to view detailed statistics and information a
 ## Usage
 
 ### For Administrators:
+
 1. Navigate to Survey/Assessment statistics
 2. View list of candidates who completed the survey
 3. Click on any candidate's name to view detailed statistics
@@ -168,6 +175,7 @@ This feature allows administrators to view detailed statistics and information a
 5. Click "Back to Statistics" to return to the list
 
 ### Benefits:
+
 - **Individual Assessment**: Evaluate each candidate's performance in detail
 - **Identify Patterns**: Spot common areas of difficulty
 - **Time Analysis**: Understand which questions took longest
@@ -177,11 +185,13 @@ This feature allows administrators to view detailed statistics and information a
 ## Technical Implementation
 
 ### State Management:
+
 - Uses React hooks for local state
 - Maintains selected response ID
 - Tab navigation handled locally
 
 ### Data Flow:
+
 1. User clicks candidate name
 2. Response ID stored in state
 3. API call fetches detailed data
@@ -189,6 +199,7 @@ This feature allows administrators to view detailed statistics and information a
 5. Back button clears selection
 
 ### Error Handling:
+
 - Loading states during data fetch
 - Error messages for failed requests
 - Graceful fallbacks for missing data
@@ -196,6 +207,7 @@ This feature allows administrators to view detailed statistics and information a
 ## Future Enhancements
 
 Potential improvements for this feature:
+
 1. Export candidate report to PDF
 2. Comparison view between candidates
 3. Historical performance tracking

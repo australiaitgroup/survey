@@ -61,7 +61,7 @@ router.get(
 					...snapshot.questionData,
 					userAnswer: snapshot.userAnswer,
 					durationInSeconds: snapshot.durationInSeconds || 0,
-					scoring: snapshot.scoring
+					scoring: snapshot.scoring,
 				}));
 		} else {
 			// Fallback to survey questions
@@ -70,7 +70,9 @@ router.get(
 
 		// Calculate detailed statistics
 		const totalQuestions = questions.length;
-		const answeredQuestions = questions.filter(q => q.userAnswer !== null && q.userAnswer !== undefined).length;
+		const answeredQuestions = questions.filter(
+			q => q.userAnswer !== null && q.userAnswer !== undefined
+		).length;
 		const completionRate = totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
 
 		// Calculate time statistics
@@ -89,7 +91,7 @@ router.get(
 					fastest: Math.min(...durations),
 					slowest: Math.max(...durations),
 					average: durations.reduce((a, b) => a + b, 0) / durations.length,
-					median: durations.sort((a, b) => a - b)[Math.floor(durations.length / 2)]
+					median: durations.sort((a, b) => a - b)[Math.floor(durations.length / 2)],
 				};
 			}
 		}
@@ -101,30 +103,30 @@ router.get(
 				name: response.name,
 				email: response.email,
 				submittedAt: response.createdAt,
-				metadata: response.metadata || {}
+				metadata: response.metadata || {},
 			},
 			surveyInfo: {
 				_id: survey._id,
 				title: survey.title,
 				type: survey.type,
-				description: survey.description
+				description: survey.description,
 			},
 			statistics: {
 				completion: {
 					totalQuestions,
 					answeredQuestions,
 					skippedQuestions: totalQuestions - answeredQuestions,
-					completionRate: Math.round(completionRate * 100) / 100
+					completionRate: Math.round(completionRate * 100) / 100,
 				},
 				timing: {
 					totalTimeSpent,
 					averageTimePerQuestion: Math.round(averageTimePerQuestion * 100) / 100,
 					isAutoSubmit: response.isAutoSubmit || false,
-					questionTimeStats
-				}
+					questionTimeStats,
+				},
 			},
 			score: null,
-			questionDetails: []
+			questionDetails: [],
 		};
 
 		// Add scoring information if applicable
@@ -137,7 +139,7 @@ router.get(
 				percentage: response.score.percentage || 0,
 				displayScore: response.score.displayScore || 0,
 				scoringMode: response.score.scoringMode || 'percentage',
-				passed: response.score.passed || false
+				passed: response.score.passed || false,
 			};
 		}
 
@@ -158,7 +160,7 @@ router.get(
 					timeSpent: snapshot.durationInSeconds || 0,
 					difficulty: snapshot.questionData.difficulty || 'medium',
 					tags: snapshot.questionData.tags || [],
-					explanation: snapshot.questionData.explanation || null
+					explanation: snapshot.questionData.explanation || null,
 				}));
 		} else {
 			// Fallback for responses without snapshots
@@ -167,7 +169,9 @@ router.get(
 
 				if (response.answers) {
 					if (typeof response.answers.get === 'function') {
-						userAnswer = response.answers.get(idx.toString()) || response.answers.get(q._id?.toString());
+						userAnswer =
+							response.answers.get(idx.toString()) ||
+							response.answers.get(q._id?.toString());
 					} else if (typeof response.answers === 'object') {
 						userAnswer = response.answers[idx.toString()] || response.answers[q._id];
 					}
@@ -186,7 +190,7 @@ router.get(
 					timeSpent: 0,
 					difficulty: q.difficulty || 'medium',
 					tags: q.tags || [],
-					explanation: q.explanation || null
+					explanation: q.explanation || null,
 				};
 			});
 		}
@@ -327,24 +331,24 @@ router.get(
 		);
 
 		// Calculate aggregated statistics
-        const stats = questions.map((q, questionIndex) => {
-            const counts = {};
-            const normalizeOptionText = opt => {
-                if (typeof opt === 'string') {
-                    // Handle stringified object like "{\n  text: '4', ... }"
-                    if (opt.includes('text:')) {
-                        const m = opt.match(/text:\s*'([^']+)'/);
-                        return m ? m[1] : opt;
-                    }
-                    return opt;
-                }
-                return (opt && opt.text) || '';
-            };
-            if (q.options && q.options.length > 0) {
-                q.options.forEach(opt => {
-                    counts[normalizeOptionText(opt)] = 0;
-                });
-            }
+		const stats = questions.map((q, questionIndex) => {
+			const counts = {};
+			const normalizeOptionText = opt => {
+				if (typeof opt === 'string') {
+					// Handle stringified object like "{\n  text: '4', ... }"
+					if (opt.includes('text:')) {
+						const m = opt.match(/text:\s*'([^']+)'/);
+						return m ? m[1] : opt;
+					}
+					return opt;
+				}
+				return (opt && opt.text) || '';
+			};
+			if (q.options && q.options.length > 0) {
+				q.options.forEach(opt => {
+					counts[normalizeOptionText(opt)] = 0;
+				});
+			}
 
 			responses.forEach(r => {
 				let ans = null;
@@ -355,20 +359,26 @@ router.get(
 					const snapshot = r.questionSnapshots.find(
 						s => s.questionIndex === questionIndex
 					);
-                    if (snapshot) {
-                        userAnswer = snapshot.userAnswer;
-                        if (snapshot.userAnswer !== null && snapshot.userAnswer !== undefined) {
-                            if (Array.isArray(snapshot.userAnswer)) {
-                                snapshot.userAnswer.forEach(answer => {
-                                    const key = typeof answer === 'string' ? answer : normalizeOptionText(answer);
-                                    if (counts.hasOwnProperty(key)) counts[key] += 1;
-                                });
-                            } else {
-                                const key = typeof snapshot.userAnswer === 'string' ? snapshot.userAnswer : normalizeOptionText(snapshot.userAnswer);
-                                if (counts.hasOwnProperty(key)) counts[key] += 1;
-                            }
-                        }
-                    }
+					if (snapshot) {
+						userAnswer = snapshot.userAnswer;
+						if (snapshot.userAnswer !== null && snapshot.userAnswer !== undefined) {
+							if (Array.isArray(snapshot.userAnswer)) {
+								snapshot.userAnswer.forEach(answer => {
+									const key =
+										typeof answer === 'string'
+											? answer
+											: normalizeOptionText(answer);
+									if (counts.hasOwnProperty(key)) counts[key] += 1;
+								});
+							} else {
+								const key =
+									typeof snapshot.userAnswer === 'string'
+										? snapshot.userAnswer
+										: normalizeOptionText(snapshot.userAnswer);
+								if (counts.hasOwnProperty(key)) counts[key] += 1;
+							}
+						}
+					}
 				} else {
 					// Legacy method - handle different answer formats
 					if (Array.isArray(r.answers)) {
@@ -401,21 +411,21 @@ router.get(
 
 					if (ans !== undefined && ans !== null) {
 						// Handle different answer value formats
-                        if (
-                            typeof ans === 'number' ||
-                            (typeof ans === 'string' && /^\d+$/.test(ans))
-                        ) {
-                            const idx = typeof ans === 'number' ? ans : parseInt(ans, 10);
-                            if (idx >= 0 && idx < (q.options || []).length) {
-                                const key = normalizeOptionText(q.options[idx]);
-                                counts[key] += 1;
-                                console.log(`  -> Counted: ${key} (index ${idx})`);
-                            } else {
-                                console.log(
-                                    `  -> Invalid index: ${idx}, options length: ${(q.options || []).length}`
-                                );
-                            }
-                        } else if (Array.isArray(ans)) {
+						if (
+							typeof ans === 'number' ||
+							(typeof ans === 'string' && /^\d+$/.test(ans))
+						) {
+							const idx = typeof ans === 'number' ? ans : parseInt(ans, 10);
+							if (idx >= 0 && idx < (q.options || []).length) {
+								const key = normalizeOptionText(q.options[idx]);
+								counts[key] += 1;
+								console.log(`  -> Counted: ${key} (index ${idx})`);
+							} else {
+								console.log(
+									`  -> Invalid index: ${idx}, options length: ${(q.options || []).length}`
+								);
+							}
+						} else if (Array.isArray(ans)) {
 							// Multiple choice: ans is array of option indices
 							ans.forEach(optionIndex => {
 								const idx =
@@ -423,14 +433,14 @@ router.get(
 										? optionIndex
 										: parseInt(optionIndex, 10);
 								if (idx >= 0 && idx < (q.options || []).length) {
-                                    const key = normalizeOptionText(q.options[idx]);
-                                    counts[key] += 1;
+									const key = normalizeOptionText(q.options[idx]);
+									counts[key] += 1;
 								}
 							});
 						} else if (typeof ans === 'string') {
 							// Direct string answer
-                            const key = normalizeOptionText(ans);
-                            if (counts.hasOwnProperty(key)) counts[key] += 1;
+							const key = normalizeOptionText(ans);
+							if (counts.hasOwnProperty(key)) counts[key] += 1;
 						}
 					} else {
 						console.log(`  -> No answer found`);

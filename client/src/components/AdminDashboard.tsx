@@ -26,8 +26,8 @@ const AdminDashboard: React.FC = () => {
 		// Check if we're on a candidate detail route
 		if (location.pathname.includes('/candidate/') && params.responseId && params.surveyId) {
 			return (
-				<CandidateDetailView 
-					responseId={params.responseId} 
+				<CandidateDetailView
+					responseId={params.responseId}
 					onBack={() => {
 						// Navigate back to survey statistics tab
 						window.location.href = `/admin/survey/${params.surveyId}#statistics`;
