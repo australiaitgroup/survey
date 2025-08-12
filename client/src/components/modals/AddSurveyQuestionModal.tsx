@@ -330,22 +330,28 @@ const AddSurveyQuestionModal: React.FC<AddSurveyQuestionModalProps> = ({
 								<label className='block text-sm font-medium text-gray-700 mb-2'>
 									Points
 								</label>
-								<input
+                                <input
 									type='number'
 									className='input-field w-full'
 									placeholder='Points for this question'
-									value={form.points || ''}
+                                    value={
+                                        form.points === undefined || form.points === null
+                                            ? ''
+                                            : form.points
+                                    }
 									onChange={e =>
-										onChange(
-											'points',
-											e.target.value ? parseInt(e.target.value) : 1
-										)
+                                        onChange(
+                                            'points',
+                                            e.target.value === ''
+                                                ? undefined
+                                                : Math.max(1, parseInt(e.target.value))
+                                        )
 									}
 									min='1'
 									max='100'
 								/>
 								<div className='text-xs text-gray-500 mt-1'>
-									Points awarded for answering this question correctly
+                                    Leave empty to use default points ({defaultQuestionPoints})
 								</div>
 							</div>
 						)}

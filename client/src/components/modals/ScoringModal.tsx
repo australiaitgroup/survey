@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAdmin } from '../../contexts/AdminContext';
 import { useSurveys } from '../../hooks/useSurveys';
-import axios from 'axios';
+import api from '../../utils/axiosConfig';
 
 interface ModalProps {
 	show: boolean;
@@ -108,8 +108,8 @@ const ScoringModal: React.FC = () => {
 		if (!selectedSurvey) return;
 
 		setLoading(true);
-		try {
-			await axios.put(`/api/admin/surveys/${selectedSurvey._id}/scoring`, localScoring);
+    try {
+            await api.put(`/admin/surveys/${selectedSurvey._id}/scoring`, localScoring);
 
 			// Update the survey in context - this would need to be handled by the parent component
 			// For now, we'll just close the modal

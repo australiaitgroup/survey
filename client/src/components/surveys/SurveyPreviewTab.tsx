@@ -421,12 +421,10 @@ const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPan
 			: t('preview.navigation.step', 'Step by Step');
 	}, [effectiveNavigationMode, t]);
 
-	React.useEffect(() => {
-		(window as any).__PREVIEW__ = true;
-		return () => {
-			delete (window as any).__PREVIEW__;
-		};
-	}, []);
+  // Preview no longer toggles global flags
+  React.useEffect(() => {
+    return () => {};
+  }, []);
 
 	const onFocusQuestion = (q: Question) => {
 		if (effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {

@@ -17,13 +17,7 @@ import QuestionList from './components/survey/QuestionList';
 import AssessmentResults from './components/survey/AssessmentResults';
 import './styles/antiCheating.css';
 import type { SurveyResponse } from '../../shared/surveyResponse';
-import {
-	QUESTION_TYPE,
-	SOURCE_TYPE,
-	TYPES_REQUIRING_ANSWERS,
-	NAVIGATION_MODE,
-	type SourceType,
-} from './constants';
+import { SOURCE_TYPE, NAVIGATION_MODE, type SourceType, type SurveyType } from './constants';
 import type {
 	Survey,
 	Question,
@@ -54,7 +48,8 @@ const TakeSurvey: React.FC = () => {
 	const [infoStepDone, setInfoStepDone] = useState(false);
 
 	// Enable anti-cheating measures for assessments and quizzes
-	const isAssessmentType = survey && TYPES_REQUIRING_ANSWERS.includes(survey.type as any);
+	const surveyTypeSafe: SurveyType | undefined = survey?.type as SurveyType | undefined;
+	const isAssessmentType = Boolean(surveyTypeSafe && surveyTypeSafe !== 'survey');
 
 	// Control anti-cheating features - can be configured per survey or globally
 	const antiCheatEnabled = false; // Set to false to disable all anti-cheating features
@@ -90,7 +85,7 @@ const TakeSurvey: React.FC = () => {
 					params: { email: userEmail },
 				});
 				setQuestions(response.data.questions);
-			} catch (err) {
+			} catch {
 				setError('Failed to load questions');
 			}
 		} else {
@@ -177,15 +172,10 @@ const TakeSurvey: React.FC = () => {
 				surveyId: survey._id,
 				answers: questions.map(q => form.answers[q._id]),
 			};
-			// Preview suppression: if global preview flag is set, skip network write
-			if ((window as any).__PREVIEW__ === true) {
-				console.debug('Preview mode: write suppressed');
-			} else {
-				await axios.post(getApiPath(`/surveys/${survey._id}/responses`), payload);
-			}
+			await axios.post(getApiPath(`/surveys/${survey._id}/responses`), payload);
 
 			// Calculate assessment results if this is an assessment, quiz, or iq test
-			if (TYPES_REQUIRING_ANSWERS.includes(survey.type as any)) {
+			if ((survey.type as SurveyType) !== 'survey') {
 				let totalPoints = 0;
 				let maxPossiblePoints = 0;
 				let correctAnswers = 0;
@@ -319,7 +309,7 @@ const TakeSurvey: React.FC = () => {
 			}
 
 			setSubmitted(true);
-		} catch (err) {
+		} catch {
 			setError('Failed to submit survey. Please try again.');
 		} finally {
 			setLoading(false);
@@ -355,23 +345,7 @@ const TakeSurvey: React.FC = () => {
 		);
 	}
 
-	// 公司Logo组件（左上角，弱化阴影与边框）
-	const CompanyLogo: React.FC<{ company?: any }> = ({ company }) => {
-		if (!company?.logoUrl) return null;
-
-		return (
-			<div className='flex justify-start mb-6'>
-				<img
-					src={company.logoUrl}
-					alt={company.name || 'Company Logo'}
-					className='h-8 md:h-10 w-auto object-contain'
-					onError={e => {
-						e.currentTarget.remove();
-					}}
-				/>
-			</div>
-		);
-	};
+	// Removed unused CompanyLogo component
 
 	return (
 		<div className='min-h-screen bg-[#F7F7F7] py-6 sm:py-12'>
@@ -499,7 +473,7 @@ const TakeSurvey: React.FC = () => {
 										{loading
 											? '✨ Submitting...'
 											: isBankBasedSource(survey?.sourceType) &&
-												  !questionsLoaded
+											!questionsLoaded
 												? '🎲 Load Questions'
 												: !questionsLoaded
 													? '🎲 Loading...'

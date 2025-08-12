@@ -288,15 +288,21 @@ const EditSurveyQuestionModal: React.FC<EditSurveyQuestionModalProps> = ({
 								<label className='block text-sm font-medium text-gray-700 mb-2'>
 									Question Points
 								</label>
-								<input
+                                <input
 									type='number'
 									className='input-field w-full'
 									placeholder={`Default points: ${defaultQuestionPoints}`}
-									value={form.points || ''}
+                                    value={
+                                        form.points === undefined || form.points === null
+                                            ? ''
+                                            : form.points
+                                    }
 									onChange={e =>
 										onChange(
 											'points',
-											e.target.value ? parseInt(e.target.value) : undefined
+                                            e.target.value === ''
+                                                ? undefined
+                                                : Math.max(1, parseInt(e.target.value))
 										)
 									}
 									min='1'
