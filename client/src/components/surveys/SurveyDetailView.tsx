@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAdmin } from '../../contexts/AdminContext';
 import { useSurveys } from '../../hooks/useSurveys';
 import { useQuestionBanks } from '../../hooks/useQuestionBanks';
@@ -37,6 +38,10 @@ interface SurveyDetailViewProps {
 
 const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 	const { t } = useTranslation();
+	const location = useLocation();
+	const navigateRouter = useNavigate();
+	const params = useParams();
+	
 	const {
 		surveys,
 		setSurveys,
@@ -111,9 +116,20 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 		setError,
 	});
 	const [showInviteModal, setShowInviteModal] = useState(false);
-	const [tabLocal, setTabLocal] = useState<'detail' | 'invitations' | 'statistics' | 'preview'>(
-		TAB_TYPES.DETAIL
-	);
+	
+	// Get tab from URL path, default to 'detail' if not specified
+	const getTabFromPath = () => {
+		const pathSegments = location.pathname.split('/');
+		const tabIndex = pathSegments.indexOf('survey') + 2; // Find index after survey/{id}/
+		const tab = pathSegments[tabIndex];
+		
+		if (tab === 'invitations') return TAB_TYPES.INVITATIONS;
+		if (tab === 'statistics') return TAB_TYPES.STATISTICS;
+		return TAB_TYPES.DETAIL;
+	};
+	
+	const tabLocal = getTabFromPath();
+	
 	// Invitations moved into SurveyInvitationsTab
 	const [filterLoading, setFilterLoading] = useState(false);
 	const [responsePage, setResponsePage] = useState(1);
@@ -364,21 +380,21 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 				<div className='flex gap-4 border-b mb-4'>
 					<button
 						className={`py-2 px-4 font-semibold border-b-2 transition-colors ${tabLocal === TAB_TYPES.DETAIL ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 hover:text-blue-600'}`}
-						onClick={() => setTabLocal(TAB_TYPES.DETAIL)}
+						onClick={() => navigateRouter(`/admin/survey/${s._id}`)}
 					>
 						Assessment Details
 					</button>
 					{s.type === SURVEY_TYPE.ASSESSMENT && (
 						<button
 							className={`py-2 px-4 font-semibold border-b-2 transition-colors ${tabLocal === TAB_TYPES.INVITATIONS ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 hover:text-blue-600'}`}
-							onClick={() => setTabLocal(TAB_TYPES.INVITATIONS)}
+							onClick={() => navigateRouter(`/admin/survey/${s._id}/invitations`)}
 						>
 							Invited Users
 						</button>
 					)}
 					<button
 						className={`py-2 px-4 font-semibold border-b-2 transition-colors ${tabLocal === TAB_TYPES.STATISTICS ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 hover:text-blue-600'}`}
-						onClick={() => setTabLocal(TAB_TYPES.STATISTICS)}
+						onClick={() => navigateRouter(`/admin/survey/${s._id}/statistics`)}
 					>
 						Statistics
 					</button>

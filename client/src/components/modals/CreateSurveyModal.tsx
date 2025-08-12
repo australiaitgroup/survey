@@ -765,7 +765,7 @@ const CreateSurveyModal: React.FC = () => {
 									<label className='flex items-center'>
 										<input
 											type='checkbox'
-											checked={newSurvey.scoringSettings?.showScore ?? true}
+											checked={newSurvey.scoringSettings?.showScore ?? false}
 											onChange={e =>
 												handleScoringChange('showScore', e.target.checked)
 											}

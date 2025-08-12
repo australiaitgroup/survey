@@ -227,25 +227,12 @@ const SurveyStatisticsTab: React.FC<Props> = ({
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div className='grid gap-2'>
-                                                    {Object.entries(response.answers).map(
-                                                        ([q, a]) => (
-                                                            <div
-                                                                key={q}
-                                                                className='flex justify-between text-sm'
-                                                            >
-                                                                <div className='text-gray-700 w-1/2 pr-2 truncate'>
-                                                                    {q}
-                                                                </div>
-                                                                <div className='text-gray-900 w-1/2 pl-2 break-words'>
-                                                                    {a}
-                                                                </div>
-                                                            </div>
-                                                        )
-                                                    )}
-                                                </div>
-                                                {survey.type !== 'survey' && (
-                                                    <div className='mt-3'>
+                                                    <div className='text-sm text-gray-600'>
+                                                        <div>Submitted at: <span className='font-medium text-gray-800'>{new Date(response.createdAt).toLocaleString()}</span></div>
+                                                        <div>Time spent: <span className='font-medium text-gray-800'>{(response.timeSpent ?? 0)}s</span></div>
+                                                    </div>
+                                                    {survey.type !== 'survey' && (
+                                                    <div className='mt-3 flex gap-2'>
                                                         <button
                                                             className='btn-outline btn-small'
                                                             onClick={() => toggleExpand((response as any)._id)}
@@ -253,8 +240,23 @@ const SurveyStatisticsTab: React.FC<Props> = ({
                                                         >
                                                             {expanded[(response as any)._id] ? 'Hide Result Detail' : 'View Result Detail'}
                                                         </button>
+                                                        <button
+                                                            className='btn-secondary btn-small text-red-600'
+                                                            onClick={async () => {
+                                                                if (!confirm('Are you sure you want to delete this response?')) return;
+                                                                try {
+                                                                    await api.delete(`/admin/responses/${(response as any)._id}`);
+                                                                    onRefresh();
+                                                                } catch (e) {
+                                                                    alert('Failed to delete response');
+                                                                }
+                                                            }}
+                                                            type='button'
+                                                        >
+                                                            Delete
+                                                        </button>
                                                     </div>
-                                                )}
+                                                    )}
 
                                                 {survey.type !== 'survey' && expanded[(response as any)._id] && (
                                                     <div className='mt-3 rounded-md border border-gray-200 bg-white'>
@@ -262,7 +264,35 @@ const SurveyStatisticsTab: React.FC<Props> = ({
                                                             <div className='p-3 text-sm text-gray-500'>Loading...</div>
                                                         ) : (
                                                             <div className='divide-y divide-gray-100'>
-                                                                {(details[(response as any)._id]?.questionDetails || []).map((q: any, idx: number) => (
+                                                                 {(details[(response as any)._id]?.questionDetails || []).map((q: any, idx: number) => {
+                                                                    const normalizeOptionText = (opt: any) => {
+                                                                        if (typeof opt === 'string') {
+                                                                            if (opt.includes('text:')) {
+                                                                                const m = opt.match(/text:\s*'([^']+)'/);
+                                                                                return m ? m[1] : opt;
+                                                                            }
+                                                                            return opt;
+                                                                        }
+                                                                        return (opt && opt.text) || '';
+                                                                    };
+                                                                    const getCorrectDisplay = () => {
+                                                                        if (q.questionType === 'single_choice' && typeof q.correctAnswer === 'number') {
+                                                                            const opts = q.options || [];
+                                                                            return normalizeOptionText(opts[q.correctAnswer]);
+                                                                        }
+                                                                        if (q.questionType === 'multiple_choice' && Array.isArray(q.correctAnswer)) {
+                                                                            const opts = q.options || [];
+                                                                            return q.correctAnswer.map((idx: number) => normalizeOptionText(opts[idx])).join(', ');
+                                                                        }
+                                                                        return String(q.correctAnswer ?? '—');
+                                                                    };
+                                                                    const getUserDisplay = () => {
+                                                                        if (Array.isArray(q.userAnswer)) return q.userAnswer.join(', ');
+                                                                        return String(q.userAnswer ?? '—');
+                                                                    };
+                                                                    const correctDisplay = getCorrectDisplay();
+                                                                    const userDisplay = getUserDisplay();
+                                                                    return (
                                                                     <div key={idx} className='p-3 text-sm flex items-start gap-3'>
                                                                         <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${q.isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                                                             {q.isCorrect ? 'Correct' : 'Wrong'}
@@ -270,15 +300,16 @@ const SurveyStatisticsTab: React.FC<Props> = ({
                                                                         <div className='flex-1 min-w-0'>
                                                                             <div className='font-medium text-gray-800 truncate'>#{q.questionIndex + 1} {q.questionText}</div>
                                                                             <div className='text-gray-600 mt-0.5'>
-                                                                                <span className='mr-2'>Your answer: <span className='font-medium text-gray-800'>{String(q.userAnswer ?? '—')}</span></span>
-                                                                                <span>Correct: <span className='font-medium text-gray-800'>{String(q.correctAnswer ?? '—')}</span></span>
+                                                                                <span className='mr-2'>Your answer: <span className='font-medium text-gray-800'>{userDisplay}</span></span>
+                                                                                <span>Correct: <span className='font-medium text-gray-800'>{correctDisplay}</span></span>
                                                                             </div>
+                                                                            <div className='text-xs text-gray-500 mt-0.5'>Time on question: {q.timeSpent ?? 0}s</div>
                                                                         </div>
                                                                         <div className='text-right text-gray-700 whitespace-nowrap'>
                                                                             {q.pointsAwarded}/{q.maxPoints} pts
                                                                         </div>
                                                                     </div>
-                                                                ))}
+                                                                )})}
                                                             </div>
                                                         )}
                                                     </div>

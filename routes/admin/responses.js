@@ -27,6 +27,29 @@ router.get(
 );
 
 /**
+ * @route   DELETE /admin/responses/:responseId
+ * @desc    Delete a specific response
+ * @access  Private (Admin)
+ */
+router.delete(
+    '/responses/:responseId',
+    jwtAuth,
+    asyncHandler(async (req, res) => {
+        const { responseId } = req.params;
+        const response = await Response.findById(responseId).populate('surveyId');
+        if (!response) {
+            throw new AppError('Response not found', HTTP_STATUS.NOT_FOUND);
+        }
+        const survey = response.surveyId;
+        if (!survey || survey.createdBy.toString() !== req.user.id) {
+            throw new AppError('Unauthorized to delete this response', HTTP_STATUS.FORBIDDEN);
+        }
+        await Response.deleteOne({ _id: responseId });
+        res.json({ success: true, message: 'Response deleted' });
+    })
+);
+
+/**
  * @route   GET /admin/responses/:responseId
  * @desc    Get detailed information for a specific candidate response
  * @access  Private (Admin)

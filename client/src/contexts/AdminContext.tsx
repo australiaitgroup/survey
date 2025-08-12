@@ -182,7 +182,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 			scoringMode: 'percentage',
 			totalPoints: 0,
 			passingThreshold: 70,
-			showScore: true,
+			showScore: false,
 			showCorrectAnswers: true,
 			showScoreBreakdown: true,
 			customScoringRules: {
@@ -212,7 +212,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 			scoringMode: 'percentage',
 			totalPoints: 0,
 			passingThreshold: 70,
-			showScore: true,
+			showScore: false,
 			showCorrectAnswers: true,
 			showScoreBreakdown: true,
 			customScoringRules: {

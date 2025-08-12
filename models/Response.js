@@ -119,8 +119,8 @@ const responseSchema = new mongoose.Schema({
 });
 
 // Method to create question snapshots from survey questions
-responseSchema.methods.createQuestionSnapshots = function (questions, userAnswers) {
-	this.questionSnapshots = questions.map((question, index) => {
+responseSchema.methods.createQuestionSnapshots = function (questions, userAnswers, answerDurations) {
+    this.questionSnapshots = questions.map((question, index) => {
 		const userAnswer = userAnswers[index] || null;
 
 		// Create snapshot of question data
@@ -143,7 +143,13 @@ responseSchema.methods.createQuestionSnapshots = function (questions, userAnswer
 				pointsAwarded: 0,
 				maxPoints: question.points || 1,
 			},
-			durationInSeconds: 0, // Initialize duration to 0
+            durationInSeconds: (() => {
+                if (!answerDurations) return 0;
+                const byId = answerDurations[String(question._id)] ?? answerDurations[question._id];
+                const byIndex = answerDurations[String(index)] ?? answerDurations[index];
+                const v = byId ?? byIndex;
+                return typeof v === 'number' && v >= 0 ? v : 0;
+            })(),
 		};
 
 		// Calculate scoring for this question

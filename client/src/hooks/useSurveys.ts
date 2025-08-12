@@ -128,7 +128,7 @@ export const useSurveys = () => {
 					scoringMode: SCORING_MODE.PERCENTAGE,
 					totalPoints: 0,
 					passingThreshold: 70,
-					showScore: true,
+					showScore: false,
 					showCorrectAnswers: true,
 					showScoreBreakdown: true,
 					customScoringRules: {
@@ -450,7 +450,7 @@ export const useSurveys = () => {
 					scoringMode: SCORING_MODE.PERCENTAGE,
 					totalPoints: 0,
 					passingThreshold: 70,
-					showScore: true,
+					showScore: false,
 					showCorrectAnswers: true,
 					showScoreBreakdown: true,
 					customScoringRules: {

@@ -451,15 +451,6 @@ const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPan
 					</span>
 				</div>
 				<div className='flex items-center gap-3'>
-					<button
-						className='btn-secondary'
-						onClick={() => {
-							clear();
-							setPageIndex(0);
-						}}
-					>
-						{t('preview.clear', 'Clear preview data')}
-					</button>
 				</div>
 			</div>
 
