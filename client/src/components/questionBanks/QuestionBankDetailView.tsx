@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
 import { useQuestionBanks } from '../../hooks/useQuestionBanks';
-import { QuestionBank, Question, QuestionForm } from '../../types/admin';
+import { QuestionBank, QuestionForm } from '../../types/admin';
 import AddQuestionModal from '../modals/AddQuestionModal';
 import EditQuestionModal from '../modals/EditQuestionModal';
 import ImportCSVModal from '../modals/ImportCSVModal';
 import ImportResultModal from '../modals/ImportResultModal';
-import ImageUpload from '../common/ImageUpload';
 
 interface QuestionBankDetailViewProps {
 	questionBank: QuestionBank;
@@ -19,10 +18,6 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 		navigate,
 		questionBankQuestionForms,
 		setQuestionBankQuestionForms,
-		showEditQuestionBankModal,
-		setShowEditQuestionBankModal,
-		editQuestionBankForm,
-		setEditQuestionBankForm,
 		loading,
 		setLoading,
 		error,
@@ -43,6 +38,12 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 		type: 'single_choice' as const,
 		correctAnswer: undefined,
 		points: 1,
+	});
+	// Local state for edit question bank modal
+	const [showEditQuestionBankModal, setShowEditQuestionBankModal] = useState(false);
+	const [editQuestionBankForm, setEditQuestionBankForm] = useState({
+		name: '',
+		description: '',
 	});
 	// Local state for CSV import
 	const [showImportCSVModal, setShowImportCSVModal] = useState(false);
@@ -119,7 +120,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 				...prev,
 				[questionBankId]: {
 					...currentForm,
-					options: [...currentForm.options, ''],
+					options: [...(currentForm.options || []), ''],
 				},
 			};
 		});
@@ -136,7 +137,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 				...prev,
 				[questionBankId]: {
 					...currentForm,
-					options: currentForm.options.filter((_, i) => i !== index),
+					options: (currentForm.options || []).filter((_, i) => i !== index),
 				},
 			};
 		});
@@ -153,7 +154,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 				options: ['', ''],
 				type: 'single_choice',
 			};
-			const newOptions = [...currentForm.options];
+			const newOptions = [...(currentForm.options || [])];
 			newOptions[index] = value;
 			return {
 				...prev,
@@ -171,8 +172,9 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 
 		setEditQuestionForm({
 			text: question.text,
+			description: '',
 			descriptionImage: question.descriptionImage,
-			options: [...question.options],
+			options: question.options ? [...question.options] as string[] : ['', ''],
 			type: question.type || 'single_choice',
 			correctAnswer: question.correctAnswer,
 			points: question.points || 1,
@@ -222,7 +224,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 		value: string | { text?: string; imageUrl?: string }
 	) => {
 		setEditQuestionForm(prev => {
-			const newOptions = [...prev.options];
+			const newOptions = [...(prev.options || [])];
 			newOptions[index] = value;
 			return {
 				...prev,
@@ -234,14 +236,14 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 	const addEditQuestionOption = () => {
 		setEditQuestionForm(prev => ({
 			...prev,
-			options: [...prev.options, ''],
+			options: [...(prev.options || []), ''],
 		}));
 	};
 
 	const removeEditQuestionOption = (index: number) => {
 		setEditQuestionForm(prev => ({
 			...prev,
-			options: prev.options.filter((_, i) => i !== index),
+			options: (prev.options || []).filter((_, i) => i !== index),
 		}));
 	};
 
@@ -253,7 +255,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 			await updateQuestionBankQuestion(qb._id, editingQuestionIndex, form);
 			cancelEditQuestionBankQuestion();
 			setLoading(false);
-		} catch (err) {
+		} catch {
 			setError('Failed to save question. Please try again.');
 			setLoading(false);
 		}
@@ -279,7 +281,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 			setShowAddQuestionModal(false);
 
 			setLoading(false);
-		} catch (err) {
+		} catch (err: any) {
 			console.error('Error adding question:', err);
 			const errorMessage =
 				err?.response?.data?.error ||
@@ -344,14 +346,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 		}
 	};
 
-	const handleDownloadTemplate = () => {
-		const link = document.createElement('a');
-		link.href = '/api/question-banks/csv-template/download';
-		link.setAttribute('download', 'question_bank_template.csv');
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-	};
+
 
 	return (
 		<>
@@ -589,7 +584,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 				onAddOption={addEditQuestionOption}
 				onRemoveOption={removeEditQuestionOption}
 				loading={loading}
-				questionIndex={editingQuestionIndex}
+				questionIndex={editingQuestionIndex ?? undefined}
 			/>
 
 			{/* Import CSV Modal */}

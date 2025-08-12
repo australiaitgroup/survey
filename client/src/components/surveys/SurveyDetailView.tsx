@@ -78,21 +78,30 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 	const { questionBanks } = useQuestionBanks();
 
 // Local question editing moved to hook
-	const [questionEditForms, setQuestionEditForms] = useState<Record<string, QuestionForm>>({});
 const {
+  // modal visibility + indices
   showAddQuestionModal,
   setShowAddQuestionModal,
   showEditQuestionModal,
   setShowEditQuestionModal,
   editingQuestionIndex,
   setEditingQuestionIndex,
+  // add-question helpers (shared)
   addOption,
   removeOption,
   handleOptionChange,
   addQuestionModalHandler,
+  // edit-question helpers/state
+  questionEditForms,
+  setQuestionEditForms,
   startEditQuestion,
   cancelEditQuestion,
   handleEditQuestionSubmit,
+  handleQuestionEditChange,
+  handleQuestionEditOptionChange,
+  addQuestionEditOption,
+  removeQuestionEditOption,
+  toggleCorrectAnswer,
 } = useLocalQuestionEditing({ survey, setQuestionForms, addQuestion, updateQuestion, setLoading, setError });
 	const [showInviteModal, setShowInviteModal] = useState(false);
 	const [tabLocal, setTabLocal] = useState<'detail' | 'invitations' | 'statistics' | 'preview'>(
@@ -243,13 +252,7 @@ const companySlug = useCompanySlug();
 		});
 	};
 
-    const {
-        handleQuestionEditChange,
-        handleQuestionEditOptionChange,
-        addQuestionEditOption,
-        removeQuestionEditOption,
-        toggleCorrectAnswer
-    } = useLocalQuestionEditing({ survey, setQuestionForms, addQuestion, updateQuestion, setLoading, setError });
+    // Handlers already provided by the single useLocalQuestionEditing instance above
 
 	const saveQuestionEdit = async (surveyId: string, questionIndex: number) => {
 		const formKey = `${surveyId}-${questionIndex}`;

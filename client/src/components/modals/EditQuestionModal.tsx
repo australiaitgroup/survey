@@ -29,6 +29,10 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
 	loading = false,
 	questionIndex,
 }) => {
+	// Early return if form is not provided
+	if (!form) {
+		return null;
+	}
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		onSubmit(form);
@@ -225,12 +229,12 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
 								const text = typeof opt === 'string' ? opt : opt.text || '';
 								return text.trim();
 							}).length >= 2 && (
-							<div>
+														<div>
 								<label className='block text-sm font-medium text-gray-700 mb-2'>
-										Select Correct Answer(s) *
+									Select Correct Answer(s) *
 								</label>
 								<div className='space-y-2'>
-									{form.options.map((opt, idx) => {
+									{form.options && form.options.map((opt, idx) => {
 										const optionText =
 												typeof opt === 'string' ? opt : opt.text || '';
 										const optionImageUrl =
