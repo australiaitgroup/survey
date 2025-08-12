@@ -51,10 +51,12 @@ router.post(
 			});
 		}
 
-		// Create response with question snapshots including durations
-		const questionSnapshots = survey.questions.map((question, index) => {
-			const userAnswer = answers[question._id];
-			const duration = answerDurations[question._id] || 0;
+        // Create response with question snapshots including durations
+        const questionSnapshots = survey.questions.map((question, index) => {
+            // Ensure we use string keys when reading from plain objects
+            const qid = String(question._id);
+            const userAnswer = answers[qid];
+            const duration = answerDurations[qid] || 0;
 
 			// Calculate scoring
 			let isCorrect = false;
@@ -128,12 +130,15 @@ router.post(
 		const percentage =
 			maxPossiblePoints > 0 ? Math.round((totalPoints / maxPossiblePoints) * 100) : 0;
 
-		// Create response document
-		const response = new Response({
+        // Create response document. Persist answers using string keys to match how
+        // we read above and how admin analytics expect them later.
+        const response = new Response({
 			name,
 			email,
 			surveyId,
-			answers: new Map(Object.entries(answers)),
+            answers: new Map(
+                Object.entries(answers).map(([key, value]) => [String(key), value])
+            ),
 			questionSnapshots,
 			score: {
 				totalPoints,

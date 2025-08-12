@@ -36,12 +36,12 @@ async function saveSurveyResponse(data) {
 	// Prepare user answers array for snapshot creation
 	const userAnswersArray = [];
 
-	if (Array.isArray(data.answers)) {
+    if (Array.isArray(data.answers)) {
 		// New format: array of answers (string values)
 		data.answers.forEach((answer, index) => {
 			userAnswersArray[index] = answer;
 			if (answer !== null && answer !== undefined && answer !== '') {
-				const question = questionsToProcess[index];
+                const question = questionsToProcess[index];
 				if (question) {
 					if (question.type === 'single_choice') {
 						// Find the index of the selected option
@@ -114,14 +114,32 @@ async function saveSurveyResponse(data) {
 			}
 		});
 	} else {
-		// Old format: object with question IDs as keys
-		Object.entries(data.answers).forEach(([questionId, answer]) => {
-			const index = parseInt(questionId, 10);
-			userAnswersArray[index] = answer;
-			if (answer !== null && answer !== undefined && answer !== '') {
-				processedAnswers.set(questionId, answer);
-			}
-		});
+        // Old format: object with question IDs as keys (could be `_id` strings)
+        // Preserve mapping by index when possible; also keep a snapshot `userAnswersArray`
+        // aligned to `questionsToProcess` order so scoring stays correct for bank-based flows.
+        const idToIndex = new Map(
+            questionsToProcess.map((q, idx) => [String(q._id ?? idx), idx])
+        );
+        Object.entries(data.answers).forEach(([questionId, answer]) => {
+            const idx = idToIndex.get(String(questionId));
+            if (typeof idx === 'number') {
+                userAnswersArray[idx] = answer;
+                if (answer !== null && answer !== undefined && answer !== '') {
+                    processedAnswers.set(String(idx), answer);
+                }
+            } else {
+                // Fallback: try numeric index
+                const numericIndex = Number.isNaN(Number(questionId))
+                    ? undefined
+                    : parseInt(questionId, 10);
+                if (typeof numericIndex === 'number' && Number.isFinite(numericIndex)) {
+                    userAnswersArray[numericIndex] = answer;
+                    if (answer !== null && answer !== undefined && answer !== '') {
+                        processedAnswers.set(String(numericIndex), answer);
+                    }
+                }
+            }
+        });
 	}
 
 	let response;
