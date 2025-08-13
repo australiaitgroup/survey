@@ -108,7 +108,7 @@ const AdminNavbar: React.FC = () => {
 								className='flex items-center gap-2 px-3 py-2 text-gray-700 hover:text-[#FF5A5F] transition-colors duration-200 cursor-pointer'
 							>
 								<UserCircleIcon className='w-5 h-5' />
-								<span className='font-medium'>{tCommon('navigation.profile')}</span>
+								<span className='font-medium'>{tCommon('navigation.profile', 'Profile')}</span>
 								<ChevronDownIcon className={`w-4 h-4 transition-transform ${
 									profileDropdownOpen ? 'rotate-180' : ''
 								}`} />
@@ -123,7 +123,7 @@ const AdminNavbar: React.FC = () => {
 										className='flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors duration-200 cursor-pointer'
 									>
 										<UserCircleIcon className='w-5 h-5' />
-										<span className='font-medium'>{tCommon('navigation.profile')}</span>
+										<span className='font-medium'>{tCommon('navigation.profile', 'Profile')}</span>
 									</button>
 									<button
 										onClick={handleCompanyInfoClick}

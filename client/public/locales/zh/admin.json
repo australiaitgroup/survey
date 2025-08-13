@@ -9,21 +9,10 @@
     "intro": "将相关问卷组织为可复用的分组，便于管理与快速访问。",
     "info": "将相关问卷组织为可复用的分组，便于管理与快速访问。",
     "searchPlaceholder": "按名称或描述搜索...",
-    "filters": {
-      "all": "全部",
-      "active": "已发布",
-      "draft": "草稿",
-      "archived": "已归档"
-    },
     "sort": {
       "newest": "最新创建",
       "lastActivity": "最近活动",
       "az": "A–Z"
-    },
-    "status": {
-      "active": "已发布",
-      "draft": "草稿",
-      "archived": "已归档"
     },
     "meta": {
       "surveys": "个问卷",

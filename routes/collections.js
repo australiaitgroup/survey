@@ -4,7 +4,7 @@ const Survey = require('../models/Survey');
 const Response = require('../models/Response');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/AppError');
-const { HTTP_STATUS, ERROR_MESSAGES, VALID_COLLECTION_STATUSES } = require('../shared/constants');
+const { HTTP_STATUS, ERROR_MESSAGES } = require('../shared/constants');
 const { collectionCreateSchema, collectionUpdateSchema, collectionSurveysUpdateSchema } = require('../schemas/collectionSchemas');
 
 const router = express.Router();
@@ -43,13 +43,6 @@ router.patch(
 	'/collections/:id',
 	asyncHandler(async (req, res) => {
 		const data = collectionUpdateSchema.parse(req.body);
-		if (data.status && !VALID_COLLECTION_STATUSES.includes(data.status)) {
-			throw new AppError(
-				ERROR_MESSAGES.INVALID_COLLECTION_STATUS,
-				HTTP_STATUS.BAD_REQUEST,
-				'errors.invalidCollectionStatus'
-			);
-		}
 		const updated = await Collection.findByIdAndUpdate(req.params.id, data, { new: true });
 		if (!updated)
 			throw new AppError(ERROR_MESSAGES.COLLECTION_NOT_FOUND, HTTP_STATUS.NOT_FOUND, 'errors.collectionNotFound');

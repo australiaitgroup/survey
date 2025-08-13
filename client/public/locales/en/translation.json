@@ -68,7 +68,6 @@
 	},
 	"errors": {
 		"collectionNotFound": "Collection not found",
-		"invalidCollectionStatus": "Invalid collection status. Must be one of: draft, active, archived"
 	},
 	"landing": {
 		"hero": {

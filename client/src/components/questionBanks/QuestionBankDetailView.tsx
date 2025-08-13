@@ -3,6 +3,7 @@ import { useAdmin } from '../../contexts/AdminContext';
 import { useQuestionBanks } from '../../hooks/useQuestionBanks';
 import { QuestionBank, QuestionForm } from '../../types/admin';
 import AddQuestionModal from '../modals/AddQuestionModal';
+import EditQuestionBankModal from '../modals/EditQuestionBankModal';
 import EditQuestionModal from '../modals/EditQuestionModal';
 import ImportCSVModal from '../modals/ImportCSVModal';
 import ImportResultModal from '../modals/ImportResultModal';
@@ -22,6 +23,11 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 		setLoading,
 		error,
 		setError,
+		// Use context-driven modal + form state for editing question bank
+		showEditQuestionBankModal,
+		setShowEditQuestionBankModal,
+		editQuestionBankForm,
+		setEditQuestionBankForm,
 	} = useAdmin();
 
 	const { addQuestionBankQuestion, deleteQuestionBankQuestion, updateQuestionBankQuestion } =
@@ -40,12 +46,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 		correctAnswer: undefined,
 		points: 1,
 	});
-	// Local state for edit question bank modal
-	const [showEditQuestionBankModal, setShowEditQuestionBankModal] = useState(false);
-	const [editQuestionBankForm, setEditQuestionBankForm] = useState({
-		name: '',
-		description: '',
-	});
+	// Removed local edit question bank state; rely on context state instead
 	// Local state for CSV import
 	const [showImportCSVModal, setShowImportCSVModal] = useState(false);
 	const [showImportResultModal, setShowImportResultModal] = useState(false);
@@ -383,7 +384,9 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 							<button
 								className='btn-primary btn-small'
 								onClick={() => {
-									setEditQuestionBankForm({
+										// Ensure context has the current QB selected before opening modal
+										setSelectedQuestionBankDetail(qb);
+										setEditQuestionBankForm({
 										name: qb.name,
 										description: qb.description || '',
 									});
@@ -602,6 +605,9 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 				onClose={() => setShowImportResultModal(false)}
 				result={importResult}
 			/>
+
+			{/* Edit Question Bank Modal */}
+			<EditQuestionBankModal />
 		</>
 	);
 };

@@ -124,7 +124,7 @@ const SurveyCard: React.FC<SurveyCardProps> = ({ survey }) => {
 						className='btn-outline btn-small'
 						onClick={() => duplicateSurvey(survey._id)}
 					>
-						{t('buttons.duplicate')}
+						{t('buttons.duplicate', 'Duplicate')}
 					</button>
 					<button
 						className='btn-outline btn-small text-red-600 border-red-300 hover:bg-red-50 hover:border-red-500'

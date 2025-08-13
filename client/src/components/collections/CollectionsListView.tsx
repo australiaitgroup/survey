@@ -62,12 +62,6 @@ const CollectionsListView: React.FC = () => {
             <div className='bg-gray-50 rounded-lg p-3'>
                 <div className='flex flex-wrap items-center gap-2'>
                     <input className='input-field flex-1 min-w-[160px] md:min-w-[240px] px-2 py-1 text-sm h-8' placeholder={t('collections.searchPlaceholder', 'Search by name or description...')} defaultValue={query} onChange={e => setQuery(e.target.value)} />
-                    <select className='input-field w-auto min-w-[140px] md:min-w-[160px] px-2 py-1 text-sm h-8 shrink-0' value={status} onChange={e => setStatus(e.target.value as any)}>
-                        <option value=''>{t('collections.filters.all', 'All')}</option>
-                        <option value='active'>{t('collections.filters.active', 'Active')}</option>
-                        <option value='draft'>{t('collections.filters.draft', 'Draft')}</option>
-                        <option value='archived'>{t('collections.filters.archived', 'Archived')}</option>
-                    </select>
                     <select className='input-field w-auto min-w-[140px] md:min-w-[180px] px-2 py-1 text-sm h-8 shrink-0' value={sortBy} onChange={e => setSortBy(e.target.value as any)}>
                         <option value='createdAt_desc'>{t('collections.sort.newest', 'Newest')}</option>
                         <option value='lastActivity_desc'>{t('collections.sort.lastActivity', 'Last activity')}</option>
@@ -107,9 +101,6 @@ const CollectionsListView: React.FC = () => {
                                 <div className='flex-1 min-w-0'>
                                     <div className='flex flex-wrap items-center gap-2 mb-2'>
                                         <h3 className='text-base sm:text-lg font-bold text-gray-800 cursor-pointer hover:text-[#FF5A5F]' onClick={() => navigate(`/admin/collections/${c._id}`)}>{c.name}</h3>
-                                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${c.status === 'active' ? 'bg-green-100 text-green-800' : c.status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-200 text-gray-700'}`}>
-                                            {c.status === 'active' ? t('collections.status.active', 'Active') : c.status === 'draft' ? t('collections.status.draft', 'Draft') : t('collections.status.archived', 'Archived')}
-                                        </span>
                                     </div>
                                     <p className='text-gray-600 mb-2 text-sm'>{c.description || t('collections.noDescription', 'No description')}</p>
                                     <div className='flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-500'>

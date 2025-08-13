@@ -96,9 +96,6 @@ const CollectionDetailView: React.FC = () => {
           <div>
             <div className='flex items-center gap-2 flex-wrap'>
               <h2 className='text-xl font-semibold text-gray-900'>{collection?.name ?? ''}</h2>
-              <span className={`px-2 py-1 text-xs font-medium rounded-full ${collection.status === 'active' ? 'bg-green-100 text-green-800' : collection.status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-200 text-gray-700'}`}>
-                {collection.status === 'active' ? t('collections.status.active', 'Active') : collection.status === 'draft' ? t('collections.status.draft', 'Draft') : t('collections.status.archived', 'Archived')}
-              </span>
             </div>
             {collection.description && <p className='text-gray-600 mt-1'>{collection.description}</p>}
           </div>

@@ -34,7 +34,7 @@ const NavigationTabs: React.FC = () => {
 						: 'text-gray-600 hover:text-gray-900'
 				}`}
 			>
-				{t('navigation.surveys')}
+				{t('navigation.surveys', 'Surveys')}
 			</button>
 			<button
 				onClick={() => handleTabClick('collections')}
@@ -44,7 +44,7 @@ const NavigationTabs: React.FC = () => {
 						: 'text-gray-600 hover:text-gray-900'
 				}`}
 			>
-				{t('navigation.collections')}
+				{t('navigation.collections', 'Collections')}
 			</button>
 			<button
 				onClick={() => handleTabClick('question-banks')}
@@ -54,7 +54,7 @@ const NavigationTabs: React.FC = () => {
 						: 'text-gray-600 hover:text-gray-900'
 				}`}
 			>
-				{t('navigation.questionBanks')}
+				{t('navigation.questionBanks', 'Question Banks')}
 			</button>
 			<button
 				onClick={() => handleTabClick('profile')}
@@ -64,7 +64,7 @@ const NavigationTabs: React.FC = () => {
 						: 'text-gray-600 hover:text-gray-900'
 				}`}
 			>
-				{t('navigation.profile')}
+				{t('navigation.profile', 'Profile')}
 			</button>
 		</div>
 	);

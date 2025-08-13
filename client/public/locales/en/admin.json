@@ -9,21 +9,10 @@
     "intro": "Organize related surveys into reusable groups for better management and quick access.",
     "info": "Organize related surveys into reusable groups for better management and quick access.",
     "searchPlaceholder": "Search by name or description...",
-    "filters": {
-      "all": "All",
-      "active": "Active",
-      "draft": "Draft",
-      "archived": "Archived"
-    },
     "sort": {
       "newest": "Newest",
       "lastActivity": "Last activity",
       "az": "A–Z"
-    },
-    "status": {
-      "active": "Active",
-      "draft": "Draft",
-      "archived": "Archived"
     },
     "meta": {
       "surveys": "surveys",

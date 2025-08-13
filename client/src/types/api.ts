@@ -471,15 +471,12 @@ export interface InvitationEmailResult {
 }
 
 // ===== Collections =====
-export type CollectionStatus = 'draft' | 'active' | 'archived';
-
 export interface Collection {
   _id: string;
   name: string;
   description?: string;
   surveyIds: string[];
   tags?: string[];
-  status: CollectionStatus;
   createdAt: string;
   updatedAt: string;
 }
@@ -489,7 +486,6 @@ export interface CollectionCreateRequest {
   description?: string;
   surveyIds?: string[];
   tags?: string[];
-  status?: CollectionStatus;
 }
 
 export interface CollectionUpdateRequest extends Partial<CollectionCreateRequest> {}

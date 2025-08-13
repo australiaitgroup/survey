@@ -3,7 +3,6 @@ const ERROR_MESSAGES = {
 	SURVEY_NOT_FOUND: 'Survey not found',
 	INVALID_STATUS: 'Invalid status. Must be one of: draft, active, closed',
 	COLLECTION_NOT_FOUND: 'Collection not found',
-	INVALID_COLLECTION_STATUS: 'Invalid collection status. Must be one of: draft, active, archived',
 	UNAUTHORIZED: 'unauthorized',
 	INVALID_DATA: 'invalid data',
 	INVALID_CORRECT_ANSWER: 'invalid correctAnswer',
@@ -55,19 +54,6 @@ const HTTP_STATUS = {
 // 有效状态数组
 const VALID_STATUSES = [SURVEY_STATUS.DRAFT, SURVEY_STATUS.ACTIVE, SURVEY_STATUS.CLOSED];
 
-// Collection 状态常量
-const COLLECTION_STATUS = {
-	DRAFT: 'draft',
-	ACTIVE: 'active',
-	ARCHIVED: 'archived',
-};
-
-// 有效 Collection 状态数组
-const VALID_COLLECTION_STATUSES = [
-	COLLECTION_STATUS.DRAFT,
-	COLLECTION_STATUS.ACTIVE,
-	COLLECTION_STATUS.ARCHIVED,
-];
 
 // 需要正确答案的题目类型
 const TYPES_REQUIRING_ANSWERS = [SURVEY_TYPE.ASSESSMENT, SURVEY_TYPE.QUIZ, SURVEY_TYPE.IQ];
@@ -104,8 +90,6 @@ module.exports = {
 	DATA_TYPES,
 	HTTP_STATUS,
 	VALID_STATUSES,
-	COLLECTION_STATUS,
-	VALID_COLLECTION_STATUSES,
 	TYPES_REQUIRING_ANSWERS,
 	VALID_QUESTION_TYPES,
 	VALID_SOURCE_TYPES,

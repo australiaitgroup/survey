@@ -4,7 +4,6 @@ import api from '../utils/axiosConfig';
 import { Collection, CollectionCreateRequest, CollectionUpdateRequest } from '../types/api';
 
 type SortKey = 'createdAt_desc' | 'lastActivity_desc' | 'name_asc';
-type StatusFilter = '' | 'active' | 'draft' | 'archived';
 
 export const useCollections = () => {
   const { t } = useTranslation();
@@ -14,7 +13,6 @@ export const useCollections = () => {
 
   // Filters
   const [query, setQuery] = useState('');
-  const [status, setStatus] = useState<StatusFilter>('');
   const [sortBy, setSortBy] = useState<SortKey>('createdAt_desc');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -69,7 +67,6 @@ export const useCollections = () => {
       name: `${base.name} - copy`,
       description: base.description,
       tags: base.tags,
-      status: base.status,
       surveyIds: base.surveyIds,
     };
     const created = await createCollection(payload);
@@ -80,12 +77,10 @@ export const useCollections = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const q = params.get('q') || '';
-    const s = (params.get('status') || '') as StatusFilter;
     const sb = (params.get('sort') || 'createdAt_desc') as SortKey;
     const p = parseInt(params.get('page') || '1', 10);
     const ps = parseInt(params.get('pageSize') || '10', 10);
     setQuery(q);
-    setStatus(s);
     setSortBy(sb);
     setPage(Number.isNaN(p) ? 1 : p);
     setPageSize(Number.isNaN(ps) ? 10 : ps);
@@ -94,13 +89,12 @@ export const useCollections = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (query) params.set('q', query); else params.delete('q');
-    if (status) params.set('status', status); else params.delete('status');
     params.set('sort', sortBy);
     params.set('page', String(page));
     params.set('pageSize', String(pageSize));
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     window.history.replaceState({}, '', newUrl);
-  }, [query, status, sortBy, page, pageSize]);
+  }, [query, sortBy, page, pageSize]);
 
   useEffect(() => {
     loadCollections();
@@ -118,7 +112,6 @@ export const useCollections = () => {
     const q = query.trim().toLowerCase();
     let list = [...collections];
     if (q) list = list.filter(c => [c.name, c.description].filter(Boolean).some(v => String(v).toLowerCase().includes(q)));
-    if (status) list = list.filter(c => c.status === status);
     switch (sortBy) {
       case 'name_asc':
         list.sort((a, b) => a.name.localeCompare(b.name));
@@ -130,7 +123,7 @@ export const useCollections = () => {
         list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
     return list;
-  }, [collections, query, status, sortBy]);
+  }, [collections, query, sortBy]);
 
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -145,14 +138,12 @@ export const useCollections = () => {
     loading,
     error,
     query,
-    status,
     sortBy,
     page: currentPage,
     pageSize,
     total,
     totalPages,
     setQuery: setQueryDebounced,
-    setStatus,
     setSortBy,
     setPage,
     setPageSize,

@@ -47,7 +47,7 @@ const SurveyHeaderActions: React.FC<Props> = ({
             className='btn-outline text-sm px-3 py-1'
             onClick={() => onDuplicate(s._id)}
           >
-            {t('buttons.duplicate')}
+            {t('buttons.duplicate') || 'Duplicate'}
           </button>
           <button
             className='btn-outline text-sm px-3 py-1 text-red-600 border-red-300 hover:bg-red-50'

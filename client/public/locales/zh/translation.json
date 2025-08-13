@@ -68,7 +68,6 @@
 	},
 	"errors": {
 		"collectionNotFound": "未找到合集",
-		"invalidCollectionStatus": "无效的合集状态。必须是：草稿、已发布、已归档"
 	},
 	"landing": {
 		"hero": {

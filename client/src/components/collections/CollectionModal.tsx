@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Collection, CollectionCreateRequest, CollectionStatus } from '../../types/api';
+import { Collection, CollectionCreateRequest } from '../../types/api';
 import { useCollections } from '../../hooks/useCollections';
 
 interface CollectionModalProps {
@@ -14,10 +14,9 @@ interface CollectionModalProps {
   };
 }
 
-const statusOptions: CollectionStatus[] = ['draft', 'active', 'archived'];
 
 const CollectionModal: React.FC<CollectionModalProps> = ({ open, onClose, collection, onSaved, collectionsApi }) => {
-  const { t } = useTranslation(['admin', 'translation']);
+  const { t, i18n } = useTranslation(['admin', 'translation']);
   const hookApi = useCollections();
   const createCollection = (payload: CollectionCreateRequest) => (collectionsApi?.createCollection || hookApi.createCollection)(payload);
   const updateCollection = (id: string, payload: Partial<Collection>) => (collectionsApi?.updateCollection || hookApi.updateCollection)(id, payload as any);
@@ -26,7 +25,6 @@ const CollectionModal: React.FC<CollectionModalProps> = ({ open, onClose, collec
   const [description, setDescription] = useState('');
   const [tagsInput, setTagsInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
-  const [status, setStatus] = useState<CollectionStatus>('draft');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -34,9 +32,20 @@ const CollectionModal: React.FC<CollectionModalProps> = ({ open, onClose, collec
       setName(collection?.name || '');
       setDescription(collection?.description || '');
       setTags(collection?.tags || []);
-      setStatus(collection?.status || 'draft');
     }
   }, [open, collection]);
+
+  useEffect(() => {
+    const loadNamespace = async () => {
+      try {
+        await i18n.loadNamespaces(['admin', 'translation']);
+        i18n.reloadResources(['admin', 'translation']);
+      } catch (error) {
+        console.error('Failed to load namespaces:', error);
+      }
+    };
+    loadNamespace();
+  }, [i18n]);
 
   const addTag = () => {
     const v = tagsInput.trim();
@@ -52,12 +61,12 @@ const CollectionModal: React.FC<CollectionModalProps> = ({ open, onClose, collec
     try {
       let id = collection?._id;
       if (!id) {
-        const payload: CollectionCreateRequest = { name: name.trim(), description: description.trim() || undefined, tags, status };
+        const payload: CollectionCreateRequest = { name: name.trim(), description: description.trim() || undefined, tags };
         const created = await createCollection(payload);
         id = created._id;
         onSaved && onSaved(created);
       } else {
-        await updateCollection(id, { name: name.trim(), description: description.trim() || undefined, tags, status });
+        await updateCollection(id, { name: name.trim(), description: description.trim() || undefined, tags });
       }
       onClose();
     } finally {
@@ -80,11 +89,11 @@ const CollectionModal: React.FC<CollectionModalProps> = ({ open, onClose, collec
         <div className='grid grid-cols-1 gap-4 mt-4'>
           <div className='space-y-3'>
             <div>
-              <label className='block text-sm font-medium mb-1'>{t('translation:common.name')}</label>
+              <label className='block text-sm font-medium mb-1'>{t('translation:common.name', 'Name')}</label>
               <input className='input-field w-full' value={name} onChange={e => setName(e.target.value)} placeholder={t('admin:collections.namePlaceholder', 'Collection name')} />
             </div>
             <div>
-              <label className='block text-sm font-medium mb-1'>{t('translation:common.description')}</label>
+              <label className='block text-sm font-medium mb-1'>{t('translation:common.description', 'Description')}</label>
               <textarea className='input-field w-full' rows={3} value={description} onChange={e => setDescription(e.target.value)} placeholder={t('admin:collections.descriptionPlaceholder', 'Optional description')} />
             </div>
             <div>
@@ -104,21 +113,13 @@ const CollectionModal: React.FC<CollectionModalProps> = ({ open, onClose, collec
                 </div>
               )}
             </div>
-            <div>
-              <label className='block text-sm font-medium mb-1'>{t('translation:common.status')}</label>
-              <select className='input-field w-full' value={status} onChange={e => setStatus(e.target.value as CollectionStatus)}>
-                {statusOptions.map(s => (
-                  <option key={s} value={s}>{ s === 'active' ? t('admin:collections.status.active') : s === 'draft' ? t('admin:collections.status.draft') : t('admin:collections.status.archived') }</option>
-                ))}
-              </select>
-            </div>
           </div>
         </div>
 
         <div className='flex justify-end gap-2 mt-6'>
-          <button className='btn-outline' onClick={onClose}>{t('translation:buttons.cancel')}</button>
+          <button className='btn-outline' onClick={onClose}>{t('translation:buttons.cancel', 'Cancel')}</button>
           <button className='btn-primary' onClick={onSubmit} disabled={saving}>
-            {collection ? t('translation:buttons.save') : t('translation:buttons.create')}
+            {collection ? t('translation:buttons.save', 'Save') : t('translation:buttons.create', 'Create')}
           </button>
         </div>
       </div>
