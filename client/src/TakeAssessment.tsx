@@ -586,49 +586,31 @@ const TakeAssessment: React.FC = () => {
 				{/* Questions Step - Step by Step Navigation */}
 				{currentStep === 'questions' && currentQuestion && questionsLoaded && (
 					<div className='w-full bg-white rounded-xl border border-[#EBEBEB] p-6'>
-						{/* Header with Progress and Timer */}
-						<div className='flex items-center justify-between mb-6'>
-							<div className='flex-1'>
-								{/* Progress Indicators */}
-								<div className='flex items-center justify-center gap-2 mb-3'>
-									{currentQuestions.map((_, i) => (
-										<span
-											key={`step-${i}`}
-											className={
-												'rounded-full transition-all ' +
-												(i === currentQuestionIndex
-													? 'bg-blue-600 h-2.5 w-6'
-													: i < currentQuestionIndex
-														? 'bg-blue-500 bg-opacity-30 h-2 w-5'
-														: 'bg-gray-200 h-2 w-4')
-											}
-											aria-hidden='true'
-										/>
-									))}
-								</div>
-								{/* Progress Bar */}
-								<div className='flex items-center justify-center gap-3'>
-									<span className='text-xs text-gray-600'>
-										Question {currentQuestionIndex + 1} of {totalQuestions}
-									</span>
-									<div className='w-40 bg-gray-200 rounded-full h-2'>
-										<div
-											className='bg-blue-600 h-2 rounded-full transition-all duration-300'
-											style={{ width: `${progress}%` }}
-										/>
-									</div>
+						{/* Header with centered progress bar and right-side timer */}
+						<div className='flex items-center mb-6'>
+							<div className='flex-1' />
+							<div className='flex items-center gap-3 justify-center'>
+								<span className='text-xs text-gray-600'>
+									Question {currentQuestionIndex + 1} of {totalQuestions}
+								</span>
+								<div className='w-44 bg-gray-200 rounded-full h-2'>
+									<div
+										className='bg-blue-600 h-2 rounded-full transition-all duration-300'
+										style={{ width: `${progress}%` }}
+									/>
 								</div>
 							</div>
-							{/* Timer */}
-							{timer.isActive && (
-								<div
-									className={`ml-4 text-sm font-medium ${
-										timer.timeLeft < 60 ? 'text-red-600' : 'text-gray-600'
-									}`}
-								>
-									⏱️ {formatTime(timer.timeLeft)}
-								</div>
-							)}
+							<div className='flex-1 flex justify-end'>
+								{timer.isActive && (
+									<div
+										className={`text-sm font-medium ${
+											timer.timeLeft < 60 ? 'text-red-600' : 'text-gray-600'
+										}`}
+									>
+										⏱️ {formatTime(timer.timeLeft)}
+									</div>
+								)}
+							</div>
 						</div>
 
 						{/* Question Content - Left-Right Split Layout */}
@@ -746,7 +728,7 @@ const TakeAssessment: React.FC = () => {
 							</div>
 						</div>
 
-						{/* Navigation Buttons */}
+						{/* Navigation + Center Progress */}
 						<div className='flex justify-between items-center pt-4'>
 							<button
 								onClick={prevQuestion}

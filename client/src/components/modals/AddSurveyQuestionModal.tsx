@@ -87,27 +87,27 @@ const AddSurveyQuestionModal: React.FC<AddSurveyQuestionModalProps> = ({
 		onChange('correctAnswer', newCorrectAnswer);
 	};
 
-	const getValidationErrors = () => {
-		const errors: string[] = [];
+    const getValidationErrors = () => {
+        const errors: string[] = [];
 
-		if (!form.text.trim()) {
-			errors.push('Question text is required');
-		}
+        if (!((form.text || '').trim())) {
+            errors.push('Question text is required');
+        }
 
-		if (form.type !== QUESTION_TYPE.SHORT_TEXT) {
-			const validOptions =
-				form.options?.filter(opt => {
-					const text = typeof opt === 'string' ? opt : opt.text || '';
-					return text.trim();
-				}) || [];
+        if (form.type !== QUESTION_TYPE.SHORT_TEXT) {
+            const validOptions =
+                form.options?.filter(opt => {
+                    const text = typeof opt === 'string' ? opt : opt?.text || '';
+                    return (text || '').trim();
+                }) || [];
 
-			if (validOptions.length < 2) {
-				errors.push('At least 2 valid options are required');
-			}
-		}
+            if (validOptions.length < 2) {
+                errors.push('At least 2 valid options are required');
+            }
+        }
 
-		return errors;
-	};
+        return errors;
+    };
 
 	const isFormValid = () => {
 		return getValidationErrors().length === 0;
@@ -118,13 +118,14 @@ const AddSurveyQuestionModal: React.FC<AddSurveyQuestionModalProps> = ({
 		return text.length > 50 || (typeof opt === 'object' && opt.imageUrl);
 	};
 
-	const hasLongOptions = () => {
-		if (!form.options) return false;
-		return form.options.some(opt => {
-			if (typeof opt === 'object' && opt.imageUrl) return true;
-			return (opt.text && opt.text.trim()) || opt.imageUrl;
-		});
-	};
+    const hasLongOptions = () => {
+        if (!form.options) return false;
+        return form.options.some(opt => {
+            if (typeof opt === 'object' && (opt as any)?.imageUrl) return true;
+            if (typeof opt === 'string') return Boolean(opt.trim());
+            return Boolean((opt as any)?.text && (opt as any).text.trim());
+        });
+    };
 
 	const isAssessmentType = TYPES_REQUIRING_ANSWERS.includes(surveyType);
 
