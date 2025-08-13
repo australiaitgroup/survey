@@ -125,7 +125,10 @@ const CandidateDetailView: React.FC<CandidateDetailViewProps> = ({ responseId, o
 
 	const formatDateTime = (dateString: string): string => {
 		const date = new Date(dateString);
-		return date.toLocaleString();
+		return date.toLocaleString('en-US', { 
+			timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, 
+			timeZoneName: 'short' 
+		});
 	};
 
 	const getDifficultyColor = (difficulty: string): string => {

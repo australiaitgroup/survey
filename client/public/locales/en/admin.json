@@ -3,6 +3,14 @@
 		"title": "{{companyName}} Admin Dashboard",
 		"subtitle": "Manage your surveys, assessments and view responses"
 	},
+  "collections": {
+    "title": "Collections",
+    "createButton": "Create Collection",
+    "empty": {
+      "title": "No collections yet",
+      "description": "Group related surveys into collections to organize your workspace."
+    }
+  },
 	"survey": {
 		"title": "Survey",
 		"surveys": "Surveys",

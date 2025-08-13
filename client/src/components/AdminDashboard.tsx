@@ -13,6 +13,8 @@ import QuestionBankListView from './questionBanks/QuestionBankListView';
 import QuestionBankDetailView from './questionBanks/QuestionBankDetailView';
 import ProfileView from './profile/ProfileView';
 import BillingView from './billing/BillingView';
+import CollectionsListView from './collections/CollectionsListView';
+import CollectionDetailView from './collections/CollectionDetailView';
 import CreateSurveyModal from './modals/CreateSurveyModal';
 import EditSurveyModal from './modals/EditSurveyModal';
 import ScoringModal from './modals/ScoringModal';
@@ -33,11 +35,11 @@ const AdminDashboard: React.FC = () => {
 			// Check if we're on a survey detail route
 			if (params.id && location.pathname.includes('/survey/')) {
 				setIsLoadingSurvey(true);
-				
+
 				try {
 					// First try to find the survey in existing surveys
 					let survey = surveys.find(s => s._id === params.id);
-					
+
 					// If not found, fetch directly from API
 					if (!survey) {
 						const response = await api.get(`/admin/surveys/${params.id}`);
@@ -45,7 +47,7 @@ const AdminDashboard: React.FC = () => {
 						// Also trigger a reload of all surveys to keep state in sync
 						loadSurveys();
 					}
-					
+
 					// Set the survey if found and not already selected
 					if (survey && (!selectedSurvey || selectedSurvey._id !== survey._id)) {
 						setSelectedSurvey(survey);
@@ -90,6 +92,11 @@ const AdminDashboard: React.FC = () => {
 			return <SurveyDetailView survey={selectedSurvey} />;
 		}
 
+		// Collection detail route
+		if (params.id && location.pathname.includes('/collections/')) {
+			return <CollectionDetailView />;
+		}
+
 		if (tab === 'detail' && selectedSurvey) {
 			return <SurveyDetailView survey={selectedSurvey} />;
 		}
@@ -99,6 +106,10 @@ const AdminDashboard: React.FC = () => {
 				return <QuestionBankDetailView questionBank={selectedQuestionBankDetail} />;
 			}
 			return <QuestionBankListView />;
+		}
+
+		if (tab === 'collections') {
+			return <CollectionsListView />;
 		}
 
 		if (tab === 'profile') {

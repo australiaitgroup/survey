@@ -67,7 +67,7 @@ export interface EnhancedStats {
 	summary: StatsSummary;
 }
 
-export type TabType = 'list' | 'detail' | 'question-banks' | 'profile' | 'billing';
+export type TabType = 'list' | 'detail' | 'collections' | 'question-banks' | 'profile' | 'billing';
 export type StatsViewType = 'aggregated' | 'individual';
 
 export interface QuestionForm {

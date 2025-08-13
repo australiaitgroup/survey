@@ -3,6 +3,14 @@
 		"title": "{{companyName}} 管理后台",
 		"subtitle": "管理您的问卷、测评并查看回复"
 	},
+  "collections": {
+    "title": "合集",
+    "createButton": "创建合集",
+    "empty": {
+      "title": "暂无合集",
+      "description": "将相关问卷归为一个合集，便于组织和管理。"
+    }
+  },
 	"survey": {
 		"title": "问卷",
 		"surveys": "问卷管理",

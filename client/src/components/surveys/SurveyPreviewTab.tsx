@@ -331,7 +331,7 @@ const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number }> = ({
 	// Display modes
 	if (effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
 		return (
-			<OneQuestionPerPageView
+            <OneQuestionPerPageView
 				questions={questions as any}
 				answers={answers as any}
 				onAnswerChange={handleAnswerChange}
@@ -340,7 +340,8 @@ const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number }> = ({
 				antiCheatEnabled={false}
 				getInputProps={() => ({})}
 				externalPageIndex={externalPageIndex}
-				ignoreRequiredForNavigation={true}
+                ignoreRequiredForNavigation={false}
+                autoAdvanceOnSelect={false}
 			/>
 		);
 	}
@@ -407,19 +408,25 @@ const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPan
 	const { clear, scrollToQuestion } = usePreview();
 	const [pageIndex, setPageIndex] = useState<number>(0);
 	// Use effective navigation mode for label and behaviors in preview
+	// Assessment types now use step-by-step mode (handled by TakeAssessment component)
 	const effectiveNavigationMode = React.useMemo(
 		() =>
 			survey.type === SURVEY_TYPE.ASSESSMENT
-				? NAVIGATION_MODE.ONE_QUESTION_PER_PAGE
+				? NAVIGATION_MODE.STEP_BY_STEP
 				: (survey.navigationMode as any),
 		[survey.type, survey.navigationMode]
 	);
 
 	const navigationLabel = React.useMemo(() => {
-		return effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE
-			? t('preview.navigation.one', 'One Question Per Page')
-			: t('preview.navigation.step', 'Step by Step');
-	}, [effectiveNavigationMode, t]);
+		if (effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
+			return t('preview.navigation.one', 'One Question Per Page');
+		} else {
+			// For survey type, show 'All in One'; for assessment type, show 'Step by Step'
+			return survey.type === SURVEY_TYPE.ASSESSMENT
+				? t('preview.navigation.stepByStep', 'Step by Step')
+				: t('preview.navigation.allInOne', 'All in One');
+		}
+	}, [effectiveNavigationMode, survey.type, t]);
 
   // Preview no longer toggles global flags
   React.useEffect(() => {

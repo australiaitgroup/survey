@@ -333,6 +333,8 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 		const path = location.pathname;
 		if (path === '/admin/question-banks' || path.startsWith('/admin/question-bank/')) {
 			setTab('question-banks');
+		} else if (path === '/admin/collections') {
+			setTab('collections');
 		} else if (path === '/admin/profile') {
 			setTab('profile');
 		} else if (path === '/admin/billing') {

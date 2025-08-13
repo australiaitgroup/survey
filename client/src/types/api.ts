@@ -468,6 +468,30 @@ export interface InvitationEmailResult {
 	error?: string;
 }
 
+// ===== Collections =====
+export type CollectionStatus = 'draft' | 'active' | 'archived';
+
+export interface Collection {
+  _id: string;
+  name: string;
+  description?: string;
+  surveyIds: string[];
+  tags?: string[];
+  status: CollectionStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CollectionCreateRequest {
+  name: string;
+  description?: string;
+  surveyIds?: string[];
+  tags?: string[];
+  status?: CollectionStatus;
+}
+
+export interface CollectionUpdateRequest extends Partial<CollectionCreateRequest> {}
+
 // ===== 文件上传相关接口 =====
 
 export interface FileUploadResponse {

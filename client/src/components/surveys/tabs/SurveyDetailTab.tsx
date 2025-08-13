@@ -178,81 +178,79 @@ const SurveyDetailTab: React.FC<Props> = ({
 
 					<div className='bg-gray-50 rounded-lg p-4 mb-4'>
 						<div className='space-y-3'>
-							{s.type === SURVEY_TYPE.ASSESSMENT ? (
-								<div className='flex items-center justify-between'>
-									<div>
-										<label className='block text-sm font-medium text-gray-700 mb-1'>
-											Enhanced Assessment URL
-										</label>
-										<div className='text-sm text-gray-600 font-mono'>
-											{getAssessmentUrl(s.slug, companySlug)}
-										</div>
-									</div>
-									<div className='flex flex-wrap items-center gap-1 sm:gap-2'>
-										<button
-											className='btn-secondary btn-small'
-											onClick={() =>
-												copyToClipboard(
-													getAssessmentUrl(s.slug, companySlug)
-												)
-											}
-										>
-											Copy URL
-										</button>
-										<button
-											className='btn-outline btn-small'
-											onClick={() =>
-												window.open(
-													getAssessmentUrl(s.slug, companySlug),
-													'_blank'
-												)
-											}
-										>
-											Open
-										</button>
-										<button
-											className='btn-primary btn-small'
-											onClick={() => toggleQR(s._id)}
-										>
-											{showQR[s._id] ? 'Hide QR' : 'Show QR'}
-										</button>
-									</div>
-								</div>
+                            {s.type === SURVEY_TYPE.ASSESSMENT ? (
+                                <div className='flex flex-col items-start gap-2'>
+                                    <label className='block text-sm font-medium text-gray-700'>
+                                        Enhanced Assessment URL
+                                    </label>
+                                    <div className='text-sm text-gray-600 font-mono break-all'>
+                                        {getAssessmentUrl(s.slug, companySlug)}
+                                    </div>
+                                    <div className='flex items-center gap-1 sm:gap-2'>
+                                        <button
+                                            className='btn-outline btn-small'
+                                            onClick={() =>
+                                                copyToClipboard(
+                                                    getAssessmentUrl(s.slug, companySlug)
+                                                )
+                                            }
+                                        >
+                                            Copy URL
+                                        </button>
+                                        <button
+                                            className='btn-outline btn-small'
+                                            onClick={() =>
+                                                window.open(
+                                                    getAssessmentUrl(s.slug, companySlug),
+                                                    '_blank'
+                                                )
+                                            }
+                                        >
+                                            Open
+                                        </button>
+                                        <button
+                                            className='btn-outline btn-small'
+                                            onClick={() => toggleQR(s._id)}
+                                        >
+                                            {showQR[s._id] ? 'Hide QR' : 'Show QR'}
+                                        </button>
+                                    </div>
+                                </div>
 							) : (
 								<>
-									<div className='flex items-center justify-between'>
-										<div>
-											<label className='block text-sm font-medium text-gray-700 mb-1'>
-												Classic Survey URL
-											</label>
-											<div className='text-sm text-gray-600 font-mono'>
-												{getSurveyUrl(s.slug, companySlug)}
-											</div>
+									<div className='flex flex-col items-start gap-2'>
+										<label className='block text-sm font-medium text-gray-700'>
+											Classic Survey URL
+										</label>
+										<div className='text-sm text-gray-600 font-mono break-all'>
+											{s.slug ? getSurveyUrl(s.slug, companySlug) : 'Generating URL...'}
 										</div>
-										<div className='flex flex-wrap items-center gap-1 sm:gap-2'>
+										<div className='flex items-center gap-1 sm:gap-2'>
 											<button
-												className='btn-secondary btn-small'
+                                            className='btn-outline btn-small'
 												onClick={() =>
-													copyToClipboard(
+													s.slug && copyToClipboard(
 														getSurveyUrl(s.slug, companySlug)
 													)
 												}
+												disabled={!s.slug}
 											>
 												Copy URL
 											</button>
 											<button
 												className='btn-outline btn-small'
 												onClick={() =>
-													window.open(
+													s.slug && window.open(
 														getSurveyUrl(s.slug, companySlug),
 														'_blank'
 													)
 												}
+												disabled={!s.slug}
 											>
 												Open
 											</button>
 											<button
-												className='btn-primary btn-small'
+                                            className='btn-outline btn-small'
 												onClick={() => toggleQR(s._id)}
 											>
 												{showQR[s._id] ? 'Hide QR' : 'Show QR'}

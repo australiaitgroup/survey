@@ -167,18 +167,11 @@ const EditSurveyModal: React.FC = () => {
 												setEditForm({
 													...editForm,
 													type: e.target.value as any,
-													// Sanitize navigationMode when switching to survey
+													// Set navigationMode based on survey type
 													navigationMode:
-														e.target.value === 'survey' &&
-														![
-															'step-by-step',
-															'one-question-per-page',
-														].includes(
-															(editForm.navigationMode as string) ||
-																'step-by-step'
-														)
-															? 'step-by-step'
-															: editForm.navigationMode,
+														e.target.value === 'survey'
+															? ((editForm.navigationMode as string) || 'step-by-step')
+															: 'step-by-step', // Assessment types default to step-by-step
 												})
 											}
 										>
@@ -525,10 +518,10 @@ const EditSurveyModal: React.FC = () => {
 												<div
 													className={`text-sm font-semibold ${editForm.navigationMode === 'step-by-step' ? 'text-blue-600' : 'text-gray-900'}`}
 												>
-													Step by Step
+													All in One
 												</div>
 												<div className='text-xs text-gray-500 mt-1'>
-													Sequential list, multiple questions per screen
+													All questions displayed on a single page
 												</div>
 											</div>
 										</div>
@@ -597,16 +590,16 @@ const EditSurveyModal: React.FC = () => {
 														strokeLinecap='round'
 														strokeLinejoin='round'
 														strokeWidth={2}
-														d='M4 6h16M4 10h16M4 14h10'
+														d='M4 6h16M4 12h10M4 18h6'
 													/>
 												</svg>
 											</div>
 											<div className='flex-1 min-w-0'>
 												<div className='text-sm font-semibold text-blue-600'>
-													One Question Per Page
+													Step by Step
 												</div>
 												<div className='text-xs text-gray-500 mt-1'>
-													Required for assessment-like types
+													Default for assessment types - all questions on one page
 												</div>
 											</div>
 										</div>

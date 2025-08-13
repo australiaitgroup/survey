@@ -311,6 +311,14 @@ surveySchema.statics.generateSlug = async function (title, excludeId = null) {
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/(^-|-$)/g, '');
 
+	// If the slug is empty (e.g., Chinese title), generate a unique ID
+	if (!baseSlug) {
+		// Generate a unique slug using timestamp and random string
+		const timestamp = Date.now().toString(36);
+		const randomStr = Math.random().toString(36).substring(2, 8);
+		baseSlug = `survey-${timestamp}-${randomStr}`;
+	}
+
 	// Ensure slug is unique
 	let slug = baseSlug;
 	let counter = 1;

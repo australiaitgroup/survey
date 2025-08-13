@@ -41,7 +41,7 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 	const location = useLocation();
 	const navigateRouter = useNavigate();
 	const params = useParams();
-	
+
 	const {
 		surveys,
 		setSurveys,
@@ -116,20 +116,20 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 		setError,
 	});
 	const [showInviteModal, setShowInviteModal] = useState(false);
-	
+
 	// Get tab from URL path, default to 'detail' if not specified
 	const getTabFromPath = () => {
 		const pathSegments = location.pathname.split('/');
 		const tabIndex = pathSegments.indexOf('survey') + 2; // Find index after survey/{id}/
 		const tab = pathSegments[tabIndex];
-		
+
 		if (tab === 'invitations') return TAB_TYPES.INVITATIONS;
 		if (tab === 'statistics') return TAB_TYPES.STATISTICS;
 		return TAB_TYPES.DETAIL;
 	};
-	
+
 	const tabLocal = getTabFromPath();
-	
+
 	// Invitations moved into SurveyInvitationsTab
 	const [filterLoading, setFilterLoading] = useState(false);
 	const [responsePage, setResponsePage] = useState(1);
@@ -414,7 +414,7 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 						getAssessmentUrl={getAssessmentUrl}
 						getSurveyUrl={getSurveyUrl}
 						copyToClipboard={copyToClipboard}
-						loading={loading}
+										loading={loading}
 						handleQuestionsReorder={handleQuestionsReorder}
 						startEditQuestion={startEditQuestion}
 						deleteQuestion={deleteQuestion}
@@ -433,7 +433,7 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 						statsView={statsView}
 						setStatsView={setStatsView}
 						onRefresh={() => loadStats(s._id)}
-						onFilter={handleStatisticsFilter}
+									onFilter={handleStatisticsFilter}
 						responsePage={responsePage}
 						setResponsePage={setResponsePage}
 						pageSize={RESPONSE_PAGE_SIZE}
@@ -473,19 +473,19 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 					open={showEditQuestionModal}
 					questionIndex={editingQuestionIndex}
 					form={questionEditForms[`${s._id}-${editingQuestionIndex}`]}
-					onClose={cancelEditQuestion}
-					onSubmit={handleEditQuestionSubmit}
-					onChange={(field, value) =>
-						handleQuestionEditChange(s._id, editingQuestionIndex, field, value)
-					}
-					onOptionChange={(index, value) =>
+						onClose={cancelEditQuestion}
+						onSubmit={handleEditQuestionSubmit}
+						onChange={(field, value) =>
+							handleQuestionEditChange(s._id, editingQuestionIndex, field, value)
+						}
+						onOptionChange={(index, value) =>
 						handleQuestionEditOptionChange(s._id, editingQuestionIndex, index, value)
-					}
-					onAddOption={() => addQuestionEditOption(s._id, editingQuestionIndex)}
-					onRemoveOption={index =>
-						removeQuestionEditOption(s._id, editingQuestionIndex, index)
-					}
-					loading={loading}
+						}
+						onAddOption={() => addQuestionEditOption(s._id, editingQuestionIndex)}
+						onRemoveOption={index =>
+							removeQuestionEditOption(s._id, editingQuestionIndex, index)
+						}
+						loading={loading}
 				/>
 			</div>
 		</>

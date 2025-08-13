@@ -11,6 +11,7 @@ const usersRouter = require('./routes/users');
 const invitationsRouter = require('./routes/invitations');
 const questionBanksRouter = require('./routes/questionBanks');
 const subscriptionRouter = require('./routes/subscription');
+const collectionsRouter = require('./routes/collections');
 const companiesRouter = require('./routes/companies');
 const errorHandler = require('./middlewares/errorHandler');
 const { extractTenantFromUrl, multiTenant } = require('./middlewares/multiTenant');
@@ -62,6 +63,8 @@ app.use('/api/admin/question-banks', questionBanksRouter);
 app.use('/api/invitations', invitationsRouter);
 app.use('/api/subscription', subscriptionRouter);
 app.use('/api/companies', companiesRouter);
+// Collections API
+app.use('/api', collectionsRouter);
 
 app.use(errorHandler);
 

@@ -6,6 +6,7 @@
 	},
 	"navigation": {
 		"surveys": "问卷调研",
+		"collections": "合集",
 		"questionBanks": "题库管理",
 		"profile": "个人资料",
 		"billing": "账单管理",
@@ -64,6 +65,10 @@
 		"records": "条记录",
 		"showingPage": "显示第",
 		"total": "总计"
+	},
+	"errors": {
+		"collectionNotFound": "未找到合集",
+		"invalidCollectionStatus": "无效的合集状态。必须是：草稿、已发布、已归档"
 	},
 	"landing": {
 		"hero": {

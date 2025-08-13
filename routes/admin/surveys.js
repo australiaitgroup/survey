@@ -16,7 +16,8 @@ router.post(
 	asyncHandler(async (req, res) => {
 		// Generate slug after validating the request data
 		const surveyData = { ...req.body };
-		if (surveyData.title && !surveyData.slug) {
+		// Check for both falsy values and empty strings
+		if (surveyData.title && (!surveyData.slug || surveyData.slug.trim() === '')) {
 			surveyData.slug = await Survey.generateSlug(surveyData.title);
 		}
 

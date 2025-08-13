@@ -46,6 +46,7 @@ const TakeSurvey: React.FC = () => {
 	const [scoringResult, setScoringResult] = useState<ScoringResult | null>(null);
 	// For one-question-per-page: gate questions behind an initial personal info step
 	const [infoStepDone, setInfoStepDone] = useState(false);
+	// No longer need assessment-specific state since assessments use TakeAssessment component
 
 	// Enable anti-cheating measures for assessments and quizzes
 	const surveyTypeSafe: SurveyType | undefined = survey?.type as SurveyType | undefined;
@@ -122,14 +123,21 @@ const TakeSurvey: React.FC = () => {
 		}
 	}, [slug]);
 
+	// For survey type, use the configured navigation mode
+	// Assessment type surveys should use TakeAssessment component instead
+	const effectiveNavigationMode = survey?.navigationMode;
+
 	// Reset info step when survey or navigation mode changes
 	useEffect(() => {
-		if (survey?.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
+		if (effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
 			setInfoStepDone(false);
 		} else {
 			setInfoStepDone(true);
 		}
-	}, [survey?.navigationMode, survey?._id]);
+	}, [effectiveNavigationMode, survey?._id]);
+
+	// Assessment types should use the TakeAssessment component via routing
+	// No redirect needed as routing handles this directly
 
 	const handleAnswerChange = (qid: string, value: string) => {
 		setForm({ ...form, answers: { ...form.answers, [qid]: value } });
@@ -349,7 +357,7 @@ const TakeSurvey: React.FC = () => {
 
 	return (
 		<div className='min-h-screen bg-[#F7F7F7] py-6 sm:py-12'>
-			<div className={`mx-auto px-3 sm:px-4 ${slug ? 'max-w-3xl' : 'max-w-7xl'}`}>
+			<div className={`mx-auto px-3 sm:px-4 ${slug ? 'max-w-5xl' : 'max-w-7xl'}`}>
 				{survey && <HeaderWithLogo survey={survey} />}
 
 				{!slug && (
@@ -381,7 +389,7 @@ const TakeSurvey: React.FC = () => {
 							className={`space-y-8 ${antiCheatEnabled && isAssessmentType ? 'anti-cheat-container' : ''}`}
 						>
 							{!(
-								survey?.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE &&
+								effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE &&
 								infoStepDone
 							) && (
 								<RespondentInfoForm
@@ -398,16 +406,15 @@ const TakeSurvey: React.FC = () => {
 								/>
 							)}
 
-							{(() => {
-								return (
-									questionsLoaded &&
-									(survey.navigationMode !==
-										NAVIGATION_MODE.ONE_QUESTION_PER_PAGE ||
-										infoStepDone ||
-										survey.sourceType === SOURCE_TYPE.QUESTION_BANK)
-								);
-							})() &&
-								(survey.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE ? (
+							{/* Assessment type now handled by TakeAssessment component */}
+
+							{/* Questions */}
+							{questionsLoaded &&
+								(effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE
+									? infoStepDone
+									: true
+								) &&
+								(effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE ? (
 									<OneQuestionPerPageView
 										questions={questions}
 										answers={form.answers}
@@ -430,7 +437,7 @@ const TakeSurvey: React.FC = () => {
 								))}
 
 							{/* Start button for one-question-per-page before entering questions */}
-							{survey?.navigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE &&
+							{effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE &&
 								!infoStepDone && (
 								<div className='flex justify-center pt-4'>
 									<button
@@ -445,7 +452,7 @@ const TakeSurvey: React.FC = () => {
 							)}
 
 							{/* Submit button - only show for non-one-question-per-page modes */}
-							{survey?.navigationMode !== NAVIGATION_MODE.ONE_QUESTION_PER_PAGE && (
+							{effectiveNavigationMode !== NAVIGATION_MODE.ONE_QUESTION_PER_PAGE && (
 								<div className='flex justify-center pt-8 border-t border-[#EBEBEB] mt-8'>
 									<button
 										className='btn-primary px-8 py-3 text-base font-medium'

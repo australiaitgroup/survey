@@ -59,7 +59,7 @@ const AssessmentResults: React.FC<AssessmentResultsProps> = ({
 							<div className='space-y-4 mb-6'>
 								{assessmentResults.map((result, index) => (
 									<div
-										key={result.questionId}
+										key={result.questionId || `question-${index}`}
 										className={`p-4 rounded-lg border-2 break-words ${result.isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'}`}
 									>
 										<div className='flex items-center justify-between mb-2'>

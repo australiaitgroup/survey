@@ -110,7 +110,10 @@ const SurveyInvitationsTab: React.FC<Props> = ({ surveyId, companySlug }) => {
 										</td>
 										<td className='px-2 py-1 border'>
 											{inv.createdAt
-												? new Date(inv.createdAt).toLocaleString()
+												? new Date(inv.createdAt).toLocaleString('en-US', { 
+													timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, 
+													timeZoneName: 'short' 
+												})
 												: ''}
 										</td>
 										<td className='px-2 py-1 border'>

@@ -6,9 +6,9 @@ function errorHandler(err, req, res, next) {
 	let status = HTTP_STATUS.INTERNAL_SERVER_ERROR;
 	let message = 'Internal server error';
 
-	if (err instanceof ZodError) {
+    if (err instanceof ZodError) {
 		status = HTTP_STATUS.BAD_REQUEST;
-		message = err.errors.map(e => e.message).join(', ');
+        message = err.errors.map(e => e.message).join(', ');
 	} else if (err.statusCode) {
 		status = err.statusCode;
 		message = err.message || message;
@@ -17,7 +17,12 @@ function errorHandler(err, req, res, next) {
 		message = err.message;
 	}
 
-	res.status(status).json({ success: false, message, statusCode: status });
+    // Include i18n key for client-side translation where applicable
+    const response = { success: false, message, statusCode: status };
+    if (err.i18nKey) {
+        response.i18nKey = err.i18nKey;
+    }
+    res.status(status).json(response);
 }
 
 module.exports = errorHandler;

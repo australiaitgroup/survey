@@ -6,10 +6,12 @@ const NavigationTabs: React.FC = () => {
 	const { tab, setTab, navigate } = useAdmin();
 	const { t } = useTranslation();
 
-	const handleTabClick = (newTab: 'list' | 'question-banks' | 'profile') => {
+	const handleTabClick = (newTab: 'list' | 'collections' | 'question-banks' | 'profile') => {
 		setTab(newTab);
 		if (newTab === 'list') {
 			navigate('/admin');
+		} else if (newTab === 'collections') {
+			navigate('/admin/collections');
 		} else if (newTab === 'question-banks') {
 			navigate('/admin/question-banks');
 		} else if (newTab === 'profile') {
@@ -33,6 +35,16 @@ const NavigationTabs: React.FC = () => {
 				}`}
 			>
 				{t('navigation.surveys')}
+			</button>
+			<button
+				onClick={() => handleTabClick('collections')}
+				className={`flex-1 min-w-[80px] rounded-md px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
+					tab === 'collections'
+						? 'bg-white text-gray-900 shadow-sm'
+						: 'text-gray-600 hover:text-gray-900'
+				}`}
+			>
+				{t('navigation.collections')}
 			</button>
 			<button
 				onClick={() => handleTabClick('question-banks')}

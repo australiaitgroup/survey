@@ -145,7 +145,8 @@ async function createSurvey(req, res) {
 		}
 
 		// Generate slug after schema validation
-		if (data.title && !data.slug) {
+		// Check for both falsy values and empty strings
+		if (data.title && (!data.slug || data.slug.trim() === '')) {
 			data.slug = await SurveyModel.generateSlug(data.title);
 		}
 

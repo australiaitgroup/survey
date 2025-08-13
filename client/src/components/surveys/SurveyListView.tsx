@@ -46,8 +46,6 @@ const SurveyListView: React.FC = () => {
 		return list;
 	}, [surveys, query, status, type, sortBy]);
 
-	console.log('SurveyListView - surveys:', surveys, 'loading:', loading, 'error:', error);
-
 	if (loading) {
 		return (
 			<div className='text-center py-8 text-gray-500'>

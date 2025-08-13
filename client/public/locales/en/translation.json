@@ -6,6 +6,7 @@
 	},
 	"navigation": {
 		"surveys": "Surveys",
+		"collections": "Collections",
 		"questionBanks": "Question Banks",
 		"profile": "Profile",
 		"billing": "Billing",
@@ -64,6 +65,10 @@
 		"records": "records",
 		"showingPage": "showing page",
 		"total": "Total"
+	},
+	"errors": {
+		"collectionNotFound": "Collection not found",
+		"invalidCollectionStatus": "Invalid collection status. Must be one of: draft, active, archived"
 	},
 	"landing": {
 		"hero": {

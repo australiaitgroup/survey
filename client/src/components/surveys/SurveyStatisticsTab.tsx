@@ -46,6 +46,9 @@ const SurveyStatisticsTab: React.FC<Props> = ({
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
   const [details, setDetails] = React.useState<Record<string, any>>({});
   const [loadingDetail, setLoadingDetail] = React.useState<Record<string, boolean>>({});
+  
+  // Sort state
+  const [sortOrder, setSortOrder] = React.useState<'newest' | 'oldest'>('newest');
 
   const toggleExpand = async (responseId: string) => {
     const isOpen = expanded[responseId];
@@ -64,13 +67,41 @@ const SurveyStatisticsTab: React.FC<Props> = ({
     }
   };
 
+  // Sort responses by date
+  const getSortedResponses = () => {
+    if (!stats?.userResponses) return [];
+    const sorted = [...stats.userResponses].sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+    });
+    return sorted;
+  };
+
 	return (
 		<div className='card'>
 			<div className='flex justify-between items-center mb-4'>
 				<h3 className='text-xl font-bold text-gray-800'>Statistics</h3>
-				<button className='btn-secondary text-sm' onClick={onRefresh} type='button'>
-					Refresh Data
-				</button>
+				<div className='flex gap-2'>
+					<div className='relative'>
+						<select
+							value={sortOrder}
+							onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
+							className='btn-secondary text-sm pr-8 appearance-none bg-white border border-gray-300 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500'
+						>
+							<option value='newest'>Newest First</option>
+							<option value='oldest'>Oldest First</option>
+						</select>
+						<div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
+							<svg className='fill-current h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
+								<path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z'/>
+							</svg>
+						</div>
+					</div>
+					<button className='btn-secondary text-sm' onClick={onRefresh} type='button'>
+						Refresh Data
+					</button>
+				</div>
 			</div>
 
 			{!stats ? (
@@ -180,19 +211,19 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 					{/* Individual */}
 					{statsView === STATS_VIEW.INDIVIDUAL && (
 						<div className='space-y-4'>
-							{stats.userResponses?.length > 0 ? (
+							{getSortedResponses()?.length > 0 ? (
 								<>
 									<div className='flex justify-between items-center text-sm text-gray-600 mb-4'>
 										<div>
-											{stats.userResponses.length} records, showing page{' '}
+											{getSortedResponses().length} records, showing page{' '}
 											{(responsePage - 1) * pageSize + 1} -{' '}
 											{Math.min(
 												responsePage * pageSize,
-												stats.userResponses.length
+												getSortedResponses().length
 											)}
 										</div>
 									</div>
-									{stats.userResponses
+									{getSortedResponses()
 										.slice(
 											(responsePage - 1) * pageSize,
 											responsePage * pageSize
@@ -228,7 +259,7 @@ const SurveyStatisticsTab: React.FC<Props> = ({
                                                     )}
                                                 </div>
                                                     <div className='text-sm text-gray-600'>
-                                                        <div>Submitted at: <span className='font-medium text-gray-800'>{new Date(response.createdAt).toLocaleString()}</span></div>
+                                                        <div>Submitted at: <span className='font-medium text-gray-800'>{new Date(response.createdAt).toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: 'short' })}</span></div>
                                                         <div>Time spent: <span className='font-medium text-gray-800'>{(response.timeSpent ?? 0)}s</span></div>
                                                     </div>
                                                     <div className='mt-3 flex gap-2'>
@@ -320,7 +351,7 @@ const SurveyStatisticsTab: React.FC<Props> = ({
                                                 )}
 											</div>
 										))}
-									{stats.userResponses.length > pageSize && (
+									{getSortedResponses().length > pageSize && (
 										<div className='flex items-center justify-between mt-2'>
 											<button
 												onClick={() =>
@@ -342,7 +373,7 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 													setResponsePage(prev =>
 														Math.min(
 															Math.ceil(
-																stats.userResponses.length /
+																getSortedResponses().length /
 																	pageSize
 															),
 															(typeof prev === 'number' ? prev : 1) +
@@ -352,7 +383,7 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 												}
 												disabled={
 													responsePage >=
-													Math.ceil(stats.userResponses.length / pageSize)
+													Math.ceil(getSortedResponses().length / pageSize)
 												}
 												className='px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed'
 											>
