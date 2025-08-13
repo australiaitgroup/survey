@@ -34,6 +34,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 	const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
 	const [editQuestionForm, setEditQuestionForm] = useState<QuestionForm>({
 		text: '',
+		description: '',
 		options: ['', ''],
 		type: 'single_choice' as const,
 		correctAnswer: undefined,
@@ -59,6 +60,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 	const qb = questionBank;
 	const currentForm = questionBankQuestionForms[qb._id] || {
 		text: '',
+		description: '',
 		options: ['', ''],
 		type: 'single_choice' as const,
 		correctAnswer: undefined,
@@ -172,7 +174,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 
 		setEditQuestionForm({
 			text: question.text,
-			description: '',
+			description: question.description || '',
 			descriptionImage: question.descriptionImage,
 			options: question.options ? ([...question.options] as string[]) : ['', ''],
 			type: question.type || 'single_choice',
@@ -272,6 +274,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 				...prev,
 				[qb._id]: {
 					text: '',
+					description: '',
 					options: ['', ''],
 					type: 'single_choice',
 					correctAnswer: undefined,

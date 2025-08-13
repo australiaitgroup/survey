@@ -33,6 +33,12 @@ i18n.use(HttpBackend)
 			caches: ['localStorage'],
 		},
 
+		react: {
+			useSuspense: false,
+			bindI18n: 'languageChanged loaded',
+			bindI18nStore: 'added removed',
+		},
+
 		// Default namespace
 		defaultNS: 'translation',
 

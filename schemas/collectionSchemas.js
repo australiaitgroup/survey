@@ -22,4 +22,9 @@ const collectionUpdateSchema = z.object({
 	status: z.enum([COLLECTION_STATUS.DRAFT, COLLECTION_STATUS.ACTIVE, COLLECTION_STATUS.ARCHIVED]).optional(),
 });
 
-module.exports = { collectionCreateSchema, collectionUpdateSchema };
+// Additional schema for updating surveys
+const collectionSurveysUpdateSchema = z.object({
+  surveyIds: z.array(objectId).default([]),
+});
+
+module.exports = { collectionCreateSchema, collectionUpdateSchema, collectionSurveysUpdateSchema };

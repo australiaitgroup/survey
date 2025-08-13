@@ -129,6 +129,7 @@ exports.addQuestion = async (req, res) => {
 	try {
 		const {
 			text,
+			description,
 			type,
 			options,
 			correctAnswer,
@@ -170,6 +171,7 @@ exports.addQuestion = async (req, res) => {
 
 		const newQuestion = {
 			text: text.trim(),
+			description: description?.trim() || '',
 			type: questionType,
 			explanation: explanation?.trim(),
 			points: points || 1,
@@ -207,6 +209,7 @@ exports.updateQuestion = async (req, res) => {
 		const { questionId } = req.params;
 		const {
 			text,
+			description,
 			type,
 			options,
 			correctAnswer,
@@ -238,6 +241,7 @@ exports.updateQuestion = async (req, res) => {
 		// Update the question
 		const question = questionBank.questions[questionIndex];
 		if (text !== undefined) question.text = text.trim();
+		if (description !== undefined) question.description = description?.trim() || '';
 		if (type !== undefined) question.type = type;
 		if (options !== undefined)
 			question.options = options.map(opt => opt.trim()).filter(opt => opt.length > 0);

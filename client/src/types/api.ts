@@ -130,6 +130,7 @@ export interface ProfileData {
 export interface Question {
 	_id: string;
 	text: string;
+	description?: string;
 	imageUrl?: string;
 	descriptionImage?: string;
 	type: QuestionType;
@@ -143,6 +144,7 @@ export interface Question {
 
 export interface QuestionCreateRequest {
 	text: string;
+	description?: string;
 	imageUrl?: string;
 	descriptionImage?: string;
 	type: QuestionType;

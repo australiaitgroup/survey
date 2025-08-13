@@ -27,6 +27,7 @@ const responseSchema = new mongoose.Schema({
 			// Complete question data snapshot
 			questionData: {
 				text: { type: String, required: true },
+				description: String, // Added description field
 				type: {
 					type: String,
 					enum: ['single_choice', 'multiple_choice', 'short_text'],
@@ -42,6 +43,7 @@ const responseSchema = new mongoose.Schema({
 					enum: ['easy', 'medium', 'hard'],
 					default: 'medium',
 				},
+				descriptionImage: String, // Also add descriptionImage for consistency
 			},
 			// User's answer for this question
 			userAnswer: mongoose.Schema.Types.Mixed, // String, [String], or null

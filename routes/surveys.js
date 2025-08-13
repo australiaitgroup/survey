@@ -314,18 +314,6 @@ router.get(
 			}
 		}
 
-		// Debug: Log questions being returned
-		console.log(
-			'Returning questions for survey',
-			slug,
-			':',
-			questions.map((q, idx) => ({
-				index: idx,
-				text: q.text?.substring(0, 50),
-				hasDescriptionImage: !!q.descriptionImage,
-				descriptionImage: q.descriptionImage,
-			}))
-		);
 
 		res.json({
 			questions,

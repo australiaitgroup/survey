@@ -6,10 +6,53 @@
   "collections": {
     "title": "Collections",
     "createButton": "Create Collection",
+    "intro": "Organize related surveys into reusable groups for better management and quick access.",
+    "info": "Organize related surveys into reusable groups for better management and quick access.",
+    "searchPlaceholder": "Search by name or description...",
+    "filters": {
+      "all": "All",
+      "active": "Active",
+      "draft": "Draft",
+      "archived": "Archived"
+    },
+    "sort": {
+      "newest": "Newest",
+      "lastActivity": "Last activity",
+      "az": "A–Z"
+    },
+    "status": {
+      "active": "Active",
+      "draft": "Draft",
+      "archived": "Archived"
+    },
+    "meta": {
+      "surveys": "surveys",
+      "created": "Created",
+      "updated": "Updated"
+    },
+    "actions": {
+      "manage": "Manage"
+    },
+    "noDescription": "No description",
+    "noMatch": "No collections match current filters.",
     "empty": {
       "title": "No collections yet",
       "description": "Group related surveys into collections to organize your workspace."
-    }
+    },
+    "createTitle": "Create Collection",
+    "editTitle": "Edit Collection",
+    "namePlaceholder": "Collection name",
+    "descriptionPlaceholder": "Optional description",
+    "tags": "Tags",
+    "tagPlaceholder": "Add a tag and press +",
+    "linkedSurveys": "Linked Surveys",
+    "noSurveys": "No surveys found",
+    "open": "Open",
+    "addSurveys": "Add Surveys",
+    "addSurveysHint": "Select multiple surveys to add to this collection. Your surveys will not be affected.",
+    "searchSurveys": "Search surveys/assessments",
+    "selectedCount": "Selected ({{count}})",
+    "collectionMissing": "Collection data is unavailable"
   },
 	"survey": {
 		"title": "Survey",

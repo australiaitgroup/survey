@@ -562,7 +562,7 @@ const TakeAssessment: React.FC = () => {
 
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100'>
-			<div className='w-full px-4 py-8'>
+			<div className='w-full mx-auto px-4 py-8' style={{ maxWidth: '1440px' }}>
 				{/* Header with Logo */}
 				{survey && <HeaderWithLogo survey={survey} />}
 

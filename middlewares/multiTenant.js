@@ -49,14 +49,11 @@ const multiTenant = async (req, res, next) => {
  */
 const extractTenantFromUrl = (req, res, next) => {
 	const path = req.path;
-	console.log('extractTenantFromUrl - original path:', path);
 
 	// Check for tenant-based URLs: /company-slug/assessment/* or /company-slug/survey/*
 	// Exclude API paths that start with /api/
 	const tenantMatch =
 		!path.startsWith('/api/') && path.match(/^\/([a-z0-9-]+)\/(assessment|survey)\/(.+)$/);
-
-	console.log('tenantMatch:', tenantMatch);
 
 	if (tenantMatch) {
 		const [, companySlug, routeType, resourcePath] = tenantMatch;

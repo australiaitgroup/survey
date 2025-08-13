@@ -2,7 +2,7 @@ import type { Survey as ApiSurvey, Question as ApiQuestion, Company } from '../.
 import type { ScoringMode } from '../../constants';
 
 export type Survey = ApiSurvey;
-export type Question = ApiQuestion & { description?: string };
+export type Question = ApiQuestion;
 export type { Company };
 
 export interface FormState {
