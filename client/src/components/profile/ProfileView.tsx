@@ -113,8 +113,8 @@ const ProfileView: React.FC = () => {
 			<div className='bg-white rounded-lg shadow-sm border border-gray-200'>
 				{/* Header */}
 				<div className='px-6 py-4 border-b border-gray-200'>
-					<h2 className='text-2xl font-bold text-gray-900'>{t('profile.settings')}</h2>
-					<p className='text-gray-600 mt-1'>{t('profile.manageInfo')}</p>
+					<h2 className='text-2xl font-bold text-gray-900'>{t('profile.settings', 'Profile Settings')}</h2>
+					<p className='text-gray-600 mt-1'>{t('profile.manageInfo', 'Manage your personal, company and billing information')}</p>
 				</div>
 
 				{/* Error Message */}
@@ -125,7 +125,7 @@ const ProfileView: React.FC = () => {
 							onClick={() => setError('')}
 							className='mt-2 text-red-600 hover:text-red-800 text-sm underline'
 						>
-							{t('profile.dismiss')}
+							{t('profile.dismiss', 'Dismiss')}
 						</button>
 					</div>
 				)}
@@ -141,7 +141,7 @@ const ProfileView: React.FC = () => {
 									: 'text-gray-600 hover:text-gray-900'
 							}`}
 						>
-							{t('profile.personalInfo')}
+							{t('profile.personalInfo', 'Personal Info')}
 						</button>
 						<button
 							onClick={() => handleTabChange('company')}
@@ -151,7 +151,7 @@ const ProfileView: React.FC = () => {
 									: 'text-gray-600 hover:text-gray-900'
 							}`}
 						>
-							{t('profile.companyInfo')}
+							{t('profile.companyInfo', 'Company Info')}
 						</button>
 						<button
 							onClick={() => handleTabChange('billing')}
@@ -236,8 +236,8 @@ const ProfileView: React.FC = () => {
 										className='w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
 									>
 										{loading
-											? t('profile.updating')
-											: t('profile.updatePersonalInfo')}
+											? t('profile.updating', 'Updating...')
+											: t('profile.updatePersonalInfo', 'Update Profile')}
 									</button>
 								</form>
 							</div>
@@ -294,8 +294,8 @@ const ProfileView: React.FC = () => {
 										className='w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
 									>
 										{loading
-											? t('profile.updating')
-											: t('profile.updatePassword')}
+											? t('profile.updating', 'Updating...')
+											: t('profile.updatePassword', 'Update Password')}
 									</button>
 								</form>
 							</div>
@@ -328,7 +328,7 @@ const ProfileView: React.FC = () => {
 							<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
 								<div>
 									<label className='block text-sm font-medium text-gray-700 mb-1'>
-										{t('profile.companyName')} *
+										{t('profile.companyName', 'Company Name')} *
 									</label>
 									<input
 										type='text'
@@ -343,7 +343,7 @@ const ProfileView: React.FC = () => {
 
 								<div>
 									<label className='block text-sm font-medium text-gray-700 mb-1'>
-										{t('profile.industry')}
+										{t('profile.industry', 'Industry')}
 									</label>
 									<input
 										type='text'
@@ -421,7 +421,7 @@ const ProfileView: React.FC = () => {
 
 							<div>
 								<label className='block text-sm font-medium text-gray-700 mb-1'>
-									{t('profile.website')}
+									{t('profile.website', 'Website')}
 								</label>
 								<input
 									type='url'
@@ -720,7 +720,7 @@ const ProfileView: React.FC = () => {
 								disabled={loading}
 								className='w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
 							>
-								{loading ? t('profile.updating') : t('profile.updateCompanyInfo')}
+								{loading ? t('profile.updating', 'Updating...') : t('profile.updateCompanyInfo', 'Update Company Info')}
 							</button>
 						</form>
 					</div>
