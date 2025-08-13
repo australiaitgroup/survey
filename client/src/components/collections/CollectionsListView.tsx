@@ -24,6 +24,7 @@ const CollectionsListView: React.FC = () => {
         setPage,
         setPageSize,
         createCollection,
+        updateCollection,
         deleteCollection,
         duplicateCollection,
     } = useCollections();
@@ -122,7 +123,16 @@ const CollectionsListView: React.FC = () => {
 
             {/* Modal */}
             {showModal && (
-                <CollectionModal open={showModal} onClose={() => setShowModal(false)} collection={editing} onSaved={() => setShowModal(false)} />
+                <CollectionModal
+                    open={showModal}
+                    onClose={() => setShowModal(false)}
+                    collection={editing}
+                    onSaved={() => setShowModal(false)}
+                    collectionsApi={{
+                        createCollection,
+                        updateCollection,
+                    }}
+                />
             )}
 		</div>
 	);
