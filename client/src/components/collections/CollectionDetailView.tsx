@@ -15,6 +15,18 @@ interface Stats {
 
 const CollectionDetailView: React.FC = () => {
   const { t, i18n } = useTranslation('admin');
+
+  useEffect(() => {
+    const loadNamespace = async () => {
+      try {
+        await i18n.loadNamespaces(['admin']);
+        i18n.reloadResources(['admin']);
+      } catch (error) {
+        console.error('Failed to load admin namespace:', error);
+      }
+    };
+    loadNamespace();
+  }, [i18n]);
   const { id } = useParams();
   const navigate = useNavigate();
   const [collection, setCollection] = useState<Collection | null>(null);
@@ -67,7 +79,7 @@ const CollectionDetailView: React.FC = () => {
   if (!collection) {
     return (
       <div className='p-8 text-center text-gray-500'>
-        {t('admin:collections.collectionMissing', 'Collection data is unavailable')}
+        {t('collections.collectionMissing', 'Collection data is unavailable')}
       </div>
     );
   }
@@ -76,16 +88,16 @@ const CollectionDetailView: React.FC = () => {
     <div className='space-y-4'>
       <div className='bg-white rounded-lg p-4 shadow-sm mb-4'>
         <div className='mb-2 text-xs sm:text-sm text-gray-500'>
-          <button className='text-blue-600 hover:underline' onClick={() => navigate('/admin/collections')}>{t('collections.title')}</button>
+          <button className='text-blue-600 hover:underline' onClick={() => navigate('/admin/collections')}>{t('collections.title', 'Collections')}</button>
           <span className='mx-2 text-gray-400'>/</span>
-          <span className='text-gray-700'>{collection?.name || t('collections.title')}</span>
+          <span className='text-gray-700'>{collection?.name || t('collections.title', 'Collections')}</span>
         </div>
         <div className='flex items-start justify-between gap-4'>
           <div>
             <div className='flex items-center gap-2 flex-wrap'>
               <h2 className='text-xl font-semibold text-gray-900'>{collection?.name ?? ''}</h2>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${collection.status === 'active' ? 'bg-green-100 text-green-800' : collection.status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-200 text-gray-700'}`}>
-                {collection.status === 'active' ? t('collections.status.active') : collection.status === 'draft' ? t('collections.status.draft') : t('collections.status.archived')}
+                {collection.status === 'active' ? t('collections.status.active', 'Active') : collection.status === 'draft' ? t('collections.status.draft', 'Draft') : t('collections.status.archived', 'Archived')}
               </span>
             </div>
             {collection.description && <p className='text-gray-600 mt-1'>{collection.description}</p>}
@@ -109,7 +121,7 @@ const CollectionDetailView: React.FC = () => {
                   <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('common.title', 'Title')}</th>
                   <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('common.type', 'Type')}</th>
                   <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('common.status', 'Status')}</th>
-                  <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('admin:survey.questions.title', 'Questions')}</th>
+                  <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('survey.questions.title', 'Questions')}</th>
                   <th className='px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>{t('common.actions', 'Actions')}</th>
                 </tr>
               </thead>

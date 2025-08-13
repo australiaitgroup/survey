@@ -252,16 +252,23 @@ router.get(
 			responseFilter.email = { $regex: email, $options: 'i' };
 		}
 
-		// Filter by date range
-		if (fromDate || toDate) {
-			responseFilter.createdAt = {};
-			if (fromDate) {
-				responseFilter.createdAt.$gte = new Date(fromDate);
-			}
-			if (toDate) {
-				responseFilter.createdAt.$lte = new Date(toDate);
-			}
-		}
+        // Filter by date range (treat toDate as end-of-day inclusive)
+        if (fromDate || toDate) {
+            responseFilter.createdAt = {};
+            if (fromDate) {
+                const start = new Date(fromDate);
+                // Normalize to start of day
+                start.setHours(0, 0, 0, 0);
+                responseFilter.createdAt.$gte = start;
+            }
+            if (toDate) {
+                const endExclusive = new Date(toDate);
+                // Move to next day start to make original day inclusive
+                endExclusive.setHours(0, 0, 0, 0);
+                endExclusive.setDate(endExclusive.getDate() + 1);
+                responseFilter.createdAt.$lt = endExclusive;
+            }
+        }
 
 		// Filter by completion status
 		if (status) {
@@ -273,7 +280,7 @@ router.get(
 			}
 		}
 
-		let responses = await Response.find(responseFilter).lean();
+        let responses = await Response.find(responseFilter).sort({ createdAt: -1 }).lean();
 
 		// Filter incomplete responses if needed (post-processing)
 		if (status === 'incomplete') {

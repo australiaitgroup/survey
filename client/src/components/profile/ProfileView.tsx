@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../contexts/AdminContext';
 import ImageUpload from '../common/ImageUpload';
 import BillingView from '../billing/BillingView';
 
 const ProfileView: React.FC = () => {
 	const { t } = useTranslation();
+	const location = useLocation();
+	const navigate = useNavigate();
 	const {
 		profileData,
 		profileForm,
@@ -23,11 +26,36 @@ const ProfileView: React.FC = () => {
 		setError,
 	} = useAdmin();
 
-	const [activeTab, setActiveTab] = useState<'personal' | 'company' | 'billing'>('personal');
+	// Get active tab from URL search params
+	const searchParams = new URLSearchParams(location.search);
+	const tabFromUrl = searchParams.get('tab') as 'personal' | 'company' | 'billing' | null;
+	const [activeTab, setActiveTab] = useState<'personal' | 'company' | 'billing'>(tabFromUrl || 'personal');
 
 	useEffect(() => {
 		loadProfile();
 	}, []);
+
+	// Update active tab when URL changes
+	useEffect(() => {
+		const searchParams = new URLSearchParams(location.search);
+		const tabFromUrl = searchParams.get('tab') as 'personal' | 'company' | 'billing' | null;
+		if (tabFromUrl && tabFromUrl !== activeTab) {
+			setActiveTab(tabFromUrl);
+		}
+	}, [location.search, activeTab]);
+
+	// Function to change tab and update URL
+	const handleTabChange = (tab: 'personal' | 'company' | 'billing') => {
+		setActiveTab(tab);
+		const searchParams = new URLSearchParams(location.search);
+		if (tab === 'personal') {
+			searchParams.delete('tab');
+		} else {
+			searchParams.set('tab', tab);
+		}
+		const newUrl = `/admin/profile${searchParams.toString() ? '?' + searchParams.toString() : ''}`;
+		navigate(newUrl, { replace: true });
+	};
 
 	const handleProfileSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -106,7 +134,7 @@ const ProfileView: React.FC = () => {
 				<div className='px-6 py-4 border-b border-gray-200'>
 					<div className='flex space-x-1 bg-gray-100 p-1 rounded-lg overflow-x-auto'>
 						<button
-							onClick={() => setActiveTab('personal')}
+							onClick={() => handleTabChange('personal')}
 							className={`flex-1 min-w-[80px] rounded-md px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
 								activeTab === 'personal'
 									? 'bg-white text-gray-900 shadow-sm'
@@ -116,7 +144,7 @@ const ProfileView: React.FC = () => {
 							{t('profile.personalInfo')}
 						</button>
 						<button
-							onClick={() => setActiveTab('company')}
+							onClick={() => handleTabChange('company')}
 							className={`flex-1 min-w-[80px] rounded-md px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
 								activeTab === 'company'
 									? 'bg-white text-gray-900 shadow-sm'
@@ -126,7 +154,7 @@ const ProfileView: React.FC = () => {
 							{t('profile.companyInfo')}
 						</button>
 						<button
-							onClick={() => setActiveTab('billing')}
+							onClick={() => handleTabChange('billing')}
 							className={`flex-1 min-w-[80px] rounded-md px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${
 								activeTab === 'billing'
 									? 'bg-white text-gray-900 shadow-sm'

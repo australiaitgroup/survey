@@ -157,23 +157,12 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 	};
 
 	// Load initial statistics with default filter (last 30 days)
-	useEffect(() => {
-		if (tabLocal === TAB_TYPES.STATISTICS && survey._id) {
-			const today = new Date();
-			const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-			handleStatisticsFilter({
-				fromDate: thirtyDaysAgo.toISOString().split('T')[0],
-				toDate: today.toISOString().split('T')[0],
-			});
-		}
-	}, [tabLocal, survey._id]);
-
-	useEffect(() => {
-		if (tabLocal === TAB_TYPES.STATISTICS) {
-			loadStats(survey._id);
-		}
-	}, [tabLocal, survey._id]);
+    useEffect(() => {
+        if (tabLocal === TAB_TYPES.STATISTICS && survey._id) {
+            // Load all-time stats on first enter; users can narrow with filter UI
+            loadStats(survey._id);
+        }
+    }, [tabLocal, survey._id]);
 
 	const s = survey;
 	const currentForm = questionForms[s._id] || {

@@ -33,7 +33,8 @@ const responseSchema = new mongoose.Schema({
 					enum: ['single_choice', 'multiple_choice', 'short_text'],
 					required: true,
 				},
-				options: [{ type: String }], // For choice questions
+                // Store option texts only for snapshots
+                options: [String],
 				correctAnswer: mongoose.Schema.Types.Mixed, // Number, [Number], or String
 				explanation: String,
 				points: { type: Number, default: 1 },

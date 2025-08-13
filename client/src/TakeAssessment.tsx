@@ -8,12 +8,11 @@ import { useWorkingAntiCheating } from './hooks/useWorkingAntiCheating';
 import LoadingScreen from './components/survey/LoadingScreen';
 import ErrorCard from './components/survey/ErrorCard';
 import UnavailableCard from './components/survey/UnavailableCard';
-import ManualNoQuestionsCard from './components/survey/ManualNoQuestionsCard';
 import HeaderWithLogo from './components/survey/HeaderWithLogo';
 import SafeMarkdown from './components/survey/SafeMarkdown';
 import AssessmentResults from './components/survey/AssessmentResults';
 import './styles/antiCheating.css';
-import type { SurveyResponse } from '../../shared/surveyResponse';
+// Server-side submission for assessments; local SurveyResponse not used here
 import { SOURCE_TYPE, type SourceType } from './constants';
 import type {
 	Survey,
@@ -61,10 +60,11 @@ const TakeAssessment: React.FC = () => {
 	const [submitted, setSubmitted] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
-	const [assessmentResults, setAssessmentResults] = useState<AssessmentResult[]>([]);
-	const [scoringResult, setScoringResult] = useState<ScoringResult | null>(null);
+    const [assessmentResults, setAssessmentResults] = useState<AssessmentResult[]>([]);
+    const [scoringResult, setScoringResult] = useState<ScoringResult | null>(null);
+    const [assessmentMeta, setAssessmentMeta] = useState<{ responseId?: string }>({});
 	const [startTime, setStartTime] = useState<Date | null>(null);
-	
+
 	// Question timing tracking
 	const [questionTimings, setQuestionTimings] = useState<Record<string, QuestionTiming>>({});
 	const [currentQuestionStartTime, setCurrentQuestionStartTime] = useState<number | null>(null);
@@ -82,7 +82,7 @@ const TakeAssessment: React.FC = () => {
 		sourceType === SOURCE_TYPE.MANUAL_SELECTION;
 
 	// Use both hooks for comprehensive protection
-	const { getInputProps } = useAntiCheating({
+    const { getInputProps } = useAntiCheating({
 		enabled: antiCheatEnabled,
 		disableCopy: true,
 		disablePaste: true,
@@ -158,7 +158,7 @@ const TakeAssessment: React.FC = () => {
 		// If slug is provided, fetch that specific assessment
 		if (slug) {
 			setLoading(true);
-			const apiUrl = getApiPath(`/survey/${slug}`);
+            const apiUrl = getApiPath(`/assessment/${slug}`);
 			axios
 				.get<Survey>(apiUrl)
 				.then(res => {
@@ -178,11 +178,7 @@ const TakeAssessment: React.FC = () => {
 						});
 					}
 
-					// Load questions immediately only for manual surveys
-					// For bank-based surveys, wait for user email
-					if (res.data.sourceType === SOURCE_TYPE.MANUAL) {
-						loadQuestions(res.data);
-					}
+                    // Do not pre-load any questions for assessments
 				})
 				.catch(() => {
 					setError('Assessment not found');
@@ -193,22 +189,22 @@ const TakeAssessment: React.FC = () => {
 
 	const startAssessment = async () => {
 		if (!survey) return;
-		
+
 		setCurrentStep('questions');
 		setStartTime(new Date());
 
-		// Load questions for question bank surveys
-		if (isBankBasedSource(survey.sourceType) && form.email && !questionsLoaded) {
-			try {
-				const questionsResponse = await axios.get(getApiPath(`/survey/${slug}/questions`), {
-					params: { email: form.email },
-				});
-				setQuestions(questionsResponse.data.questions || []);
-				setQuestionsLoaded(true);
-			} catch (e) {
-				console.error('Failed to load questions before start:', e);
-			}
-		}
+        // Start assessment - lock questions server-side and return masked list
+        try {
+            const startResp = await axios.post(getApiPath(`/assessment/${slug}/start`), {
+                name: form.name,
+                email: form.email,
+            });
+            setQuestions(startResp.data.questions || []);
+            setQuestionsLoaded(true);
+            setAssessmentMeta({ responseId: startResp.data.responseId });
+        } catch (e) {
+            console.error('Failed to start assessment:', e);
+        }
 
 		// Start timing for the first question
 		if ((questionsLoaded ? questions : survey.questions)?.length > 0) {
@@ -236,7 +232,7 @@ const TakeAssessment: React.FC = () => {
 		}));
 	};
 
-	const nextQuestion = (isSkip = false) => {
+    const nextQuestion = (isSkip = false) => {
 		const currentQuestions = questionsLoaded ? questions : (survey?.questions || []);
 		if (!currentQuestions.length) return;
 
@@ -256,12 +252,12 @@ const TakeAssessment: React.FC = () => {
 			}));
 
 			// If this is a skip, mark the answer as skipped (empty)
-			if (isSkip && !form.answers[currentQuestion._id]) {
+            if (isSkip && !form.answers[currentQuestion._id]) {
 				setForm(prev => ({
 					...prev,
 					answers: {
-						...prev.answers,
-						[currentQuestion._id]: '', // Empty answer for skipped questions
+                        ...prev.answers,
+                        [currentQuestion._id]: '', // Empty answer for skipped questions
 					},
 				}));
 			}
@@ -354,148 +350,31 @@ const TakeAssessment: React.FC = () => {
 
 			const timeSpent = startTime ? Math.floor((Date.now() - startTime.getTime()) / 1000) : 0;
 
-			// Submit response first
-			const payload: SurveyResponse = {
-				name: form.name,
-				email: form.email,
-				surveyId: survey._id,
-				answers: questions.map(q => form.answers[q._id]),
-			};
-			await axios.post(getApiPath(`/surveys/${survey._id}/responses`), payload);
+            // Submit to assessment endpoint for server-side scoring
+            const answersArray = questions.map(q => form.answers[q._id]);
+            const submitResp = await axios.post(getApiPath(`/assessment/${slug}/submit`), {
+                responseId: assessmentMeta.responseId,
+                answers: answersArray,
+                timeSpent,
+                answerDurations: Object.fromEntries(
+                    Object.entries(finalQuestionTimings).map(([qid, v]) => [qid, v.duration || 0])
+                ),
+            });
 
-			// Calculate assessment results
-			let totalPoints = 0;
-			let maxPossiblePoints = 0;
-			let correctAnswers = 0;
-			let wrongAnswers = 0;
+            const apiScore = submitResp.data.score;
+            const apiResults = submitResp.data.questionResults || [];
 
-			const results: AssessmentResult[] = questions.map(q => {
-				const userAnswer = form.answers[q._id];
-
-				// Proper answer matching logic
-				let isCorrect = false;
-				let correctAnswerText = '';
-
-				if (q.correctAnswer !== undefined && userAnswer !== undefined) {
-					if (q.type === 'single_choice') {
-						// For single choice, correctAnswer is an index
-						if (typeof q.correctAnswer === 'number') {
-							const userOptionIndex = (q.options ?? []).findIndex(opt =>
-								typeof opt === 'string'
-									? opt === userAnswer
-									: opt.text === userAnswer
-							);
-							isCorrect = userOptionIndex === q.correctAnswer;
-
-							// Get correct answer text
-							const correctOption = q.options?.[q.correctAnswer];
-							correctAnswerText =
-								typeof correctOption === 'string'
-									? correctOption
-									: correctOption?.text || '';
-						} else {
-							// Fallback for direct text comparison
-							isCorrect = userAnswer === q.correctAnswer;
-							correctAnswerText = String(q.correctAnswer);
-						}
-					} else if (q.type === 'multiple_choice' && Array.isArray(q.correctAnswer)) {
-						// Handle multiple choice
-						const userAnswerArray = Array.isArray(userAnswer)
-							? userAnswer
-							: [userAnswer];
-						const userOptionIndices = userAnswerArray
-							.map(ans =>
-								(q.options ?? []).findIndex(opt =>
-									typeof opt === 'string' ? opt === ans : opt.text === ans
-								)
-							)
-							.filter((idx): idx is number => idx !== -1);
-						const correctIndices = q.correctAnswer as number[];
-						isCorrect =
-							userOptionIndices.length === correctIndices.length &&
-							userOptionIndices.every(idx => correctIndices.includes(idx));
-
-						// Get correct answer text
-						correctAnswerText = correctIndices
-							.map(idx => {
-								const option = q.options?.[idx];
-								return typeof option === 'string' ? option : option?.text || '';
-							})
-							.join(', ');
-					} else if (q.type === 'short_text') {
-						// For short text, compare directly
-						isCorrect = userAnswer === q.correctAnswer;
-						correctAnswerText = String(q.correctAnswer);
-					} else {
-						// Fallback logic
-						isCorrect = userAnswer === q.correctAnswer;
-						correctAnswerText = String(q.correctAnswer);
-					}
-				}
-				const maxPoints: number =
-					(typeof q.points === 'number' && q.points > 0
-						? q.points
-						: survey.scoringSettings?.customScoringRules?.defaultQuestionPoints) ??
-					1;
-				const pointsAwarded = isCorrect ? maxPoints : 0;
-
-				totalPoints += pointsAwarded;
-				maxPossiblePoints += maxPoints;
-
-				if (isCorrect) {
-					correctAnswers++;
-				} else {
-					wrongAnswers++;
-				}
-
-				return {
-					questionId: q._id,
-					questionText: q.text,
-					questionDescription: q.description,
-					descriptionImage: q.descriptionImage,
-					userAnswer: Array.isArray(userAnswer)
-						? userAnswer.join(', ')
-						: String(userAnswer || 'No answer'),
-					correctAnswer: correctAnswerText,
-					isCorrect,
-					pointsAwarded,
-					maxPoints,
-				};
-			});
-
-			// Calculate scoring result
-			const scoringMode = survey.scoringSettings?.scoringMode || 'percentage';
-			const passingThreshold = survey.scoringSettings?.passingThreshold || 60;
-			const percentage =
-				maxPossiblePoints > 0 ? (totalPoints / maxPossiblePoints) * 100 : 0;
-
-			let displayScore = 0;
-			let passed = false;
-			let scoringDescription = '';
-
-			if (scoringMode === 'percentage') {
-				displayScore = Math.round(percentage * 100) / 100;
-				passed = percentage >= passingThreshold;
-				scoringDescription = `Percentage scoring, max score 100, passing threshold ${passingThreshold}`;
-			} else {
-				displayScore = totalPoints;
-				passed = totalPoints >= passingThreshold;
-				scoringDescription = `Accumulated scoring, max score ${maxPossiblePoints}, passing threshold ${passingThreshold}`;
-			}
-
-			const scoring: ScoringResult = {
-				totalPoints,
-				maxPossiblePoints,
-				correctAnswers,
-				wrongAnswers,
-				displayScore,
-				passed,
-				scoringMode,
-				scoringDescription,
-			};
-
-			setAssessmentResults(results);
-			setScoringResult(scoring);
+            setAssessmentResults(apiResults);
+            setScoringResult({
+                totalPoints: apiScore.totalPoints,
+                maxPossiblePoints: apiScore.maxPossiblePoints,
+                correctAnswers: apiScore.correctAnswers,
+                wrongAnswers: apiScore.wrongAnswers,
+                displayScore: apiScore.displayScore,
+                passed: apiScore.passed,
+                scoringMode: apiScore.scoringMode,
+                scoringDescription: apiScore.scoringDescription,
+            });
 			setSubmitted(true);
 			setCurrentStep('results');
 
@@ -521,21 +400,7 @@ const TakeAssessment: React.FC = () => {
 		return <UnavailableCard status={survey.status} onHome={() => navigate('/')} />;
 	}
 
-	// Check if survey has no questions (for manual surveys) or questions haven't loaded yet
-	if (
-		survey &&
-		survey.sourceType === SOURCE_TYPE.MANUAL &&
-		(!survey.questions || survey.questions.length === 0)
-	) {
-		return (
-			<ManualNoQuestionsCard
-				surveyLoaded={Boolean(survey)}
-				questionsCount={survey?.questions?.length}
-				status={survey?.status}
-				onHome={() => navigate('/')}
-			/>
-		);
-	}
+    // For assessment: 不再使用 Survey 的“无题目卡片”逻辑，题目在 start 后返回
 
 	// No survey found
 	if (!survey) {
@@ -917,7 +782,7 @@ const TakeAssessment: React.FC = () => {
 								)}
 							</div>
 						</div>
-						
+
 						{/* Navigation Tip */}
 						<div className='text-center mt-3 text-xs text-gray-500'>
 							💡 Tip: You can navigate between questions or skip difficult ones before submitting

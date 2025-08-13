@@ -239,13 +239,17 @@ export const useAntiCheating = (options: AntiCheatingOptions = {}) => {
 		t,
 	]);
 
-	return {
-		// Anti-cheating methods for specific inputs
-		getInputProps: () => ({
-			onPaste: disablePaste ? preventPaste : undefined,
-			onCopy: disableCopy ? preventCopy : undefined,
-			onCut: disableCopy ? preventCopy : undefined,
-			style: disableCopy ? { userSelect: 'none' } : undefined,
-		}),
-	};
+    const getInputProps = () => ({
+        onPaste: disablePaste
+            ? ((preventPaste as unknown) as React.ClipboardEventHandler<HTMLInputElement & HTMLTextAreaElement>)
+            : undefined,
+        onCopy: disableCopy
+            ? ((preventCopy as unknown) as React.ClipboardEventHandler<HTMLInputElement & HTMLTextAreaElement>)
+            : undefined,
+        onCut: disableCopy
+            ? ((preventCopy as unknown) as React.ClipboardEventHandler<HTMLInputElement & HTMLTextAreaElement>)
+            : undefined,
+    });
+
+    return { getInputProps } as const;
 };

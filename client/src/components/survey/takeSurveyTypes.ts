@@ -6,9 +6,9 @@ export type Question = ApiQuestion;
 export type { Company };
 
 export interface FormState {
-	name: string;
-	email: string;
-	answers: Record<string, string>;
+    name: string;
+    email: string;
+    answers: Record<string, string | string[]>;
 }
 
 export interface AssessmentResult {

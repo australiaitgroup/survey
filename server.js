@@ -7,6 +7,7 @@ const questionsRouter = require('./routes/questions');
 const responsesRouter = require('./routes/responses');
 const adminRouter = require('./routes/admin');
 const surveysRouter = require('./routes/surveys');
+const assessmentsRouter = require('./routes/assessments');
 const usersRouter = require('./routes/users');
 const invitationsRouter = require('./routes/invitations');
 const questionBanksRouter = require('./routes/questionBanks');
@@ -52,11 +53,13 @@ app.use('/api', questionsRouter);
 app.use('/:companySlug/api', multiTenant, questionsRouter);
 app.use('/:companySlug/api', multiTenant, responsesRouter);
 app.use('/:companySlug/api', multiTenant, surveysRouter);
+app.use('/:companySlug/api', multiTenant, assessmentsRouter);
 app.use('/:companySlug/api/invitations', multiTenant, invitationsRouter);
 
 // Regular API routes
 app.use('/api', responsesRouter);
 app.use('/api', surveysRouter);
+app.use('/api', assessmentsRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/admin/users', usersRouter);
 app.use('/api/admin/question-banks', questionBanksRouter);

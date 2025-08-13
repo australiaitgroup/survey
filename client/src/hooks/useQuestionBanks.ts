@@ -195,14 +195,16 @@ export const useQuestionBanks = () => {
 			}
 		}
 
-		const questionData: unknown = {
-			text: currentForm.text,
-			type: currentForm.type,
-			points: currentForm.points,
-			explanation: currentForm.explanation,
-			tags: currentForm.tags,
-			difficulty: currentForm.difficulty,
-		};
+        const questionData: any = {
+            text: currentForm.text,
+            type: currentForm.type,
+            points: currentForm.points,
+            explanation: currentForm.explanation,
+            tags: currentForm.tags,
+            difficulty: currentForm.difficulty,
+            // Include description when adding a question to the bank
+            description: currentForm.description || '',
+        };
 
 		// Add description image if provided
 		if (currentForm.descriptionImage) {
@@ -211,10 +213,12 @@ export const useQuestionBanks = () => {
 
 		// For choice questions, add options and correctAnswer
 		if (currentForm.type !== 'short_text') {
-			if (currentForm.options) {
-				// Use the already filtered options from above
-				questionData.options = filteredOptions;
-			}
+            if (currentForm.options) {
+                // Normalize to array of strings for API
+                questionData.options = filteredOptions.map((opt: any) =>
+                    typeof opt === 'string' ? opt : (opt?.text || '')
+                );
+            }
 			questionData.correctAnswer = currentForm.correctAnswer;
 		} else {
 			// For short_text, only add correctAnswer if it's provided and not empty
