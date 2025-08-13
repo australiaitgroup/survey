@@ -231,7 +231,6 @@ const SurveyStatisticsTab: React.FC<Props> = ({
                                                         <div>Submitted at: <span className='font-medium text-gray-800'>{new Date(response.createdAt).toLocaleString()}</span></div>
                                                         <div>Time spent: <span className='font-medium text-gray-800'>{(response.timeSpent ?? 0)}s</span></div>
                                                     </div>
-                                                    {survey.type !== 'survey' && (
                                                     <div className='mt-3 flex gap-2'>
                                                         <button
                                                             className='btn-outline btn-small'
@@ -256,9 +255,8 @@ const SurveyStatisticsTab: React.FC<Props> = ({
                                                             Delete
                                                         </button>
                                                     </div>
-                                                    )}
 
-                                                {survey.type !== 'survey' && expanded[(response as any)._id] && (
+                                                {expanded[(response as any)._id] && (
                                                     <div className='mt-3 rounded-md border border-gray-200 bg-white'>
                                                         {loadingDetail[(response as any)._id] ? (
                                                             <div className='p-3 text-sm text-gray-500'>Loading...</div>
@@ -294,20 +292,26 @@ const SurveyStatisticsTab: React.FC<Props> = ({
                                                                     const userDisplay = getUserDisplay();
                                                                     return (
                                                                     <div key={idx} className='p-3 text-sm flex items-start gap-3'>
+                                                                        {survey.type !== 'survey' && (
                                                                         <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${q.isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                                                             {q.isCorrect ? 'Correct' : 'Wrong'}
                                                                         </div>
+                                                                        )}
                                                                         <div className='flex-1 min-w-0'>
                                                                             <div className='font-medium text-gray-800 truncate'>#{q.questionIndex + 1} {q.questionText}</div>
                                                                             <div className='text-gray-600 mt-0.5'>
                                                                                 <span className='mr-2'>Your answer: <span className='font-medium text-gray-800'>{userDisplay}</span></span>
+                                                                                {survey.type !== 'survey' && (
                                                                                 <span>Correct: <span className='font-medium text-gray-800'>{correctDisplay}</span></span>
+                                                                                )}
                                                                             </div>
                                                                             <div className='text-xs text-gray-500 mt-0.5'>Time on question: {q.timeSpent ?? 0}s</div>
                                                                         </div>
+                                                                        {survey.type !== 'survey' && (
                                                                         <div className='text-right text-gray-700 whitespace-nowrap'>
                                                                             {q.pointsAwarded}/{q.maxPoints} pts
                                                                         </div>
+                                                                        )}
                                                                     </div>
                                                                 )})}
                                                             </div>
