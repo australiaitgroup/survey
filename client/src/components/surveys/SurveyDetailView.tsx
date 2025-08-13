@@ -37,7 +37,25 @@ interface SurveyDetailViewProps {
 }
 
 const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
-	const { t } = useTranslation();
+	const { t: tOriginal } = useTranslation();
+
+	// Create a wrapper function to provide default values for common translation keys
+	const t = (key: string, defaultValue?: string) => {
+		const translations: Record<string, string> = {
+			'buttons.duplicate': 'Duplicate',
+			'buttons.delete': 'Delete',
+			'buttons.edit': 'Edit',
+			'buttons.save': 'Save',
+			'buttons.cancel': 'Cancel',
+		};
+		const translated = tOriginal(key);
+		// Check if translation exists and is not empty/just the key
+		if (translated && translated !== key && translated.trim() !== '') {
+			return translated;
+		}
+		// Fallback to provided default value, then built-in translations, then key
+		return defaultValue || translations[key] || key;
+	};
 	const location = useLocation();
 	const navigateRouter = useNavigate();
 	const params = useParams();

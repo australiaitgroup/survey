@@ -804,7 +804,7 @@ const TakeAssessment: React.FC = () => {
 					<div className='inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-200 text-sm text-gray-600 hover:shadow-md transition-shadow duration-200'>
 						<span>Powered by</span>
 						<a
-							href='https://sigmaq.org'
+							href='https://sigma.jiangren.com.au'
 							target='_blank'
 							rel='noopener noreferrer'
 							className='font-semibold text-blue-600 hover:text-blue-700 transition-colors duration-200'
