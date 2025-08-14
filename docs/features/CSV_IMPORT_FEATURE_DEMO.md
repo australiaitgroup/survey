@@ -27,12 +27,13 @@
 ### 列结构
 
 ```csv
-questionText,type,options,correctAnswers,tags
+questionText,description,type,options,correctAnswers,tags,explanation,points,difficulty,descriptionImage
 ```
 
 ### 字段说明
 
 - **questionText**: 题干内容（必填）
+- **description**: 题目描述/场景说明（可选，支持 Markdown）
 - **type**: 题型类型
     - `single` - 单选题
     - `multiple` - 多选题
@@ -40,15 +41,19 @@ questionText,type,options,correctAnswers,tags
 - **options**: 选项内容，用分号(`;`)分隔（选择题必填）
 - **correctAnswers**: 正确答案索引，从0开始，多个答案用分号分隔
 - **tags**: 题目标签，用逗号(`,`)分隔
+- **explanation**: 答案解析（可选）
+- **points**: 分值（可选，默认 1）
+- **difficulty**: 难度（可选：easy/medium/hard，默认 medium）
+- **descriptionImage**: 描述图片 URL（可选）
 
 ### 示例数据
 
 ```csv
-questionText,type,options,correctAnswers,tags
-你喜欢哪个颜色？,single,红色;绿色;蓝色,1,"颜色,兴趣"
-哪些是编程语言？,multiple,JavaScript;Python;Dog,0;1,"技术,测试"
-请简要说明你的人生目标,text,,,思辨
-以下哪个是正确的数学公式？,single,2+2=4;2+2=5;2+2=6,0,"数学,基础"
+questionText,description,type,options,correctAnswers,tags,explanation,points,difficulty,descriptionImage
+你喜欢哪个颜色？,"**场景**：请选择你最喜欢的颜色。",single,红色;绿色;蓝色,1,"颜色,兴趣",这是一个关于颜色偏好的问题,1,easy,
+哪些是编程语言？,"提示：选择所有符合条件的选项。",multiple,JavaScript;Python;Dog,0;1,"技术,测试",选择所有编程语言选项,2,medium,
+请简要说明你的人生目标,"可以使用Markdown，例如：**清晰简洁地描述**",text,,,"思辨,职业规划",请用简洁的语言描述,1,medium,
+以下哪个是正确的数学公式？,"You can add Markdown like **bold** or _italic_.",single,2+2=4;2+2=5;2+2=6,0,"数学,基础",基础数学运算题,1,easy,
 ```
 
 ## 🔧 技术实现

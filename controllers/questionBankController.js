@@ -448,6 +448,7 @@ exports.importQuestionsFromCSV = async (req, res) => {
 					csv({
 						headers: [
 							'questionText',
+							'description',
 							'type',
 							'options',
 							'correctAnswers',
@@ -498,6 +499,11 @@ exports.importQuestionsFromCSV = async (req, res) => {
 									? row.difficulty.toLowerCase()
 									: 'medium',
 						};
+
+						// Handle description (supports Markdown)
+						if (row.description && row.description.trim()) {
+							newQuestion.description = row.description.trim();
+						}
 
 						// Handle explanation
 						if (row.explanation && row.explanation.trim()) {
@@ -634,14 +640,18 @@ exports.importQuestionsFromCSV = async (req, res) => {
 // Download CSV template
 exports.downloadCSVTemplate = async (req, res) => {
 	try {
-		const csvTemplate = `questionText,type,options,correctAnswers,tags,explanation,points,difficulty,descriptionImage
-你喜欢哪个颜色？,single,红色;绿色;蓝色,1,"颜色,兴趣",这是一个关于颜色偏好的问题,1,easy,
-哪些是编程语言？,multiple,JavaScript;Python;HTML,0;1,"技术,测试",选择所有编程语言选项,2,medium,
-请简要说明你的人生目标,text,,,"思辨,职业规划",请用简洁的语言描述,1,medium,
-What is 2+2?,single,3;4;5,1,"数学,基础",基础数学运算题,1,easy,`;
+			const csvTemplate = `questionText,description,type,options,correctAnswers,tags,explanation,points,difficulty,descriptionImage
+	你喜欢哪个颜色？,"**场景**：请选择你最喜欢的颜色。",single,红色;绿色;蓝色,1,"颜色,兴趣",这是一个关于颜色偏好的问题,1,easy,
+	哪些是编程语言？,"提示：选择所有符合条件的选项。",multiple,JavaScript;Python;HTML,0;1,"技术,测试",选择所有编程语言选项,2,medium,
+	请简要说明你的人生目标,"可以使用Markdown，例如：**清晰简洁地描述**",text,,,"思辨,职业规划",请用简洁的语言描述,1,medium,
+	What is 2+2?,"You can add Markdown like **bold** or _italic_.",single,3;4;5,1,"数学,基础",基础数学运算题,1,easy,`;
 
 		res.setHeader('Content-Type', 'text/csv');
 		res.setHeader('Content-Disposition', 'attachment; filename="question_bank_template.csv"');
+		// Prevent caching so clients always get the latest template
+		res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+		res.setHeader('Pragma', 'no-cache');
+		res.setHeader('Expires', '0');
 		res.send(csvTemplate);
 	} catch (error) {
 		console.error('Error generating CSV template:', error);

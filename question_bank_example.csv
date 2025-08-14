@@ -1,9 +1,9 @@
-questionText,type,options,correctAnswers,tags
-你喜欢哪个颜色？,single,红色;绿色;蓝色,1,"颜色,兴趣"
-哪些是编程语言？,multiple,JavaScript;Python;Dog,0;1,"技术,测试"
-请简要说明你的人生目标,text,,,思辨
-以下哪个是正确的数学公式？,single,2+2=4;2+2=5;2+2=6,0,"数学,基础"
-选择所有偶数,multiple,1;2;3;4;5;6,1;3;5,"数学,数字"
-描述一下你最喜欢的编程语言,text,,,编程
-中国的首都是哪里？,single,北京;上海;广州;深圳,0,"地理,常识"
-以下哪些是水果？,multiple,苹果;香蕉;土豆;橙子,0;1;3,"生活,常识"
+questionText,description,type,options,correctAnswers,tags,explanation,points,difficulty,descriptionImage
+你喜欢哪个颜色？,"**场景**：请选择你最喜欢的颜色。",single,红色;绿色;蓝色,1,"颜色,兴趣",这是一个关于颜色偏好的问题,1,easy,
+哪些是编程语言？,"提示：选择所有符合条件的选项。",multiple,JavaScript;Python;HTML,0;1,"技术,测试",选择所有编程语言选项,2,medium,
+请简要说明你的人生目标,"可以使用Markdown，例如：**清晰简洁地描述**",text,,,"思辨,职业规划",请用简洁的语言描述,1,medium,
+以下哪个是正确的数学公式？,"You can add Markdown like **bold** or _italic_.",single,2+2=4;2+2=5;2+2=6,0,"数学,基础",基础数学运算题,1,easy,
+选择所有偶数,"请选择所有偶数。",multiple,1;2;3;4;5;6,1;3;5,"数学,数字",,1,medium,
+描述一下你最喜欢的编程语言,"可使用 Markdown 描述你喜欢它的原因。",text,,,编程,,1,medium,
+中国的首都是哪里？,"基础常识题。",single,北京;上海;广州;深圳,0,"地理,常识",,1,easy,
+以下哪些是水果？,"多选题：选择所有水果。",multiple,苹果;香蕉;土豆;橙子,0;1;3,"生活,常识",,1,medium,
