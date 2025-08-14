@@ -15,6 +15,8 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = 
 		try {
 			await i18n.changeLanguage(lang);
 			localStorage.setItem('i18nextLng', lang);
+			// Update document language attribute for accessibility and detectors
+			document.documentElement.setAttribute('lang', lang);
 			setIsOpen(false);
 		} catch (error) {
 			console.error('Error changing language:', error);

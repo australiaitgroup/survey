@@ -9,7 +9,10 @@ import {
 } from '@heroicons/react/24/outline';
 
 const UseCases: React.FC = () => {
-	const { t } = useTranslation();
+    const { t, i18n } = useTranslation('translation');
+    React.useEffect(() => {
+        i18n.loadNamespaces(['translation']).catch(() => {});
+    }, [i18n]);
 
 	const useCases = [
 		{

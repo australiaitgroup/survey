@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 const FinalCTA: React.FC = () => {
-	const { t } = useTranslation();
+    const { t, i18n } = useTranslation('translation');
+    React.useEffect(() => {
+        i18n.loadNamespaces(['translation']).catch(() => {});
+    }, [i18n]);
 
 	return (
 		<section className='py-24 bg-gradient-to-r from-[#FF5A5F] to-[#FC642D]'>

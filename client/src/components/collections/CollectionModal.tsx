@@ -83,7 +83,7 @@ const CollectionModal: React.FC<CollectionModalProps> = ({ open, onClose, collec
           <h3 className='text-lg font-semibold'>
             {collection ? t('admin:collections.editTitle', 'Edit Collection') : t('admin:collections.createTitle', 'Create Collection')}
           </h3>
-          <button className='btn-outline btn-small' onClick={onClose}>{t('buttons.close')}</button>
+          <button className='btn-outline btn-small' onClick={onClose}>{t('translation:buttons.close', 'Close')}</button>
         </div>
 
         <div className='grid grid-cols-1 gap-4 mt-4'>

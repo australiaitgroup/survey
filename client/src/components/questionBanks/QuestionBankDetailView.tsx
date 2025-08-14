@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAdmin } from '../../contexts/AdminContext';
 import { useQuestionBanks } from '../../hooks/useQuestionBanks';
 import { QuestionBank, QuestionForm } from '../../types/admin';
@@ -13,6 +14,11 @@ interface QuestionBankDetailViewProps {
 }
 
 const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questionBank }) => {
+    const { t, i18n } = useTranslation('admin');
+    const { t: tq } = useTranslation('question');
+    React.useEffect(() => {
+        i18n.loadNamespaces(['admin', 'translation', 'question']).catch(() => {});
+    }, [i18n]);
 	const {
 		setSelectedQuestionBankDetail,
 		setQuestionBankDetailTab,
@@ -23,10 +29,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 		setLoading,
 		error,
 		setError,
-		// Use context-driven modal + form state for editing question bank
-		showEditQuestionBankModal,
 		setShowEditQuestionBankModal,
-		editQuestionBankForm,
 		setEditQuestionBankForm,
 	} = useAdmin();
 
@@ -355,10 +358,10 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 			<div className='space-y-4'>
 				<div className='flex items-center gap-4'>
 					<button onClick={handleQuestionBankBackToList} className='btn-secondary'>
-						← Back to List
+						← {t('questionBanks.backToList', 'Back to List')}
 					</button>
 					<h2 className='text-xl font-semibold text-gray-800'>
-						Question Bank Detail: {qb.name}
+						{t('questionBanks.detailTitle', 'Question Bank Detail')}: {qb.name}
 					</h2>
 				</div>
 
@@ -370,8 +373,8 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 								<p className='text-gray-600 mb-3'>{qb.description}</p>
 							)}
 							<div className='flex items-center gap-4 text-sm text-gray-500'>
-								<span>Questions: {qb.questions?.length || 0}</span>
-								<span>Created: {new Date(qb.createdAt).toLocaleDateString()}</span>
+								<span>{t('questionBanks.meta.questionsCount', 'Questions')}: {qb.questions?.length || 0}</span>
+								<span>{t('questionBanks.meta.created', 'Created')}: {new Date(qb.createdAt).toLocaleDateString()}</span>
 							</div>
 							{/* Error Display */}
 							{error && (
@@ -384,16 +387,16 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 							<button
 								className='btn-primary btn-small'
 								onClick={() => {
-										// Ensure context has the current QB selected before opening modal
-										setSelectedQuestionBankDetail(qb);
-										setEditQuestionBankForm({
+									// Ensure context has the current QB selected before opening modal
+									setSelectedQuestionBankDetail(qb);
+									setEditQuestionBankForm({
 										name: qb.name,
 										description: qb.description || '',
 									});
 									setShowEditQuestionBankModal(true);
 								}}
 							>
-								Edit Question Bank
+								{t('questionBanks.edit', 'Edit Question Bank')}
 							</button>
 						</div>
 					</div>
@@ -402,7 +405,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 					<div className='border-t border-gray-200 pt-4'>
 						<div className='flex justify-between items-center'>
 							<h4 className='font-semibold text-gray-800'>
-								Questions ({qb.questions?.length || 0})
+								{t('questionBanks.questions', 'Questions')} ({qb.questions?.length || 0})
 							</h4>
 							<div className='flex gap-2'>
 								<button
@@ -411,7 +414,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 									type='button'
 									disabled={loading}
 								>
-									📄 导入 CSV
+									{t('questionBanks.importCsv', 'Import CSV')}
 								</button>
 								<button
 									className='btn-primary text-sm'
@@ -421,7 +424,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 									}}
 									type='button'
 								>
-									+ Add New Question
+                                        + {t('questionBanks.addQuestion', 'Add New Question')}
 								</button>
 							</div>
 						</div>
@@ -439,22 +442,22 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 													<span className='font-medium text-gray-800'>
 														{idx + 1}. {q.text}
 													</span>
-													<span className='text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded'>
-														{q.type === 'multiple_choice'
-															? 'Multiple Choice'
-															: q.type === 'single_choice'
-																? 'Single Choice'
-																: 'Short Text'}
-													</span>
+                                                    <span className='text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded'>
+                                                        {q.type === 'multiple_choice'
+                                                            ? tq('types.multipleChoice', 'Multiple Choice')
+                                                            : q.type === 'single_choice'
+                                                                ? tq('types.singleChoice', 'Single Choice')
+                                                                : tq('types.shortText', 'Short Text')}
+                                                    </span>
 													<span className='text-xs bg-green-100 text-green-800 px-2 py-1 rounded'>
-														{q.points || 1} pts
+														{q.points || 1} {t('questionBanks.meta.pointsAbbr', 'pts')}
 													</span>
 												</div>
 												{q.descriptionImage && (
 													<div className='mb-2'>
 														<img
 															src={q.descriptionImage}
-															alt='Question illustration'
+															alt={t('questionBanks.questionIllustration', 'Question illustration')}
 															className='w-32 h-32 object-cover rounded border border-gray-300'
 														/>
 													</div>
@@ -467,7 +470,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 														startEditQuestionBankQuestion(qb._id, idx)
 													}
 												>
-													Edit
+													{t('buttons.edit', { ns: 'translation', defaultValue: 'Edit' })}
 												</button>
 												<button
 													className='px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors'
@@ -475,7 +478,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 														deleteQuestionBankQuestion(qb._id, idx)
 													}
 												>
-													Delete
+													{t('buttons.delete', { ns: 'translation', defaultValue: 'Delete' })}
 												</button>
 											</div>
 										</div>
@@ -494,7 +497,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 												</div>
 											) : (
 												<div>
-													<div className='font-medium'>Options:</div>
+													<div className='font-medium'>{t('questionBanks.options', 'Options')}:</div>
 													{q.options &&
 														q.options.map((opt, optIdx) => {
 															const optionText =
@@ -540,7 +543,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 																					src={
 																						optionImageUrl
 																					}
-																					alt={`Option ${optIdx + 1}`}
+																					alt={t('questionBanks.optionAlt', 'Option {{number}}', { number: optIdx + 1 })}
 																					className='w-16 h-16 object-cover rounded border border-gray-300'
 																				/>
 																			</div>
@@ -556,7 +559,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 								))}
 							</div>
 						) : (
-							<p className='text-gray-500 text-sm'>No questions added yet.</p>
+							<p className='text-gray-500 text-sm'>{t('questionBanks.noQuestions', 'No questions added yet.')}</p>
 						)}
 					</div>
 				</div>

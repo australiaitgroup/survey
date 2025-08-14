@@ -195,5 +195,45 @@
 		"copyUrl": "复制链接",
 		"showQr": "显示二维码",
 		"hideQr": "隐藏二维码"
-	}
+  },
+  "questionBanks": {
+    "title": "题库",
+    "createButton": "创建题库",
+    "empty": {
+      "title": "暂无题库",
+      "description": "创建你的第一个题库开始使用。"
+    },
+    "viewDetails": "查看详情",
+    "delete": "删除",
+    "backToList": "返回列表",
+    "detailTitle": "题库详情",
+    "edit": "编辑题库",
+    "questions": "题目",
+    "importCsv": "导入 CSV",
+    "addQuestion": "新增题目",
+    "meta": {
+      "questions": "题",
+      "questionsCount": "题目数",
+      "created": "创建于",
+      "pointsAbbr": "分"
+    },
+    "questionIllustration": "题目说明图",
+    "options": "选项",
+    "optionAlt": "选项 {{number}}",
+    "noQuestions": "暂无题目。",
+    "editTitleWithName": "编辑题库：{{name}}",
+    "nameRequired": "题库名称 *",
+    "namePlaceholder": "请输入题库名称",
+    "description": "描述",
+    "descriptionPlaceholder": "请输入描述",
+    "updating": "更新中...",
+    "update": "更新题库",
+    "hint": {
+      "singleChoice": "单选题：只能选择一个正确答案",
+      "multipleChoice": "多选题：可选择多个正确答案",
+      "shortText": "简答题：填写文本回答",
+      "selectSingle": "点击选择单个正确答案",
+      "selectMultiple": "勾选多个选项作为正确答案"
+    }
+  }
 }

@@ -3,46 +3,46 @@
 		"title": "{{companyName}} Admin Dashboard",
 		"subtitle": "Manage your surveys, assessments and view responses"
 	},
-  "collections": {
-    "title": "Collections",
-    "createButton": "Create Collection",
-    "intro": "Organize related surveys into reusable groups for better management and quick access.",
-    "info": "Organize related surveys into reusable groups for better management and quick access.",
-    "searchPlaceholder": "Search by name or description...",
-    "sort": {
-      "newest": "Newest",
-      "lastActivity": "Last activity",
-      "az": "A–Z"
-    },
-    "meta": {
-      "surveys": "surveys",
-      "created": "Created",
-      "updated": "Updated"
-    },
-    "actions": {
-      "manage": "Manage"
-    },
-    "noDescription": "No description",
-    "noMatch": "No collections match current filters.",
-    "empty": {
-      "title": "No collections yet",
-      "description": "Group related surveys into collections to organize your workspace."
-    },
-    "createTitle": "Create Collection",
-    "editTitle": "Edit Collection",
-    "namePlaceholder": "Collection name",
-    "descriptionPlaceholder": "Optional description",
-    "tags": "Tags",
-    "tagPlaceholder": "Add a tag and press +",
-    "linkedSurveys": "Linked Surveys",
-    "noSurveys": "No surveys found",
-    "open": "Open",
-    "addSurveys": "Add Surveys",
-    "addSurveysHint": "Select multiple surveys to add to this collection. Your surveys will not be affected.",
-    "searchSurveys": "Search surveys/assessments",
-    "selectedCount": "Selected ({{count}})",
-    "collectionMissing": "Collection data is unavailable"
-  },
+	"collections": {
+		"title": "Collections",
+		"createButton": "Create Collection",
+		"intro": "Organize related surveys into reusable groups for better management and quick access.",
+		"info": "Organize related surveys into reusable groups for better management and quick access.",
+		"searchPlaceholder": "Search by name or description...",
+		"sort": {
+		"newest": "Newest",
+		"lastActivity": "Last activity",
+		"az": "A–Z"
+		},
+		"meta": {
+		"surveys": "surveys",
+		"created": "Created",
+		"updated": "Updated"
+		},
+		"actions": {
+		"manage": "Manage"
+		},
+		"noDescription": "No description",
+		"noMatch": "No collections match current filters.",
+		"empty": {
+		"title": "No collections yet",
+		"description": "Group related surveys into collections to organize your workspace."
+		},
+		"createTitle": "Create Collection",
+		"editTitle": "Edit Collection",
+		"namePlaceholder": "Collection name",
+		"descriptionPlaceholder": "Optional description",
+		"tags": "Tags",
+		"tagPlaceholder": "Add a tag and press +",
+		"linkedSurveys": "Linked Surveys",
+		"noSurveys": "No surveys found",
+		"open": "Open",
+		"addSurveys": "Add Surveys",
+		"addSurveysHint": "Select multiple surveys to add to this collection. Your surveys will not be affected.",
+		"searchSurveys": "Search surveys/assessments",
+		"selectedCount": "Selected ({{count}})",
+		"collectionMissing": "Collection data is unavailable"
+	},
 	"survey": {
 		"title": "Survey",
 		"surveys": "Surveys",
@@ -204,4 +204,45 @@
 		"showQr": "Show QR",
 		"hideQr": "Hide QR"
 	}
+  ,
+  "questionBanks": {
+    "title": "Question Banks",
+    "createButton": "Create Question Bank",
+    "empty": {
+      "title": "No question banks yet",
+      "description": "Create your first question bank to get started."
+    },
+    "viewDetails": "View Details",
+    "delete": "Delete",
+    "backToList": "Back to List",
+    "detailTitle": "Question Bank Detail",
+    "edit": "Edit Question Bank",
+    "questions": "Questions",
+    "importCsv": "Import CSV",
+    "addQuestion": "Add New Question",
+    "meta": {
+      "questions": "questions",
+      "questionsCount": "Questions",
+      "created": "Created",
+      "pointsAbbr": "pts"
+    },
+    "questionIllustration": "Question illustration",
+    "options": "Options",
+    "optionAlt": "Option {{number}}",
+    "noQuestions": "No questions added yet.",
+    "editTitleWithName": "Edit Question Bank: {{name}}",
+    "nameRequired": "Question Bank Name *",
+    "namePlaceholder": "Enter question bank name",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter description",
+    "updating": "Updating...",
+    "update": "Update Question Bank",
+    "hint": {
+      "singleChoice": "Students can select only one correct answer",
+      "multipleChoice": "Students can select multiple correct answers",
+      "shortText": "Students can enter a text response",
+      "selectSingle": "Click to select the single correct answer",
+      "selectMultiple": "Click the checkboxes to select multiple correct answers"
+    }
+  }
 }

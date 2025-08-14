@@ -4,7 +4,10 @@ import { Link } from 'react-router-dom';
 import LanguageSwitcher from '../common/LanguageSwitcher';
 
 const Footer: React.FC = () => {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation('translation');
+	React.useEffect(() => {
+		i18n.loadNamespaces(['translation']).catch(() => {});
+	}, [i18n]);
 
 	const links = [
 		{ key: 'features', to: '#features' },

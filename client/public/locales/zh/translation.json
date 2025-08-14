@@ -10,7 +10,8 @@
 		"questionBanks": "题库管理",
 		"profile": "个人资料",
 		"billing": "账单管理",
-		"dashboard": "仪表盘"
+		"dashboard": "仪表盘",
+		"companyInfo": "公司信息"
 	},
 	"profile": {
 		"settings": "个人设置",
@@ -67,7 +68,7 @@
 		"total": "总计"
 	},
 	"errors": {
-		"collectionNotFound": "未找到合集",
+		"collectionNotFound": "未找到合集"
 	},
 	"landing": {
 		"hero": {

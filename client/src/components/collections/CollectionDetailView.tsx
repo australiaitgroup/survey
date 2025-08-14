@@ -100,7 +100,7 @@ const CollectionDetailView: React.FC = () => {
             {collection.description && <p className='text-gray-600 mt-1'>{collection.description}</p>}
           </div>
           <div className='flex flex-wrap gap-2'>
-            <button className='btn-outline' onClick={() => setShowModal(true)}>{i18n.t('buttons.edit', { ns: 'translation' })}</button>
+            <button className='btn-outline' onClick={() => setShowModal(true)}>{i18n.t('buttons.edit', { ns: 'translation', defaultValue: 'Edit' })}</button>
             <button className='btn-outline' onClick={() => setShowSelectModal(true)}>{t('collections.addSurveys', 'Add Surveys')}</button>
           </div>
         </div>

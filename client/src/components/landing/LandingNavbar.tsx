@@ -5,7 +5,10 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import LanguageSwitcher from '../common/LanguageSwitcher';
 
 const LandingNavbar: React.FC = () => {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation('translation');
+	useEffect(() => {
+		i18n.loadNamespaces(['translation']).catch(() => {});
+	}, [i18n]);
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 	// Handle escape key to close mobile menu

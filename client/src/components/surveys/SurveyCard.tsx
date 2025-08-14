@@ -10,7 +10,7 @@ interface SurveyCardProps {
 }
 
 const SurveyCard: React.FC<SurveyCardProps> = ({ survey }) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation('survey');
 	const { showQR, setShowQR, copyToClipboard } = useAdmin();
 	const { toggleSurveyStatus, deleteSurvey, handleSurveyClick, openEditModal, duplicateSurvey } =
 		useSurveys();
@@ -52,9 +52,13 @@ const SurveyCard: React.FC<SurveyCardProps> = ({ survey }) => {
 											: 'bg-orange-100 text-orange-800'
 							}`}
 						>
-							{survey.type
-								? survey.type.charAt(0).toUpperCase() + survey.type.slice(1)
-								: 'Unknown'}
+						{survey.type === 'survey'
+							? t('questions.type.survey', 'Survey')
+							: survey.type === 'assessment'
+							? t('questions.type.assessment', 'Assessment')
+							: survey.type === 'quiz'
+							? t('questions.type.quiz', 'Quiz')
+							: t('questions.type.unknown', 'Unknown')}
 						</span>
 						{survey.sourceType === 'question_bank' && (
 							<span className='px-2 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800'>
@@ -70,11 +74,11 @@ const SurveyCard: React.FC<SurveyCardProps> = ({ survey }) => {
 										: 'bg-red-100 text-red-800'
 							}`}
 						>
-							{survey.status === 'active'
-								? 'Active'
-								: survey.status === 'draft'
-									? 'Draft'
-									: 'Closed'}
+						{survey.status === 'active'
+							? t('status.active', 'Active')
+							: survey.status === 'draft'
+								? t('status.draft', 'Draft')
+								: t('status.closed', 'Closed')}
 						</span>
 					</div>
 					<p className='text-gray-600 mb-2 text-sm'>
@@ -82,11 +86,11 @@ const SurveyCard: React.FC<SurveyCardProps> = ({ survey }) => {
 					</p>
 					<div className='flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-500'>
 						<span>
-							{survey.questions?.length || 0}{' '}
-							{t('survey.questions.title', 'Questions')}
+						{survey.questions?.length || 0}{' '}
+						{t('questions.title', 'Questions')}
 						</span>
 						<span>
-							{survey.responseCount || 0} {t('survey.responses', 'Responses')}
+						{survey.responseCount || 0} {t('responses', 'Responses')}
 						</span>
 						<span className='hidden sm:inline'>
 							Created:{' '}
@@ -96,17 +100,17 @@ const SurveyCard: React.FC<SurveyCardProps> = ({ survey }) => {
 						</span>
 						{survey.lastActivity ? (
 							<span className='hidden md:inline'>
-								{t('survey.lastActivity', 'Last activity')}:{' '}
+							{t('lastActivity', 'Last activity')}:{' '}
 								{new Date(survey.lastActivity).toLocaleDateString()}
 							</span>
 						) : (
 							<span className='hidden md:inline'>
-								{t('survey.noActivity', 'No recent activity')}
+							{t('noActivity', 'No recent activity')}
 							</span>
 						)}
 						{survey.timeLimit && (
 							<span className='hidden lg:inline'>
-								Time limit: {survey.timeLimit} minutes
+							{t('assessment.timeLimit', 'Time limit')}: {survey.timeLimit} {t('assessment.minutes', 'minutes')}
 							</span>
 						)}
 					</div>
@@ -118,7 +122,7 @@ const SurveyCard: React.FC<SurveyCardProps> = ({ survey }) => {
 						className='btn-primary btn-small'
 						onClick={() => handleSurveyClick(survey)}
 					>
-						Manage
+						{t('manage', 'Manage')}
 					</button>
 					<button
 						className='btn-outline btn-small'
@@ -130,7 +134,7 @@ const SurveyCard: React.FC<SurveyCardProps> = ({ survey }) => {
 						className='btn-outline btn-small text-red-600 border-red-300 hover:bg-red-50 hover:border-red-500'
 						onClick={() => deleteSurvey(survey._id)}
 					>
-						Delete
+						{t('buttons.delete', 'Delete')}
 					</button>
 				</div>
 			</div>

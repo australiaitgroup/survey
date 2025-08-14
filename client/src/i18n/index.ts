@@ -8,7 +8,8 @@ i18n.use(HttpBackend)
 	.use(initReactI18next)
 	.init({
 		fallbackLng: 'en',
-		lng: 'en', // Force default language
+		// Respect previously chosen language via detector; don't force 'en'
+		supportedLngs: ['en', 'zh'],
 		debug: false, // Disable debug logs in production
 
 		// Force reload translations
@@ -41,9 +42,27 @@ i18n.use(HttpBackend)
 
 		// Default namespace
 		defaultNS: 'translation',
+		fallbackNS: 'translation',
 
-		// List of namespaces
-		ns: ['translation', 'admin', 'survey'],
+		// Do not override nsSeparator; keep default ':' so dotted keys remain object paths
+
+		// List of namespaces used in the app
+		ns: ['translation', 'admin', 'survey', 'question'],
 	});
+
+// Ensure <html lang> reflects the active language on startup and changes
+if (typeof document !== 'undefined') {
+	const setHtmlLang = (lng: string) => {
+		document.documentElement.setAttribute('lang', lng);
+	};
+	// Set once after initialization
+	setHtmlLang(i18n.language || 'en');
+	// Update on runtime language changes
+	i18n.on('languageChanged', lng => {
+		setHtmlLang(lng);
+		// Ensure all namespaces reload after language change
+		void i18n.reloadResources();
+	});
+}
 
 export default i18n;

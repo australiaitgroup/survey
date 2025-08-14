@@ -41,9 +41,9 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 	getInputProps = () => ({}),
 	externalPageIndex,
 	ignoreRequiredForNavigation = false,
-  autoAdvanceOnSelect = true,
+    autoAdvanceOnSelect = true,
 }) => {
-	const { t } = useTranslation();
+	const { t } = useTranslation('survey');
 	const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 	const [transitionDirection, setTransitionDirection] = useState<'up' | 'down'>('up');
 	const [showHint, setShowHint] = useState(false);
@@ -111,11 +111,11 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 			<div className='text-center py-8'>
 				<div className='text-gray-500 text-6xl mb-4'>❓</div>
 				<h3 className='text-xl font-semibold text-gray-700 mb-2'>
-					{t('survey.oneQuestionPerPage.noQuestions', 'No questions available')}
+					{t('oneQuestionPerPage.noQuestions', 'No questions available')}
 				</h3>
 				<p className='text-gray-500'>
 					{t(
-						'survey.oneQuestionPerPage.noQuestionsDescription',
+						'oneQuestionPerPage.noQuestionsDescription',
 						'Please check back later.'
 					)}
 				</p>
@@ -178,11 +178,11 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 				{showHint && (
 					<div className='mb-3 flex justify-center md:hidden'>
 						<div className='text-xs text-[#767676] bg-[#F7F7F7] border border-[#EBEBEB] px-3 py-1.5 rounded-full animate-slide-down animate-fade-out'>
-							{t('survey.oneQuestionPerPage.hintEnter', '按 Enter 继续')}
+						{t('oneQuestionPerPage.hintEnter', '按 Enter 继续')}
 						</div>
 					</div>
 				)}
-				
+
 				{/* Two-column layout for iPad and above (≥768px) */}
 				<div className='md:flex md:gap-8'>
 					{/* Left Column - Question Content */}
@@ -247,10 +247,7 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 							<div className='mb-6'>
 								<img
 									src={currentQuestion.descriptionImage}
-									alt={t(
-										'survey.oneQuestionPerPage.descriptionImage',
-										'Question illustration'
-									)}
+								alt={t('oneQuestionPerPage.descriptionImage', 'Question illustration')}
 									className='max-w-full h-auto rounded-lg border border-gray-300 mx-auto md:mx-0'
 									onLoad={() => {
 										console.log(
@@ -353,13 +350,7 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 											<div className='mt-4'>
 												<img
 													src={optionImage}
-													alt={t(
-														'survey.oneQuestionPerPage.optionImage',
-														'Option {{number}}',
-														{
-															number: optIndex + 1,
-														}
-													)}
+								alt={t('oneQuestionPerPage.optionImage', 'Option {{number}}', { number: optIndex + 1 })}
 													className='max-w-full h-auto rounded-lg border border-[#EBEBEB] shadow-sm'
 													style={{ maxHeight: '200px' }}
 													onLoad={() => {
@@ -401,10 +392,7 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 										/>
 									</svg>
 									<span className='text-sm font-medium'>
-										{t(
-											'survey.oneQuestionPerPage.answerRequired',
-											'Please provide an answer to continue.'
-										)}
+									{t('oneQuestionPerPage.answerRequired', 'Please provide an answer to continue.')}
 									</span>
 								</div>
 							</div>
@@ -427,7 +415,7 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 			{/* Keyboard Hint */}
 			<div className='text-center text-sm text-[#767676]'>
 				{t(
-					'survey.oneQuestionPerPage.keyboardHint',
+						'oneQuestionPerPage.keyboardHint',
 					'Tip: Press Enter to proceed to the next question'
 				)}
 			</div>

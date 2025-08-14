@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 const Hero: React.FC = () => {
-	const { t } = useTranslation();
+    const { t, i18n } = useTranslation('translation');
+    React.useEffect(() => {
+        i18n.loadNamespaces(['translation']).catch(() => {});
+    }, [i18n]);
 
 	return (
 		<section className='relative bg-gradient-to-b from-[#F7F7F7] to-white py-24 lg:py-32 overflow-hidden'>

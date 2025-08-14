@@ -10,7 +10,8 @@
 		"questionBanks": "Question Banks",
 		"profile": "Profile",
 		"billing": "Billing",
-		"dashboard": "Dashboard"
+		"dashboard": "Dashboard",
+		"companyInfo": "Company Info"
 	},
 	"profile": {
 		"settings": "Profile Settings",
@@ -67,7 +68,7 @@
 		"total": "Total"
 	},
 	"errors": {
-		"collectionNotFound": "Collection not found",
+		"collectionNotFound": "Collection not found"
 	},
 	"landing": {
 		"hero": {

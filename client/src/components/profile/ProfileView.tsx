@@ -6,7 +6,10 @@ import ImageUpload from '../common/ImageUpload';
 import BillingView from '../billing/BillingView';
 
 const ProfileView: React.FC = () => {
-	const { t } = useTranslation();
+    const { t, i18n } = useTranslation('translation');
+    useEffect(() => {
+        i18n.loadNamespaces(['translation']).catch(() => {});
+    }, [i18n]);
 	const location = useLocation();
 	const navigate = useNavigate();
 	const {
@@ -103,7 +106,7 @@ const ProfileView: React.FC = () => {
 	if (loading && !profileData) {
 		return (
 			<div className='flex justify-center items-center py-12'>
-				<div className='text-lg text-gray-600'>Loading profile...</div>
+                <div className='text-lg text-gray-600'>{t('common.loading', 'Loading...')}</div>
 			</div>
 		);
 	}
