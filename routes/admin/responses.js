@@ -32,21 +32,21 @@ router.get(
  * @access  Private (Admin)
  */
 router.delete(
-    '/responses/:responseId',
-    jwtAuth,
-    asyncHandler(async (req, res) => {
-        const { responseId } = req.params;
-        const response = await Response.findById(responseId).populate('surveyId');
-        if (!response) {
-            throw new AppError('Response not found', HTTP_STATUS.NOT_FOUND);
-        }
-        const survey = response.surveyId;
-        if (!survey || survey.createdBy.toString() !== req.user.id) {
-            throw new AppError('Unauthorized to delete this response', HTTP_STATUS.FORBIDDEN);
-        }
-        await Response.deleteOne({ _id: responseId });
-        res.json({ success: true, message: 'Response deleted' });
-    })
+	'/responses/:responseId',
+	jwtAuth,
+	asyncHandler(async (req, res) => {
+		const { responseId } = req.params;
+		const response = await Response.findById(responseId).populate('surveyId');
+		if (!response) {
+			throw new AppError('Response not found', HTTP_STATUS.NOT_FOUND);
+		}
+		const survey = response.surveyId;
+		if (!survey || survey.createdBy.toString() !== req.user.id) {
+			throw new AppError('Unauthorized to delete this response', HTTP_STATUS.FORBIDDEN);
+		}
+		await Response.deleteOne({ _id: responseId });
+		res.json({ success: true, message: 'Response deleted' });
+	})
 );
 
 /**
@@ -252,23 +252,23 @@ router.get(
 			responseFilter.email = { $regex: email, $options: 'i' };
 		}
 
-        // Filter by date range (treat toDate as end-of-day inclusive)
-        if (fromDate || toDate) {
-            responseFilter.createdAt = {};
-            if (fromDate) {
-                const start = new Date(fromDate);
-                // Normalize to start of day
-                start.setHours(0, 0, 0, 0);
-                responseFilter.createdAt.$gte = start;
-            }
-            if (toDate) {
-                const endExclusive = new Date(toDate);
-                // Move to next day start to make original day inclusive
-                endExclusive.setHours(0, 0, 0, 0);
-                endExclusive.setDate(endExclusive.getDate() + 1);
-                responseFilter.createdAt.$lt = endExclusive;
-            }
-        }
+		// Filter by date range (treat toDate as end-of-day inclusive)
+		if (fromDate || toDate) {
+			responseFilter.createdAt = {};
+			if (fromDate) {
+				const start = new Date(fromDate);
+				// Normalize to start of day
+				start.setHours(0, 0, 0, 0);
+				responseFilter.createdAt.$gte = start;
+			}
+			if (toDate) {
+				const endExclusive = new Date(toDate);
+				// Move to next day start to make original day inclusive
+				endExclusive.setHours(0, 0, 0, 0);
+				endExclusive.setDate(endExclusive.getDate() + 1);
+				responseFilter.createdAt.$lt = endExclusive;
+			}
+		}
 
 		// Filter by completion status
 		if (status) {
@@ -280,7 +280,7 @@ router.get(
 			}
 		}
 
-        let responses = await Response.find(responseFilter).sort({ createdAt: -1 }).lean();
+		let responses = await Response.find(responseFilter).sort({ createdAt: -1 }).lean();
 
 		// Filter incomplete responses if needed (post-processing)
 		if (status === 'incomplete') {
@@ -353,12 +353,6 @@ router.get(
 
 			console.log(`Using survey questions (legacy method)`);
 		}
-
-		// Debug: Print survey questions
-		console.log(
-			'Survey questions:',
-			questions.map((q, i) => `${i}: ${q.text} - [${(q.options || []).join(', ')}]`)
-		);
 
 		// Calculate aggregated statistics
 		const stats = questions.map((q, questionIndex) => {

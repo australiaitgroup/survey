@@ -50,7 +50,7 @@ router.post(
     '/assessment/:slug/start',
     asyncHandler(async (req, res) => {
         const { slug } = req.params;
-        const { name, email, attempt } = req.body || {};
+        const { name, email, attempt, resume } = req.body || {};
 
         if (!email || !name) {
             throw new AppError('Missing required fields: name, email', HTTP_STATUS.BAD_REQUEST);
@@ -74,7 +74,8 @@ router.post(
 
         let selectedQuestions = [];
 
-        if (existingResponse && existingResponse.selectedQuestions?.length > 0) {
+        // Only reuse an existing selection when explicitly resuming
+        if (resume === true && existingResponse && existingResponse.selectedQuestions?.length > 0) {
             selectedQuestions = existingResponse.selectedQuestions.map(sq => sq.questionData);
         } else {
             if (survey.sourceType === SOURCE_TYPE.MANUAL) {
@@ -124,6 +125,9 @@ router.post(
                     const selected = shuffled.slice(0, Math.min(config.questionCount, shuffled.length));
                     selectedQuestions.push(...selected);
                 }
+                // After pooling questions from all banks, shuffle globally so questions are interleaved
+                // This ensures users see a mixed order rather than grouped by question bank
+                selectedQuestions = selectedQuestions.sort(() => 0.5 - Math.random());
             } else if (survey.sourceType === SOURCE_TYPE.MANUAL_SELECTION) {
                 if (!survey.selectedQuestions || survey.selectedQuestions.length === 0) {
                     throw new AppError('No questions selected for this survey', HTTP_STATUS.BAD_REQUEST);

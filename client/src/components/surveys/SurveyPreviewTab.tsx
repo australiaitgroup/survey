@@ -67,7 +67,7 @@ const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
 	return <PreviewContext.Provider value={value}>{children}</PreviewContext.Provider>;
 };
 
-// Device switcher removed
+type PreviewDevice = 'mobile' | 'tablet' | 'desktop';
 
 const LeftPane: React.FC<{ survey: Survey; onFocusQuestion: (q: Question) => void }> = ({
 	survey,
@@ -117,9 +117,10 @@ const LeftPane: React.FC<{ survey: Survey; onFocusQuestion: (q: Question) => voi
 };
 
 // Right pane renderer that reuses end-user components but isolated
-const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number }> = ({
+const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number; forceSingleColumn?: boolean }> = ({
 	survey,
 	externalPageIndex,
+    forceSingleColumn = false,
 }) => {
 	const { answers, setAnswer } = usePreview();
 	const { t } = useTranslation();
@@ -329,7 +330,7 @@ const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number }> = ({
 			: (survey.navigationMode as any);
 
 	// Display modes
-	if (effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
+    if (effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
 		return (
             <OneQuestionPerPageView
 				questions={questions as any}
@@ -342,6 +343,7 @@ const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number }> = ({
 				externalPageIndex={externalPageIndex}
                 ignoreRequiredForNavigation={false}
                 autoAdvanceOnSelect={false}
+                forceSingleColumn={forceSingleColumn}
 			/>
 		);
 	}
@@ -407,6 +409,9 @@ const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPan
 	// No device control; rely on responsive layout
 	const { clear, scrollToQuestion } = usePreview();
 	const [pageIndex, setPageIndex] = useState<number>(0);
+    const [device, setDevice] = useState<PreviewDevice>(
+        survey.type === SURVEY_TYPE.ASSESSMENT ? 'mobile' : 'desktop'
+    );
 	// Use effective navigation mode for label and behaviors in preview
 	// Assessment types now use step-by-step mode (handled by TakeAssessment component)
 	const effectiveNavigationMode = React.useMemo(
@@ -416,6 +421,19 @@ const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPan
 				: (survey.navigationMode as any),
 		[survey.type, survey.navigationMode]
 	);
+
+	// Constrain preview width by selected device for better fidelity
+	const containerWidthClass = React.useMemo(() => {
+		switch (device) {
+			case 'mobile':
+				return 'max-w-[420px]';
+			case 'tablet':
+				return 'max-w-[768px]';
+			case 'desktop':
+			default:
+				return 'max-w-[1024px]';
+		}
+	}, [device]);
 
 	const navigationLabel = React.useMemo(() => {
 		if (effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
@@ -447,32 +465,57 @@ const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPan
 	return (
 		<div className='flex flex-col h-full min-h-[75vh]'>
 			{/* Header */}
-			<div className='flex items-center justify-between pb-3 border-b border-gray-200'>
-				<div className='flex items-center gap-3'>
+			<div className='pb-3 border-b border-gray-200'>
+				{/* Row 1: Title + Preview tag */}
+				<div className='flex items-center gap-3 mb-2'>
 					<h3 className='text-lg font-semibold'>{survey.title}</h3>
 					<span className='px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700'>
 						{t('preview.badge', 'Preview')}
 					</span>
-					<span className='px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-700'>
-						{t('preview.navigation.label', 'Navigation:')} {navigationLabel}
-					</span>
 				</div>
-				<div className='flex items-center gap-3'>
+				{/* Row 2: Badges on the left, device switcher on the right */}
+				<div className='flex items-center justify-between gap-2 flex-wrap'>
+					<div className='flex items-center gap-2'>
+						<span className='px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-700'>
+							{t('preview.navigation.label', 'Navigation:')} {navigationLabel}
+						</span>
+					</div>
+					{/* Device switcher */}
+					<div className='flex items-center gap-2'>
+						<button
+							className={`px-2 py-1 text-xs rounded border ${device === 'mobile' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-700 border-gray-300'}`}
+							onClick={() => setDevice('mobile')}
+						>
+							{t('preview.device.mobile', 'Mobile')}
+						</button>
+						<button
+							className={`px-2 py-1 text-xs rounded border ${device === 'tablet' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-700 border-gray-300'}`}
+							onClick={() => setDevice('tablet')}
+						>
+							{t('preview.device.tablet', 'Tablet')}
+						</button>
+						<button
+							className={`px-2 py-1 text-xs rounded border ${device === 'desktop' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-700 border-gray-300'}`}
+							onClick={() => setDevice('desktop')}
+						>
+							{t('preview.device.desktop', 'Desktop')}
+						</button>
+					</div>
 				</div>
 			</div>
 
 			{/* Content */}
 			<div
-				className={`flex flex-1 gap-4 sm:gap-6 pt-4 overflow-hidden ${hideLeftPane ? 'flex-col' : ''}`}
+				className={`flex flex-1 gap-4 sm:gap-6 pt-4 overflow-hidden ${hideLeftPane ? 'flex-col' : 'flex-col md:flex-row'}`}
 			>
 				{!hideLeftPane && (
-					<div className='w-[40%] min-w-[280px]'>
+					<div className='w-full md:w-[40%] md:min-w-[280px]'>
 						<LeftPane survey={survey} onFocusQuestion={onFocusQuestion} />
 					</div>
 				)}
 				{/* Right */}
 				<div className='flex-1 h-full overflow-y-auto'>
-					<div className='mx-auto w-full px-2 md:px-0'>
+					<div className={`mx-auto w-full px-2 md:px-0 ${containerWidthClass}`}>
 						<div className='mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3'>
 							<div className='flex items-center gap-3'>
 								<img
@@ -498,7 +541,13 @@ const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPan
 								</div>
 							</div>
 						</div>
-						<RightPane survey={survey} externalPageIndex={pageIndex} />
+                        <div>
+                            <RightPane
+                                survey={survey}
+                                externalPageIndex={pageIndex}
+                                forceSingleColumn={device === 'mobile'}
+                            />
+                        </div>
 						<div className='mt-6 pb-2 text-center text-xs text-[#767676]'>
 							Powered by{' '}
 							<a

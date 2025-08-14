@@ -29,6 +29,8 @@ interface OneQuestionPerPageViewProps {
 	ignoreRequiredForNavigation?: boolean;
   // Control whether selecting an option automatically advances to next question
   autoAdvanceOnSelect?: boolean;
+  // Force single-column layout regardless of viewport (useful for admin preview "mobile" mode)
+  forceSingleColumn?: boolean;
 }
 
 const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
@@ -42,6 +44,7 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 	externalPageIndex,
 	ignoreRequiredForNavigation = false,
     autoAdvanceOnSelect = true,
+    forceSingleColumn = false,
 }) => {
 	const { t } = useTranslation('survey');
 	const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -183,10 +186,10 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 					</div>
 				)}
 
-				{/* Two-column layout for iPad and above (≥768px) */}
-				<div className='md:flex md:gap-8'>
+				{/* Layout: two-columns on md+ by default; force single-column when requested (admin preview mobile) */}
+				<div className={`${forceSingleColumn ? 'flex flex-col gap-6' : 'md:flex md:gap-8'}`}>
 					{/* Left Column - Question Content */}
-					<div className='md:flex-1 md:pr-4'>
+					<div className={`${forceSingleColumn ? '' : 'md:flex-1 md:pr-4'}`}>
 						{/* Question Text */}
 						<div className='mb-6'>
 							<h3 className='text-xl md:text-2xl font-medium text-[#484848] leading-relaxed flex items-start'>
@@ -268,7 +271,7 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 					</div>
 
 					{/* Right Column - Answer Input */}
-					<div className='md:flex-1 md:pl-4 md:border-l md:border-gray-200'>
+					<div className={`${forceSingleColumn ? '' : 'md:flex-1 md:pl-4 md:border-l md:border-gray-200'}`}>
 						{currentQuestion.type === QUESTION_TYPE.SHORT_TEXT ? (
 							<div className='space-y-4'>
 								<textarea

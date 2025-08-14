@@ -84,9 +84,22 @@ const SurveyCard: React.FC<SurveyCardProps> = ({ survey }) => {
 					<p className='text-gray-600 mb-2 text-sm'>
 						{survey.description || 'No description'}
 					</p>
-					<div className='flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-500'>
+						<div className='flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-500'>
 						<span>
-						{survey.questions?.length || 0}{' '}
+						{(() => {
+							// Compute question count based on source type
+							if (survey.sourceType === 'question_bank') {
+								return survey.questionCount || 0;
+							}
+							if (survey.sourceType === 'multi_question_bank') {
+								const total = (survey.multiQuestionBankConfig || []).reduce((sum, cfg) => sum + (cfg?.questionCount || 0), 0);
+								return total;
+							}
+							if (survey.sourceType === 'manual_selection') {
+								return (survey.selectedQuestions || []).length;
+							}
+							return survey.questions?.length || 0;
+						})()}{' '}
 						{t('questions.title', 'Questions')}
 						</span>
 						<span>
