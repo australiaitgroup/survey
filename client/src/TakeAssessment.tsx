@@ -124,9 +124,8 @@ const TakeAssessment: React.FC = () => {
 					timeLeft: prev.timeLeft - 1,
 				}));
 			}, 1000);
-		} else if (timer.isActive && timer.timeLeft <= 0 && !autoSubmitRef.current) {
+		} else if (timer.isActive && timer.timeLeft <= 0) {
 			setTimer(prev => ({ ...prev, isExpired: true, isActive: false }));
-			autoSubmitRef.current = true;
 			handleAutoSubmit();
 		}
 
@@ -586,6 +585,12 @@ const TakeAssessment: React.FC = () => {
 				{/* Questions Step - Step by Step Navigation */}
 				{currentStep === 'questions' && currentQuestion && questionsLoaded && (
 					<div className='w-full bg-white rounded-xl border border-[#EBEBEB] p-6'>
+						{/* Time expired notice */}
+						{timer.isExpired && (
+							<div className='mb-4 p-3 rounded-md bg-red-50 text-red-700 text-sm font-medium'>
+								Time is up. Auto-submitting your assessment...
+							</div>
+						)}
 						{/* Header with centered progress bar and right-side timer */}
 						<div className='flex items-center mb-6'>
 							<div className='flex-1' />
@@ -667,7 +672,7 @@ const TakeAssessment: React.FC = () => {
 															: 'border-gray-200 hover:border-blue-300/60'
 													}`}
 												>
-													<input
+										<input
 														type={currentQuestion.type === 'single_choice' ? 'radio' : 'checkbox'}
 														name={currentQuestion._id}
 														className='mt-1 mr-3'
@@ -690,6 +695,7 @@ const TakeAssessment: React.FC = () => {
 																}
 															}
 														}}
+											disabled={timer.isExpired || loading || submitted}
 														{...getInputProps()}
 													/>
 													<div className='flex-1'>
@@ -721,6 +727,7 @@ const TakeAssessment: React.FC = () => {
 											value={form.answers[currentQuestion._id] || ''}
 											onChange={e => handleAnswerChange(currentQuestion._id, e.target.value)}
 											placeholder='Enter your answer here...'
+											disabled={timer.isExpired || loading || submitted}
 											{...getInputProps()}
 										/>
 									</div>
@@ -730,9 +737,9 @@ const TakeAssessment: React.FC = () => {
 
 						{/* Navigation + Center Progress */}
 						<div className='flex justify-between items-center pt-4'>
-							<button
+								<button
 								onClick={prevQuestion}
-								disabled={currentQuestionIndex === 0}
+									disabled={currentQuestionIndex === 0 || timer.isExpired || loading || submitted}
 								className='btn-secondary disabled:opacity-50 disabled:cursor-not-allowed'
 							>
 								Previous
@@ -741,9 +748,10 @@ const TakeAssessment: React.FC = () => {
 							<div className='flex gap-3'>
 								{/* Skip Button on the right side */}
 								{currentQuestionIndex < totalQuestions - 1 && (
-									<button
+										<button
 										onClick={skipQuestion}
-										className='btn-outline text-gray-600 border-gray-300 hover:border-gray-400 hover:text-gray-700'
+										disabled={timer.isExpired || loading || submitted}
+										className='btn-outline text-gray-600 border-gray-300 hover:border-gray-400 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed'
 									>
 										Skip Question
 									</button>
@@ -752,13 +760,13 @@ const TakeAssessment: React.FC = () => {
 								{currentQuestionIndex === totalQuestions - 1 ? (
 									<button
 										onClick={() => handleSubmit()}
-										disabled={loading}
+										disabled={loading || timer.isExpired || submitted}
 										className='btn-primary disabled:opacity-50'
 									>
 										{loading ? 'Submitting...' : 'Submit Assessment'}
 									</button>
 								) : (
-									<button onClick={() => nextQuestion(false)} className='btn-primary'>
+									<button onClick={() => nextQuestion(false)} disabled={timer.isExpired || loading || submitted} className='btn-primary disabled:opacity-50 disabled:cursor-not-allowed'>
 										Next
 									</button>
 								)}
