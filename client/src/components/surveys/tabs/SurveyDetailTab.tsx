@@ -287,7 +287,7 @@ const SurveyDetailTab: React.FC<Props> = ({
 			</div>
 
 			{showInlinePreview && (
-				<div className='w-full lg:flex-1'>
+				<div className='w-full lg:w-1/2'>
 					<div className='card'>
 						<SurveyPreviewTab survey={s} hideLeftPane />
 					</div>

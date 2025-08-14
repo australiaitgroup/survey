@@ -509,12 +509,12 @@ const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPan
 				className={`flex flex-1 gap-4 sm:gap-6 pt-4 overflow-hidden ${hideLeftPane ? 'flex-col' : 'flex-col md:flex-row'}`}
 			>
 				{!hideLeftPane && (
-					<div className='w-full md:w-[40%] md:min-w-[280px]'>
+					<div className='w-full md:w-1/2 md:min-w-[320px]'>
 						<LeftPane survey={survey} onFocusQuestion={onFocusQuestion} />
 					</div>
 				)}
 				{/* Right */}
-				<div className='flex-1 h-full overflow-y-auto'>
+				<div className={`${hideLeftPane ? 'flex-1' : 'md:w-1/2'} h-full overflow-y-auto`}>
 					<div className={`mx-auto w-full px-2 md:px-0 ${containerWidthClass}`}>
 						<div className='mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3'>
 							<div className='flex items-center gap-3'>
