@@ -42,6 +42,15 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 
 	const totals = stats?.summary || { totalResponses: 0, completionRate: 0, totalQuestions: 0 };
 
+	const formatTime = (seconds: number): string => {
+		if (seconds < 60) {
+			return `${Math.round(seconds)}s`;
+		}
+		const minutes = Math.floor(seconds / 60);
+		const remainingSeconds = Math.round(seconds % 60);
+		return `${minutes}m ${remainingSeconds}s`;
+	};
+
   // Local state for per-response details (question-level correctness)
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
   const [details, setDetails] = React.useState<Record<string, any>>({});
@@ -260,7 +269,7 @@ const SurveyStatisticsTab: React.FC<Props> = ({
                                                 </div>
                                                     <div className='text-sm text-gray-600'>
                                                         <div>Submitted at: <span className='font-medium text-gray-800'>{new Date(response.createdAt).toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: 'short' })}</span></div>
-                                                        <div>Time spent: <span className='font-medium text-gray-800'>{(response.timeSpent ?? 0)}s</span></div>
+                                                        <div>Time spent: <span className='font-medium text-gray-800'>{formatTime(response.timeSpent ?? 0)}</span></div>
                                                     </div>
                                                     <div className='mt-3 flex gap-2'>
                                                         <button

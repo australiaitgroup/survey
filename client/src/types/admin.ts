@@ -41,6 +41,8 @@ export interface UserResponse {
 	email: string;
 	answers: Record<string, string>;
 	createdAt: string;
+	timeSpent?: number;
+	isAutoSubmit?: boolean;
   // Optional scoring info for assessment/quiz/iq
   score?: {
     totalPoints: number;
