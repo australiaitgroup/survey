@@ -14,6 +14,7 @@ const questionBanksRouter = require('./routes/questionBanks');
 const subscriptionRouter = require('./routes/subscription');
 const collectionsRouter = require('./routes/collections');
 const companiesRouter = require('./routes/companies');
+const superAdminRouter = require('./routes/superAdmin');
 const errorHandler = require('./middlewares/errorHandler');
 const { extractTenantFromUrl, multiTenant } = require('./middlewares/multiTenant');
 
@@ -66,6 +67,8 @@ app.use('/api/admin/question-banks', questionBanksRouter);
 app.use('/api/invitations', invitationsRouter);
 app.use('/api/subscription', subscriptionRouter);
 app.use('/api/companies', companiesRouter);
+// Super Admin API (cross-tenant)
+app.use('/api/sa', superAdminRouter);
 // Collections API
 app.use('/api', collectionsRouter);
 
