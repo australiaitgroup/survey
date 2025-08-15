@@ -77,6 +77,9 @@ app.use(errorHandler);
 // Serve uploaded images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Serve Super Admin dashboard (independent from client)
+app.use('/super-admin', express.static(path.join(__dirname, 'super-admin')));
+
 // Serve static files from the React build
 const CLIENT_BUILD_PATH = path.join(__dirname, 'client', 'dist');
 app.use(express.static(CLIENT_BUILD_PATH));
