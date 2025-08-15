@@ -66,7 +66,7 @@ const TakeAssessment: React.FC = () => {
 	const [startTime, setStartTime] = useState<Date | null>(null);
 
 	// Question timing tracking
-	const [questionTimings, setQuestionTimings] = useState<Record<string, QuestionTiming>>({});
+	const [questionTimings, setQuestionTimings] = useState<Record<number, QuestionTiming>>({});
 	const [currentQuestionStartTime, setCurrentQuestionStartTime] = useState<number | null>(null);
 
 	const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -126,7 +126,21 @@ const TakeAssessment: React.FC = () => {
 			}, 1000);
 		} else if (timer.isActive && timer.timeLeft <= 0) {
 			setTimer(prev => ({ ...prev, isExpired: true, isActive: false }));
-			handleAutoSubmit();
+
+			// Handle auto-submit directly here to avoid stale closure issues
+			if (!autoSubmitRef.current) {
+				autoSubmitRef.current = true;
+				console.log('Timer expired - attempting auto-submit');
+
+				// Use a timeout to ensure the state update has been processed
+				setTimeout(() => {
+					handleSubmit(null, true).then(() => {
+						console.log('Auto-submit successful');
+					}).catch((error) => {
+						console.error('Auto-submit failed:', error);
+					});
+				}, 100);
+			}
 		}
 
 		return () => {
@@ -134,18 +148,7 @@ const TakeAssessment: React.FC = () => {
 				clearTimeout(timerRef.current);
 			}
 		};
-	}, [timer.isActive, timer.timeLeft]);
-
-	const handleAutoSubmit = useCallback(async () => {
-		if (autoSubmitRef.current) return;
-		autoSubmitRef.current = true;
-
-		try {
-			await handleSubmit(null, true);
-		} catch (error) {
-			console.error('Auto-submit failed:', error);
-		}
-	}, []);
+	}, [timer.isActive, timer.timeLeft, survey, questionsLoaded, submitted, questions, form, currentStep, currentQuestionStartTime, questionTimings, currentQuestionIndex, startTime, assessmentMeta, slug]);
 
 	const formatTime = (seconds: number): string => {
 		const mins = Math.floor(seconds / 60);
@@ -205,14 +208,13 @@ const TakeAssessment: React.FC = () => {
             console.error('Failed to start assessment:', e);
         }
 
-		// Start timing for the first question
+		// Start timing for the first question (index-based)
 		if ((questionsLoaded ? questions : survey.questions)?.length > 0) {
-			const firstQuestion = questionsLoaded ? questions[0] : survey.questions[0];
-			const startTime = Date.now();
-			setCurrentQuestionStartTime(startTime);
+			const startTimeMs = Date.now();
+			setCurrentQuestionStartTime(startTimeMs);
 			setQuestionTimings(prev => ({
 				...prev,
-				[firstQuestion._id]: { startTime },
+				[0]: { startTime: startTimeMs },
 			}));
 		}
 
@@ -221,12 +223,12 @@ const TakeAssessment: React.FC = () => {
 		}
 	};
 
-	const handleAnswerChange = (questionId: string, value: string | string[]) => {
+	const handleAnswerChange = (questionIndex: number, value: string | string[]) => {
 		setForm(prev => ({
 			...prev,
 			answers: {
 				...prev.answers,
-				[questionId]: value,
+				[questionIndex]: value,
 			},
 		}));
 	};
@@ -243,20 +245,20 @@ const TakeAssessment: React.FC = () => {
 
 			setQuestionTimings(prev => ({
 				...prev,
-				[currentQuestion._id]: {
-					...prev[currentQuestion._id],
+				[currentQuestionIndex]: {
+					...prev[currentQuestionIndex],
 					endTime,
 					duration,
 				},
 			}));
 
 			// If this is a skip, mark the answer as skipped (empty)
-            if (isSkip && !form.answers[currentQuestion._id]) {
+			if (isSkip && !form.answers[currentQuestionIndex]) {
 				setForm(prev => ({
 					...prev,
 					answers: {
-                        ...prev.answers,
-                        [currentQuestion._id]: '', // Empty answer for skipped questions
+						...prev.answers,
+						[currentQuestionIndex]: '', // Empty answer for skipped questions
 					},
 				}));
 			}
@@ -272,7 +274,7 @@ const TakeAssessment: React.FC = () => {
 			setCurrentQuestionStartTime(startTime);
 			setQuestionTimings(prev => ({
 				...prev,
-				[nextQuestion._id]: { startTime },
+				[nextIndex]: { startTime },
 			}));
 		}
 	};
@@ -293,10 +295,10 @@ const TakeAssessment: React.FC = () => {
 
 			setQuestionTimings(prev => ({
 				...prev,
-				[currentQuestion._id]: {
-					...prev[currentQuestion._id],
+				[currentQuestionIndex]: {
+					...prev[currentQuestionIndex],
 					endTime,
-					duration: (prev[currentQuestion._id]?.duration || 0) + duration,
+					duration: (prev[currentQuestionIndex]?.duration || 0) + duration,
 				},
 			}));
 		}
@@ -310,8 +312,8 @@ const TakeAssessment: React.FC = () => {
 		setCurrentQuestionStartTime(startTime);
 		setQuestionTimings(prev => ({
 			...prev,
-			[prevQuestion._id]: {
-				...prev[prevQuestion._id],
+			[prevIndex]: {
+				...prev[prevIndex],
 				startTime,
 			},
 		}));
@@ -319,7 +321,13 @@ const TakeAssessment: React.FC = () => {
 
 	const handleSubmit = async (e: React.FormEvent | null = null, isAutoSubmit = false) => {
 		if (e) e.preventDefault();
-		if (!survey || !questionsLoaded || submitted) return;
+
+		console.log('handleSubmit called', { isAutoSubmit, survey: !!survey, questionsLoaded, submitted });
+
+		if (!survey || !questionsLoaded || submitted) {
+			console.log('handleSubmit early return', { survey: !!survey, questionsLoaded, submitted });
+			return;
+		}
 
 		setLoading(true);
 		autoSubmitRef.current = true;
@@ -336,11 +344,11 @@ const TakeAssessment: React.FC = () => {
 
 					finalQuestionTimings = {
 						...finalQuestionTimings,
-						[currentQuestion._id]: {
-							...finalQuestionTimings[currentQuestion._id],
+						[currentQuestionIndex]: {
+							...finalQuestionTimings[currentQuestionIndex],
 							endTime,
 							duration:
-								(finalQuestionTimings[currentQuestion._id]?.duration || 0) +
+								(finalQuestionTimings[currentQuestionIndex]?.duration || 0) +
 								duration,
 						},
 					};
@@ -349,19 +357,25 @@ const TakeAssessment: React.FC = () => {
 
 			const timeSpent = startTime ? Math.floor((Date.now() - startTime.getTime()) / 1000) : 0;
 
-            // Submit to assessment endpoint for server-side scoring
-            const answersArray = questions.map(q => form.answers[q._id]);
-            const submitResp = await axios.post(getApiPath(`/assessment/${slug}/submit`), {
-                responseId: assessmentMeta.responseId,
-                answers: answersArray,
-                timeSpent,
-                answerDurations: Object.fromEntries(
-                    Object.entries(finalQuestionTimings).map(([qid, v]) => [qid, v.duration || 0])
-                ),
-            });
+			// Submit to assessment endpoint for server-side scoring
+			const answersArray = questions.map((_, idx) => form.answers[idx]);
+			const submitData = {
+				responseId: assessmentMeta.responseId,
+				answers: answersArray,
+				timeSpent,
+				isAutoSubmit,
+				answerDurations: Object.fromEntries(
+					Object.entries(finalQuestionTimings).map(([idx, v]) => [idx, v.duration || 0])
+				),
+			};
+
+			console.log('Submitting to API', { url: getApiPath(`/assessment/${slug}/submit`), data: submitData });
+			const submitResp = await axios.post(getApiPath(`/assessment/${slug}/submit`), submitData);
 
             const apiScore = submitResp.data.score;
             const apiResults = submitResp.data.questionResults || [];
+
+			console.log('API submission successful', { apiScore, apiResults });
 
             setAssessmentResults(apiResults);
             setScoringResult({
@@ -379,7 +393,8 @@ const TakeAssessment: React.FC = () => {
 
 			// Stop timer
 			setTimer(prev => ({ ...prev, isActive: false }));
-		} catch {
+		} catch (error) {
+			console.error('handleSubmit error:', error);
 			setError('Failed to submit assessment. Please try again.');
 		} finally {
 			setLoading(false);
@@ -657,11 +672,11 @@ const TakeAssessment: React.FC = () => {
 										{currentQuestion.options.map((option, index) => {
 											const optionText = typeof option === 'string' ? option : option.text || '';
 											const optionImage = typeof option === 'object' ? option.imageUrl : null;
-											const isSelected =
-												currentQuestion.type === 'single_choice'
-													? form.answers[currentQuestion._id] === optionText
-													: Array.isArray(form.answers[currentQuestion._id]) &&
-														form.answers[currentQuestion._id].includes(optionText);
+									const isSelected =
+										currentQuestion.type === 'single_choice'
+											? form.answers[currentQuestionIndex] === optionText
+											: Array.isArray(form.answers[currentQuestionIndex]) &&
+												form.answers[currentQuestionIndex].includes(optionText);
 
 											return (
 												<label
@@ -674,22 +689,22 @@ const TakeAssessment: React.FC = () => {
 												>
 										<input
 														type={currentQuestion.type === 'single_choice' ? 'radio' : 'checkbox'}
-														name={currentQuestion._id}
+												name={`q_${currentQuestionIndex}`}
 														className='mt-1 mr-3'
 														checked={isSelected}
 														onChange={() => {
-															if (currentQuestion.type === 'single_choice') {
-																handleAnswerChange(currentQuestion._id, optionText);
+														if (currentQuestion.type === 'single_choice') {
+														handleAnswerChange(currentQuestionIndex, optionText);
 															} else {
-																const currentAnswers = (form.answers[currentQuestion._id] as string[]) || [];
+														const currentAnswers = (form.answers[currentQuestionIndex] as string[]) || [];
 																if (isSelected) {
 																	handleAnswerChange(
-																		currentQuestion._id,
+																currentQuestionIndex,
 																		currentAnswers.filter(a => a !== optionText)
 																	);
 																} else {
 																	handleAnswerChange(
-																		currentQuestion._id,
+																currentQuestionIndex,
 																		[...currentAnswers, optionText]
 																	);
 																}
@@ -724,8 +739,8 @@ const TakeAssessment: React.FC = () => {
 									<div className='flex-1'>
 										<textarea
 											className='w-full h-40 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none'
-											value={form.answers[currentQuestion._id] || ''}
-											onChange={e => handleAnswerChange(currentQuestion._id, e.target.value)}
+										value={form.answers[currentQuestionIndex] || ''}
+										onChange={e => handleAnswerChange(currentQuestionIndex, e.target.value)}
 											placeholder='Enter your answer here...'
 											disabled={timer.isExpired || loading || submitted}
 											{...getInputProps()}

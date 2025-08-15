@@ -183,7 +183,7 @@ router.post(
     '/assessment/:slug/submit',
     asyncHandler(async (req, res) => {
         const { slug } = req.params;
-        const { responseId, answers = [], timeSpent = 0, answerDurations = {} } = req.body || {};
+        const { responseId, answers = [], timeSpent = 0, answerDurations = {}, isAutoSubmit = false } = req.body || {};
 
         if (!responseId) {
             throw new AppError('Missing responseId', HTTP_STATUS.BAD_REQUEST);
@@ -286,6 +286,7 @@ router.post(
         );
         responseDoc.questionSnapshots = questionSnapshots;
         responseDoc.timeSpent = timeSpent;
+        responseDoc.isAutoSubmit = Boolean(isAutoSubmit);
         responseDoc.score = {
             totalPoints,
             correctAnswers,

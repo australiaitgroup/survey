@@ -273,8 +273,14 @@ router.get(
 		// Filter by completion status
 		if (status) {
 			if (status === 'completed') {
-				// Responses with at least one non-empty answer
-				responseFilter.answers = { $exists: true, $ne: {} };
+				// For assessments, check questionSnapshots; for surveys, check answers
+				if (survey.type === 'assessment') {
+					// Assessment responses are considered completed if they have questionSnapshots
+					responseFilter.questionSnapshots = { $exists: true, $ne: [] };
+				} else {
+					// Responses with at least one non-empty answer
+					responseFilter.answers = { $exists: true, $ne: {} };
+				}
 			} else if (status === 'incomplete') {
 				// This is tricky to filter at DB level, we'll handle it after fetching
 			}
@@ -285,23 +291,42 @@ router.get(
 		// Filter incomplete responses if needed (post-processing)
 		if (status === 'incomplete') {
 			responses = responses.filter(response => {
-				// Check if response has any meaningful answers
-				if (!response.answers || typeof response.answers !== 'object') {
-					return true; // No answers = incomplete
+				if (survey.type === 'assessment') {
+					// For assessments, check questionSnapshots
+					if (!response.questionSnapshots || response.questionSnapshots.length === 0) {
+						return true; // No question snapshots = incomplete
+					}
+					// Check if all answers in snapshots are empty
+					const hasAnswers = response.questionSnapshots.some(snapshot => {
+						const answer = snapshot.userAnswer;
+						if (answer === null || answer === undefined || answer === '') {
+							return false;
+						}
+						if (Array.isArray(answer) && answer.length === 0) {
+							return false;
+						}
+						return true;
+					});
+					return !hasAnswers; // Return incomplete responses
+				} else {
+					// For surveys, check answers field
+					if (!response.answers || typeof response.answers !== 'object') {
+						return true; // No answers = incomplete
+					}
+
+					// Check if all answers are empty/null/undefined
+					const hasAnswers = Object.values(response.answers).some(answer => {
+						if (answer === null || answer === undefined || answer === '') {
+							return false;
+						}
+						if (Array.isArray(answer) && answer.length === 0) {
+							return false;
+						}
+						return true;
+					});
+
+					return !hasAnswers; // Return incomplete responses
 				}
-
-				// Check if all answers are empty/null/undefined
-				const hasAnswers = Object.values(response.answers).some(answer => {
-					if (answer === null || answer === undefined || answer === '') {
-						return false;
-					}
-					if (Array.isArray(answer) && answer.length === 0) {
-						return false;
-					}
-					return true;
-				});
-
-				return !hasAnswers; // Return incomplete responses
 			});
 		}
 
