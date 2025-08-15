@@ -326,6 +326,66 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
                                 {t('question.pointsHelp', 'Points awarded for answering this question correctly')}
                             </div>
 						</div>
+
+						{/* Difficulty */}
+						<div>
+                            <label className='block text-sm font-medium text-gray-700 mb-2'>
+                                {t('question.difficulty', 'Difficulty')}
+                            </label>
+							<select
+								className='input-field w-full'
+								value={form.difficulty || 'medium'}
+								onChange={e => onChange('difficulty', e.target.value)}
+							>
+								<option value='easy'>{t('question.difficulty.easy', 'Easy')}</option>
+								<option value='medium'>{t('question.difficulty.medium', 'Medium')}</option>
+								<option value='hard'>{t('question.difficulty.hard', 'Hard')}</option>
+							</select>
+                            <div className='text-xs text-gray-500 mt-1'>
+                                {t('question.difficultyHelp', 'Set the difficulty level for this question')}
+                            </div>
+						</div>
+
+						{/* Tags */}
+						<div>
+                            <label className='block text-sm font-medium text-gray-700 mb-2'>
+                                {t('question.tags', 'Tags (Optional)')}
+                            </label>
+							<input
+								type='text'
+								className='input-field w-full'
+                                placeholder={t('question.tagsPlaceholder', 'Enter tags separated by commas')}
+								value={form.tags ? form.tags.join(', ') : ''}
+								onChange={e => {
+									const tagString = e.target.value;
+									const tags = tagString
+										.split(',')
+										.map(tag => tag.trim())
+										.filter(tag => tag.length > 0);
+									onChange('tags', tags);
+								}}
+							/>
+                            <div className='text-xs text-gray-500 mt-1'>
+                                {t('question.tagsHelp', 'Add tags to help organize and filter questions')}
+                            </div>
+						</div>
+
+						{/* Explanation */}
+						<div>
+                            <label className='block text-sm font-medium text-gray-700 mb-2'>
+                                {t('question.explanation', 'Answer Explanation (Optional)')}
+                            </label>
+							<textarea
+								className='input-field w-full'
+								rows={3}
+                                placeholder={t('question.explanationPlaceholder', 'Explain why this is the correct answer')}
+								value={form.explanation || ''}
+								onChange={e => onChange('explanation', e.target.value)}
+							/>
+                            <div className='text-xs text-gray-500 mt-1'>
+                                {t('question.explanationHelp', 'Provide explanation to help users understand the correct answer')}
+                            </div>
+						</div>
 					</div>
 
 					{/* Right Column - Options Management */}

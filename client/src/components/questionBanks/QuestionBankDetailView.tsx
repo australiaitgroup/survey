@@ -184,6 +184,9 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 			type: question.type || 'single_choice',
 			correctAnswer: question.correctAnswer,
 			points: question.points || 1,
+			tags: question.tags || [],
+			explanation: question.explanation || '',
+			difficulty: question.difficulty || 'medium',
 		});
 
 		setEditingQuestionIndex(questionIndex);
@@ -452,6 +455,26 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 													<span className='text-xs bg-green-100 text-green-800 px-2 py-1 rounded'>
 														{q.points || 1} {t('questionBanks.meta.pointsAbbr', 'pts')}
 													</span>
+													{q.difficulty && (
+														<span className={`text-xs px-2 py-1 rounded ${
+															q.difficulty === 'easy' 
+																? 'bg-green-100 text-green-800'
+																: q.difficulty === 'medium'
+																	? 'bg-yellow-100 text-yellow-800' 
+																	: 'bg-red-100 text-red-800'
+														}`}>
+															{q.difficulty}
+														</span>
+													)}
+													{q.tags && q.tags.length > 0 && (
+														<div className='flex flex-wrap gap-1 mt-1'>
+															{q.tags.map((tag, tagIdx) => (
+																<span key={tagIdx} className='text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded'>
+																	{tag}
+																</span>
+															))}
+														</div>
+													)}
 												</div>
 												{q.descriptionImage && (
 													<div className='mb-2'>
@@ -552,6 +575,16 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 																</div>
 															);
 														})}
+												</div>
+											)}
+											{q.explanation && (
+												<div className='mt-3 p-3 bg-blue-50 border-l-4 border-blue-200 rounded'>
+													<div className='font-medium text-blue-800 text-sm'>
+														{t('questionBanks.explanation', 'Explanation')}:
+													</div>
+													<div className='text-blue-700 text-sm mt-1'>
+														{q.explanation}
+													</div>
 												</div>
 											)}
 										</div>
