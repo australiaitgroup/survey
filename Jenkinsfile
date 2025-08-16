@@ -76,13 +76,13 @@ pipeline {
 							fi
 
 							# Stop and remove existing survey containers
-							docker-compose -f docker-compose.prod.yml down || true
+							sudo docker-compose -f docker-compose.prod.yml down || true
 
 							# Remove only survey-related images
-							docker images | grep survey | awk '{print \$3}' | xargs -r docker rmi -f || true
+							sudo docker images | grep survey | awk '{print \$3}' | xargs -r docker rmi -f || true
 
 							# Clean up only dangling images
-							docker image prune -f
+							sudo docker image prune -f
 
 							# Step 3: Build and Deploy
 							echo "=== Building and Deploying ==="
@@ -108,19 +108,19 @@ EOF
 
 							# Build and start services
 							echo "Building and starting services..."
-							docker-compose -f docker-compose.prod.yml up --build -d
+							sudo docker-compose -f docker-compose.prod.yml up --build -d
 
 							# Wait for services to start
 							sleep 15
 
 							# Check container status
 							echo "=== Container Status ==="
-							docker-compose -f docker-compose.prod.yml ps
+							sudo docker-compose -f docker-compose.prod.yml ps
 
 							# Show logs if there are issues
-							if ! docker-compose -f docker-compose.prod.yml ps | grep -q "Up"; then
+							if ! sudo docker-compose -f docker-compose.prod.yml ps | grep -q "Up"; then
 								echo "=== Container Logs ==="
-								docker-compose -f docker-compose.prod.yml logs
+								sudo docker-compose -f docker-compose.prod.yml logs
 								exit 1
 							fi
 
