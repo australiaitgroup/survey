@@ -64,8 +64,8 @@
                     throw new Error(data.error || 'Login failed');
                 }
                 
-                // Check if user is super admin
-                if (data.user?.role !== 'superAdmin') {
+                // Check if user is super admin (accept both 'admin' and 'superAdmin' roles)
+                if (data.user?.role !== 'superAdmin' && data.user?.role !== 'admin') {
                     throw new Error('Super Admin access required');
                 }
                 
