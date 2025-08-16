@@ -14,6 +14,7 @@ const questionBanksRouter = require('./routes/questionBanks');
 const subscriptionRouter = require('./routes/subscription');
 const collectionsRouter = require('./routes/collections');
 const companiesRouter = require('./routes/companies');
+const superAdminRouter = require('./routes/superAdmin');
 const errorHandler = require('./middlewares/errorHandler');
 const { extractTenantFromUrl, multiTenant } = require('./middlewares/multiTenant');
 
@@ -66,6 +67,8 @@ app.use('/api/admin/question-banks', questionBanksRouter);
 app.use('/api/invitations', invitationsRouter);
 app.use('/api/subscription', subscriptionRouter);
 app.use('/api/companies', companiesRouter);
+// Super Admin API (cross-tenant)
+app.use('/api/sa', superAdminRouter);
 // Collections API
 app.use('/api', collectionsRouter);
 
@@ -73,6 +76,31 @@ app.use(errorHandler);
 
 // Serve uploaded images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Super Admin routes
+// In development: Super Admin runs on port 3000 (npm run dev)
+// In production: Serve built static files
+if (process.env.NODE_ENV === 'production') {
+	app.get('/super-admin', (req, res) => {
+		res.redirect('/super-admin/login');
+	});
+
+	app.get('/super-admin/login', (req, res) => {
+		res.sendFile(path.join(__dirname, 'super-admin', 'public', 'pages', 'login.html'));
+	});
+
+	app.get('/super-admin/*', (req, res) => {
+		res.sendFile(path.join(__dirname, 'super-admin', 'dist', 'index.html'));
+	});
+
+	// Serve Super Admin static files (JS, CSS, etc)
+	app.use('/super-admin', express.static(path.join(__dirname, 'super-admin', 'dist')));
+} else {
+	// In development, redirect to the dev server
+	app.get('/super-admin*', (req, res) => {
+		res.redirect('http://localhost:3000');
+	});
+}
 
 // Serve static files from the React build
 const CLIENT_BUILD_PATH = path.join(__dirname, 'client', 'dist');

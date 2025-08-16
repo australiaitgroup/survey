@@ -121,6 +121,7 @@ A modern, full-stack survey application built with Node.js, Express, MongoDB, Re
     - Frontend: http://localhost:5173
     - Backend API: http://localhost:5050
     - Admin Dashboard: http://localhost:5173/admin
+    - Super Admin Dashboard: http://localhost:5050/super-admin
 
 ## Usage
 
@@ -163,6 +164,59 @@ A modern, full-stack survey application built with Node.js, Express, MongoDB, Re
     - Receive confirmation message
     - Option to take another survey
 
+### For Super Administrators
+
+1. **Access Super Admin Dashboard**
+    - Navigate to `http://localhost:5050/super-admin`
+    - You will be redirected to the login page
+    - Login with a user account that has `superAdmin` role
+    - After successful login, you'll access the dashboard at `/super-admin/dashboard`
+
+2. **Super Admin Features**
+    - **Overview**: System-wide statistics and health monitoring
+    - **Companies**: View and manage all companies across the system
+    - **Public Banks**: Manage shared question banks
+    - **Transactions**: Monitor all financial transactions
+    - **Audit Logs**: View comprehensive audit trail of all system activities
+    
+3. **Default Super Admin Account**
+    
+    The system comes with a default super admin account for initial setup:
+    
+    ```
+    Email: superadmin@system.com
+    Password: SuperAdmin@2024!
+    ```
+    
+    **To initialize the default account, run:**
+    ```bash
+    node scripts/init-super-admin.js
+    ```
+    
+    ⚠️ **IMPORTANT**: Change the password immediately after first login!
+
+4. **Creating Additional Super Admin Users**
+    
+    **Option 1: Using the provided script**
+    ```bash
+    node scripts/create-super-admin.js admin@example.com
+    ```
+    
+    **Option 2: Manually in MongoDB**
+    ```javascript
+    // Connect to MongoDB and run:
+    db.users.updateOne(
+        { email: "admin@example.com" },
+        { $set: { role: "superAdmin" } }
+    )
+    ```
+
+5. **Security Notes**
+    - Super Admin dashboard requires authentication
+    - Session is stored in localStorage with `sa_token` and `sa_user` keys
+    - Automatic redirect to login if not authenticated or not superAdmin
+    - All Super Admin API calls require the superAdmin role
+
 ## API Endpoints
 
 ### Public Endpoints
@@ -182,6 +236,17 @@ A modern, full-stack survey application built with Node.js, Express, MongoDB, Re
 - `PUT /api/admin/surveys/:id/questions` - Add question to survey
 - `GET /api/admin/surveys/:id/statistics` - Get survey statistics
 
+### Super Admin Endpoints (require superAdmin role)
+
+- `GET /api/sa/companies` - List all companies (cross-tenant)
+- `GET /api/sa/companies/:id` - Get company details
+- `PUT /api/sa/companies/:id/suspend` - Suspend/unsuspend company
+- `GET /api/sa/stats` - Get system-wide statistics
+- `GET /api/sa/audit` - View audit logs
+- `POST /api/sa/impersonate` - Impersonate another user
+- `GET /api/sa/public-banks` - Manage public question banks
+- `GET /api/sa/transactions` - View all transactions
+
 ## Project Structure
 
 ```
@@ -195,13 +260,20 @@ survey_ai/
 │   │   └── styles.css      # Tailwind CSS styles
 │   ├── package.json
 │   └── tailwind.config.js  # Tailwind configuration
+├── super-admin/           # Super Admin dashboard (static HTML/JS)
+│   ├── index.html         # Super Admin UI
+│   ├── js/
+│   │   ├── app.js         # Main application logic
+│   │   ├── api.js         # API client
+│   │   └── components/    # UI components
 ├── models/                 # MongoDB models
 │   ├── Survey.js          # Survey schema
 │   └── Response.js        # Response schema
 ├── routes/                 # Express routes
 │   ├── admin.js           # Admin routes
 │   ├── surveys.js         # Survey routes
-│   └── responses.js       # Response routes
+│   ├── responses.js       # Response routes
+│   └── superAdmin.js      # Super Admin routes
 ├── server.js              # Express server
 └── package.json
 ```

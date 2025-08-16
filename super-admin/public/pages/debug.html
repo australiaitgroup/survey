@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Super Admin Auth</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
+        <h1 class="text-2xl font-bold mb-4">Super Admin Auth Debug</h1>
+        
+        <div class="space-y-4">
+            <button onclick="testLogin()" class="bg-blue-500 text-white px-4 py-2 rounded">Test Login</button>
+            <button onclick="checkAuth()" class="bg-green-500 text-white px-4 py-2 rounded">Check Auth</button>
+            <button onclick="clearAuth()" class="bg-red-500 text-white px-4 py-2 rounded">Clear Auth</button>
+        </div>
+        
+        <pre id="result" class="mt-4 p-4 bg-gray-100 rounded text-sm overflow-auto h-96"></pre>
+    </div>
+    
+    <script>
+        function log(msg) {
+            const result = document.getElementById('result');
+            result.textContent += new Date().toLocaleTimeString() + ': ' + msg + '\n';
+            result.scrollTop = result.scrollHeight;
+        }
+        
+        async function testLogin() {
+            log('Starting login test...');
+            
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: 'superadmin@system.com',
+                        password: 'SuperAdmin@2024!'
+                    })
+                });
+                
+                const data = await response.json();
+                log('Login response: ' + JSON.stringify(data, null, 2));
+                
+                if (data.success) {
+                    localStorage.setItem('sa_token', data.token);
+                    localStorage.setItem('sa_user', JSON.stringify(data.user));
+                    log('Stored to localStorage');
+                    checkAuth();
+                }
+            } catch (error) {
+                log('Login error: ' + error.message);
+            }
+        }
+        
+        function checkAuth() {
+            log('Checking auth...');
+            log('Current path: ' + window.location.pathname);
+            
+            const token = localStorage.getItem('sa_token');
+            const user = localStorage.getItem('sa_user');
+            
+            log('Token exists: ' + !!token);
+            log('User exists: ' + !!user);
+            
+            if (token) {
+                log('Token (first 50 chars): ' + token.substring(0, 50) + '...');
+            }
+            
+            if (user) {
+                log('User string: ' + user);
+                try {
+                    const userData = JSON.parse(user);
+                    log('Parsed user: ' + JSON.stringify(userData, null, 2));
+                    log('User role: ' + userData.role);
+                    log('Is superAdmin: ' + (userData.role === 'superAdmin'));
+                } catch (e) {
+                    log('User parse error: ' + e.message);
+                }
+            }
+        }
+        
+        function clearAuth() {
+            localStorage.removeItem('sa_token');
+            localStorage.removeItem('sa_user');
+            log('Auth cleared');
+        }
+        
+        // Auto-check on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            log('Debug page loaded');
+            checkAuth();
+        });
+    </script>
+</body>
+</html>

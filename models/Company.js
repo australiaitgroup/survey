@@ -144,6 +144,19 @@ const companySchema = new mongoose.Schema({
 		},
 	},
 
+	// Suspension fields
+	suspensionReason: {
+		type: String,
+		trim: true,
+	},
+	suspendedAt: {
+		type: Date,
+	},
+	suspendedBy: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'User',
+	},
+
 	// Metadata
 	createdAt: {
 		type: Date,
