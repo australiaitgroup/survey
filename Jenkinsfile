@@ -130,11 +130,11 @@ EOF
 						// Execute deployment on EC2
 						sshagent(credentials: ["$SSHCreds"]) {
 							sh """
-								# Copy project files to EC2
-								rsync -avz --exclude='.git' --exclude='node_modules' --exclude='client/node_modules' -e "ssh -o StrictHostKeyChecking=no" ./ $SSHUser@$SSHServerIP:/home/ubuntu/survey/
+								# Copy project files to EC2 using tar over ssh (more commonly available than rsync)
+								tar -czf - --exclude='.git' --exclude='node_modules' --exclude='client/node_modules' . | ssh -o StrictHostKeyChecking=no $SSHUser@$SSHServerIP 'mkdir -p /home/ubuntu/survey && cd /home/ubuntu/survey && tar -xzf -'
 
-								# Execute deployment script on EC2
-								ssh -o StrictHostKeyChecking=no $SSHUser@$SSHServerIP 'bash -s' << 'EOF'
+								# Execute deployment script on EC2 with environment variables
+								ssh -o StrictHostKeyChecking=no $SSHUser@$SSHServerIP "MONGO_URI='${MONGO_URI}' ADMIN_USERNAME='${ADMIN_USERNAME}' ADMIN_PASSWORD='${ADMIN_PASSWORD}' bash -s" << 'EOF'
 ${deployScriptContent}
 EOF
 							"""
