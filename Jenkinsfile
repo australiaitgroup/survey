@@ -37,107 +37,14 @@ pipeline {
 						echo "Environment variables loaded from Vault"
 						echo "MONGO_URI: ${MONGO_URI}"
 
-						// Create deployment script for EC2
-						def deployScriptContent = """
-							#!/bin/bash
-							set -e
-
-							echo "=== Deploying Survey App to EC2 ==="
-
-							# Navigate to project directory
-							cd /home/ubuntu/survey || mkdir -p /home/ubuntu/survey
-
-							echo "=== Current Working Directory ==="
-							pwd
-							echo "=== File Listing ==="
-							ls -la
-
-							# Step 1: Check Docker Compose version
-							echo "=== Checking Docker Compose version ==="
-							if command -v docker &> /dev/null && docker compose version &> /dev/null; then
-								echo "Docker Compose is already installed"
-								docker compose version
-							else
-								echo "Installing Docker Compose..."
-								curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
-								chmod +x /usr/local/bin/docker-compose
-								docker compose version
-								echo "Docker Compose installed successfully"
-							fi
-
-							# Step 2: Stop Old Containers
-							echo "=== Stopping Old Containers ==="
-							echo "=== Docker Compose Files Check ==="
-							if [ -f "docker-compose.prod.yml" ]; then
-								echo "✓ docker-compose.prod.yml exists"
-							else
-								echo "✗ docker-compose.prod.yml missing"
-								exit 1
-							fi
-
-							# Stop and remove existing survey containers
-							"docker compose -f docker-compose.prod.yml down" || true
-
-							# Remove only survey-related images
-							docker images | grep survey | awk '{print \$3}' | xargs -r docker rmi -f || true
-
-							# Clean up only dangling images
-							docker image prune -f
-
-							# Step 3: Build and Deploy
-							echo "=== Building and Deploying ==="
-
-							# Create .env file with environment variables
-							cat > .env << 'EOF'
-MONGODB_URI=${MONGO_URI}
-PORT=5173
-NODE_ENV=production
-ADMIN_USERNAME=${ADMIN_USERNAME}
-ADMIN_PASSWORD=${ADMIN_PASSWORD}
-EOF
-
-							echo "✅ Environment file created"
-
-							# Validate that required environment variables are set
-							if [ -z "${MONGO_URI}" ]; then
-								echo "ERROR: MONGO_URI environment variable is required but not set"
-								exit 1
-							fi
-
-							echo "✅ Using external MongoDB at: ${MONGO_URI}"
-
-							# Build and start services
-							echo "Building and starting services..."
-							docker compose version
-							"docker compose -f docker-compose.prod.yml up --build -d"
-
-							# Wait for services to start
-							sleep 15
-
-							# Check container status
-							echo "=== Container Status ==="
-							"docker compose -f docker-compose.prod.yml ps"
-
-							# Show logs if there are issues
-							if ! "docker compose -f docker-compose.prod.yml ps" | grep -q "Up"; then
-								echo "=== Container Logs ==="
-								"docker compose -f docker-compose.prod.yml logs"
-								exit 1
-							fi
-
-							echo "=== Deployment completed successfully ==="
-						"""
-
 						// Execute deployment on EC2
 						sshagent(credentials: ["$SSHCreds"]) {
 							sh """
 								# Copy project files to EC2 using tar over ssh (more commonly available than rsync)
 								tar -czf - --exclude='.git' --exclude='node_modules' --exclude='client/node_modules' . | ssh -o StrictHostKeyChecking=no $SSHUser@$SSHServerIP 'mkdir -p /home/ubuntu/survey && cd /home/ubuntu/survey && tar -xzf -'
 
-								# Execute deployment script on EC2 with environment variables and full shell environment
-								ssh -o StrictHostKeyChecking=no $SSHUser@$SSHServerIP "source ~/.bashrc && source ~/.profile && MONGO_URI='${MONGO_URI}' ADMIN_USERNAME='${ADMIN_USERNAME}' ADMIN_PASSWORD='${ADMIN_PASSWORD}' /bin/bash -l -s" << 'EOF'
-${deployScriptContent}
-EOF
+								# Execute deployment script on EC2 with environment variables
+								ssh -o StrictHostKeyChecking=no $SSHUser@$SSHServerIP "cd /home/ubuntu/survey && chmod +x deploy.sh && MONGO_URI='${MONGO_URI}' ADMIN_USERNAME='${ADMIN_USERNAME}' ADMIN_PASSWORD='${ADMIN_PASSWORD}' ./deploy.sh"
 							"""
 						}
 					}
