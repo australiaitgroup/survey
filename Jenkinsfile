@@ -76,7 +76,7 @@ pipeline {
 							fi
 
 							# Stop and remove existing survey containers
-							eval "docker compose -f docker-compose.prod.yml down" || true
+							"docker compose -f docker-compose.prod.yml down" || true
 
 							# Remove only survey-related images
 							docker images | grep survey | awk '{print \$3}' | xargs -r docker rmi -f || true
@@ -108,19 +108,20 @@ EOF
 
 							# Build and start services
 							echo "Building and starting services..."
-							eval "docker compose -f docker-compose.prod.yml up --build -d"
+							docker compose version
+							"docker compose -f docker-compose.prod.yml up --build -d"
 
 							# Wait for services to start
 							sleep 15
 
 							# Check container status
 							echo "=== Container Status ==="
-							eval "docker compose -f docker-compose.prod.yml ps"
+							"docker compose -f docker-compose.prod.yml ps"
 
 							# Show logs if there are issues
-							if ! eval "docker compose -f docker-compose.prod.yml ps" | grep -q "Up"; then
+							if ! "docker compose -f docker-compose.prod.yml ps" | grep -q "Up"; then
 								echo "=== Container Logs ==="
-								eval "docker compose -f docker-compose.prod.yml logs"
+								"docker compose -f docker-compose.prod.yml logs"
 								exit 1
 							fi
 
