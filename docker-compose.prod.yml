@@ -21,7 +21,8 @@ services:
                 max-size: '10m'
                 max-file: '3'
         volumes:
-            - uploads:/app/uploads
+            - survey-uploads:/app/uploads
 
 volumes:
-    uploads:
+    survey-uploads:
+        name: survey-uploads
