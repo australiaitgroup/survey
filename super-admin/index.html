@@ -56,16 +56,19 @@
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
-    <div x-data="superAdminApp()" x-cloak class="min-h-screen flex">
+    <div x-data="superAdminApp()" x-cloak class="min-h-screen flex" x-init="init()">
         <!-- Sidebar -->
-        <div class="bg-gray-900 text-white w-64 min-h-screen sidebar-transition" 
-             :class="{ '-translate-x-full': !sidebarOpen }" 
-             class="fixed lg:relative lg:translate-x-0">
+        <div class="bg-gray-900 text-white w-64 min-h-screen sidebar-transition fixed lg:relative lg:translate-x-0" 
+             :class="{ '-translate-x-full': !sidebarOpen && window.innerWidth < 1024 }">
             
             <!-- Logo -->
             <div class="p-6 border-b border-gray-800">
                 <h1 class="text-xl font-bold text-white">Super Admin</h1>
                 <p class="text-gray-400 text-sm mt-1">System Management</p>
+                <!-- Debug info -->
+                <div class="text-xs text-yellow-300 mt-2">
+                    Debug: <span x-text="navigation.length"></span> nav items
+                </div>
             </div>
             
             <!-- Navigation -->

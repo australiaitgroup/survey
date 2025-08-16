@@ -6,7 +6,7 @@ class CompaniesComponent {
         this.selectedCompany = null;
         this.drawerOpen = false;
         this.loading = false;
-        
+
         // Filters and search
         this.filters = {
             search: '',
@@ -15,7 +15,7 @@ class CompaniesComponent {
             sortBy: 'createdAt',
             sortOrder: 'desc'
         };
-        
+
         // Pagination
         this.pagination = {
             page: 1,
@@ -23,20 +23,20 @@ class CompaniesComponent {
             total: 0,
             pages: 0
         };
-        
+
         this.init();
     }
-    
+
     init() {
         this.renderContent();
         this.setupEventListeners();
         console.log('Companies component initialized');
     }
-    
+
     renderContent() {
         const content = document.getElementById('companies-content');
         if (!content) return;
-        
+
         content.innerHTML = `
             <div x-data="companiesData" class="space-y-6">
                 <!-- Header with filters -->
@@ -46,12 +46,12 @@ class CompaniesComponent {
                             <h2 class="text-xl font-semibold text-gray-900">Companies Management</h2>
                             <p class="text-sm text-gray-600 mt-1">Manage all companies and their subscriptions</p>
                         </div>
-                        
+
                         <!-- Search and filters -->
                         <div class="flex flex-col sm:flex-row gap-3">
                             <!-- Search -->
                             <div class="relative">
-                                <input type="text" 
+                                <input type="text"
                                        x-model="filters.search"
                                        @input="debounceSearch()"
                                        placeholder="Search companies..."
@@ -60,9 +60,9 @@ class CompaniesComponent {
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
                             </div>
-                            
+
                             <!-- Plan filter -->
-                            <select x-model="filters.plan" 
+                            <select x-model="filters.plan"
                                     @change="applyFilters()"
                                     class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <option value="">All Plans</option>
@@ -71,18 +71,18 @@ class CompaniesComponent {
                                 <option value="pro">Pro</option>
                                 <option value="enterprise">Enterprise</option>
                             </select>
-                            
+
                             <!-- Status filter -->
-                            <select x-model="filters.status" 
+                            <select x-model="filters.status"
                                     @change="applyFilters()"
                                     class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <option value="">All Status</option>
                                 <option value="active">Active</option>
                                 <option value="suspended">Suspended</option>
                             </select>
-                            
+
                             <!-- Refresh button -->
-                            <button @click="refreshData()" 
+                            <button @click="refreshData()"
                                     :disabled="loading"
                                     class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
                                 <svg class="w-4 h-4" :class="{ 'animate-spin': loading }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,7 +93,7 @@ class CompaniesComponent {
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Companies table -->
                 <div class="bg-white rounded-lg shadow overflow-hidden">
                     <div class="overflow-x-auto">
@@ -164,15 +164,15 @@ class CompaniesComponent {
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" x-text="company.userCount || 0"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatDate(company.createdAt)"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <button @click.stop="toggleCompanyStatus(company)" 
+                                            <button @click.stop="toggleCompanyStatus(company)"
                                                     class="text-blue-600 hover:text-blue-900 mr-3"
                                                     x-text="company.isActive ? 'Suspend' : 'Activate'"></button>
-                                            <button @click.stop="openCompanyDrawer(company)" 
+                                            <button @click.stop="openCompanyDrawer(company)"
                                                     class="text-gray-600 hover:text-gray-900">View</button>
                                         </td>
                                     </tr>
                                 </template>
-                                
+
                                 <!-- Empty state -->
                                 <tr x-show="filteredData.length === 0 && !loading">
                                     <td colspan="6" class="px-6 py-12 text-center">
@@ -184,7 +184,7 @@ class CompaniesComponent {
                                         </div>
                                     </td>
                                 </tr>
-                                
+
                                 <!-- Loading state -->
                                 <tr x-show="loading">
                                     <td colspan="6" class="px-6 py-12 text-center">
@@ -197,30 +197,30 @@ class CompaniesComponent {
                             </tbody>
                         </table>
                     </div>
-                    
+
                     <!-- Pagination -->
                     <div x-show="pagination.pages > 1" class="bg-white px-6 py-3 border-t border-gray-200 flex items-center justify-between">
                         <div class="text-sm text-gray-700">
-                            Showing <span x-text="(pagination.page - 1) * pagination.limit + 1"></span> to 
-                            <span x-text="Math.min(pagination.page * pagination.limit, pagination.total)"></span> of 
+                            Showing <span x-text="(pagination.page - 1) * pagination.limit + 1"></span> to
+                            <span x-text="Math.min(pagination.page * pagination.limit, pagination.total)"></span> of
                             <span x-text="pagination.total"></span> results
                         </div>
-                        
+
                         <div class="flex items-center gap-2">
-                            <button @click="changePage(pagination.page - 1)" 
+                            <button @click="changePage(pagination.page - 1)"
                                     :disabled="pagination.page <= 1"
                                     class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
                                 Previous
                             </button>
-                            
+
                             <template x-for="page in getVisiblePages()" :key="page">
-                                <button @click="changePage(page)" 
+                                <button @click="changePage(page)"
                                         :class="page === pagination.page ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
                                         class="px-3 py-1 border border-gray-300 rounded"
                                         x-text="page"></button>
                             </template>
-                            
-                            <button @click="changePage(pagination.page + 1)" 
+
+                            <button @click="changePage(pagination.page + 1)"
                                     :disabled="pagination.page >= pagination.pages"
                                     class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
                                 Next
@@ -228,9 +228,9 @@ class CompaniesComponent {
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Company drawer -->
-                <div x-show="drawerOpen" 
+                <div x-show="drawerOpen"
                      x-transition:enter="transform transition ease-in-out duration-500"
                      x-transition:enter-start="translate-x-full"
                      x-transition:enter-end="translate-x-0"
@@ -238,7 +238,7 @@ class CompaniesComponent {
                      x-transition:leave-start="translate-x-0"
                      x-transition:leave-end="translate-x-full"
                      class="fixed inset-y-0 right-0 w-96 bg-white shadow-xl z-50 overflow-y-auto">
-                    
+
                     <!-- Drawer content -->
                     <div class="p-6">
                         <!-- Header -->
@@ -250,7 +250,7 @@ class CompaniesComponent {
                                 </svg>
                             </button>
                         </div>
-                        
+
                         <!-- Company info -->
                         <div x-show="selectedCompany" class="space-y-6">
                             <!-- Basic info -->
@@ -267,7 +267,7 @@ class CompaniesComponent {
                                     </div>
                                     <div>
                                         <dt class="text-xs text-gray-500">Contact Email</dt>
-                                        <dd class="text-sm text-gray-900 pii-masked cursor-pointer" 
+                                        <dd class="text-sm text-gray-900 pii-masked cursor-pointer"
                                             @click="revealPII($el, selectedCompany?.contactEmail)"
                                             x-text="maskEmail(selectedCompany?.contactEmail)"></dd>
                                     </div>
@@ -281,7 +281,7 @@ class CompaniesComponent {
                                     </div>
                                 </dl>
                             </div>
-                            
+
                             <!-- Current plan -->
                             <div>
                                 <h4 class="text-sm font-medium text-gray-900 mb-3">Current Plan</h4>
@@ -294,7 +294,7 @@ class CompaniesComponent {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Stats -->
                             <div>
                                 <h4 class="text-sm font-medium text-gray-900 mb-3">Statistics</h4>
@@ -312,20 +312,20 @@ class CompaniesComponent {
                                         <div class="text-xs text-purple-600">Responses</div>
                                     </div>
                                     <div class="bg-orange-50 rounded-lg p-3">
-                                        <div class="text-lg font-semibold text-orange-900" x-text="selectedCompany?.purchasedBanks || 0"></div>
-                                        <div class="text-xs text-orange-600">Banks</div>
+                                        <div class="text-lg font-semibold text-orange-900" x-text="selectedCompany?.stats?.questionBankCount || 0"></div>
+                                        <div class="text-xs text-orange-600">Question Banks</div>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Actions -->
                             <div class="space-y-3">
-                                <button @click="toggleCompanyStatus(selectedCompany)" 
+                                <button @click="toggleCompanyStatus(selectedCompany)"
                                         :class="selectedCompany?.isActive ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'"
                                         class="w-full px-4 py-2 text-white rounded-lg transition-colors"
                                         x-text="selectedCompany?.isActive ? 'Suspend Company' : 'Activate Company'"></button>
-                                
-                                <button @click="viewCompanyTransactions()" 
+
+                                <button @click="viewCompanyTransactions()"
                                         class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                                     View Transactions
                                 </button>
@@ -333,9 +333,9 @@ class CompaniesComponent {
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Drawer overlay -->
-                <div x-show="drawerOpen" 
+                <div x-show="drawerOpen"
                      @click="closeCompanyDrawer()"
                      x-transition:enter="transition-opacity ease-linear duration-300"
                      x-transition:enter-start="opacity-0"
@@ -347,7 +347,7 @@ class CompaniesComponent {
             </div>
         `;
     }
-    
+
     setupEventListeners() {
         // Set up Alpine.js data
         window.companiesData = {
@@ -360,7 +360,7 @@ class CompaniesComponent {
             filters: this.filters,
             pagination: this.pagination,
             searchTimeout: null,
-            
+
             // Methods
             async loadData() {
                 this.loading = true;
@@ -371,13 +371,13 @@ class CompaniesComponent {
                         sortBy: this.filters.sortBy,
                         sortOrder: this.filters.sortOrder,
                     };
-                    
+
                     if (this.filters.search) params.search = this.filters.search;
                     if (this.filters.plan) params.subscriptionTier = this.filters.plan;
                     if (this.filters.status) params.status = this.filters.status;
-                    
+
                     const response = await API.getCompanies(params);
-                    
+
                     if (response.success) {
                         this.data = response.data;
                         this.filteredData = response.data;
@@ -389,19 +389,19 @@ class CompaniesComponent {
                     this.loading = false;
                 }
             },
-            
+
             debounceSearch() {
                 clearTimeout(this.searchTimeout);
                 this.searchTimeout = setTimeout(() => {
                     this.applyFilters();
                 }, 300);
             },
-            
+
             applyFilters() {
                 this.pagination.page = 1;
                 this.loadData();
             },
-            
+
             sortBy(field) {
                 if (this.filters.sortBy === field) {
                     this.filters.sortOrder = this.filters.sortOrder === 'asc' ? 'desc' : 'asc';
@@ -411,32 +411,32 @@ class CompaniesComponent {
                 }
                 this.applyFilters();
             },
-            
+
             changePage(page) {
                 if (page >= 1 && page <= this.pagination.pages) {
                     this.pagination.page = page;
                     this.loadData();
                 }
             },
-            
+
             getVisiblePages() {
                 const current = this.pagination.page;
                 const total = this.pagination.pages;
                 const delta = 2;
-                
+
                 const range = [];
                 for (let i = Math.max(1, current - delta); i <= Math.min(total, current + delta); i++) {
                     range.push(i);
                 }
-                
+
                 return range;
             },
-            
+
             async openCompanyDrawer(company) {
                 try {
                     this.loading = true;
                     const response = await API.getCompany(company._id);
-                    
+
                     if (response.success) {
                         this.selectedCompany = response.data;
                         this.drawerOpen = true;
@@ -447,37 +447,37 @@ class CompaniesComponent {
                     this.loading = false;
                 }
             },
-            
+
             closeCompanyDrawer() {
                 this.drawerOpen = false;
                 this.selectedCompany = null;
             },
-            
+
             async toggleCompanyStatus(company) {
                 try {
                     if (company.isActive) {
                         const reason = prompt('Please provide a reason for suspending this company:');
                         if (!reason) return;
-                        
+
                         await API.suspendCompany(company._id, reason);
                     } else {
                         await API.activateCompany(company._id);
                     }
-                    
+
                     // Refresh data
                     await this.loadData();
-                    
+
                     // Update drawer if open
                     if (this.selectedCompany && this.selectedCompany._id === company._id) {
                         this.selectedCompany.isActive = !company.isActive;
                     }
-                    
+
                 } catch (error) {
                     console.error('Failed to toggle company status:', error);
                     alert('Failed to update company status');
                 }
             },
-            
+
             viewCompanyTransactions() {
                 // Switch to transactions tab with company filter
                 window.dispatchEvent(new CustomEvent('switchTab', {
@@ -485,17 +485,17 @@ class CompaniesComponent {
                 }));
                 this.closeCompanyDrawer();
             },
-            
+
             refreshData() {
                 this.loadData();
             },
-            
+
             // Utility methods
             formatDate(dateString) {
                 if (!dateString) return 'N/A';
                 return new Date(dateString).toLocaleDateString();
             },
-            
+
             getPlanBadgeClass(plan) {
                 const classes = {
                     free: 'bg-gray-100 text-gray-800',
@@ -505,7 +505,7 @@ class CompaniesComponent {
                 };
                 return classes[plan] || classes.free;
             },
-            
+
             maskEmail(email) {
                 if (!email) return 'N/A';
                 const [local, domain] = email.split('@');
@@ -513,7 +513,7 @@ class CompaniesComponent {
                 const maskedLocal = local.charAt(0) + '*'.repeat(Math.max(0, local.length - 2)) + local.slice(-1);
                 return `${maskedLocal}@${domain}`;
             },
-            
+
             async revealPII(element, originalValue) {
                 try {
                     // Log the PII access
@@ -526,27 +526,27 @@ class CompaniesComponent {
                             originalValue: originalValue,
                         }
                     });
-                    
+
                     // Reveal the PII
                     element.textContent = originalValue;
                     element.classList.add('revealed');
-                    
+
                     // Hide again after 10 seconds
                     setTimeout(() => {
                         element.textContent = this.maskEmail(originalValue);
                         element.classList.remove('revealed');
                     }, 10000);
-                    
+
                 } catch (error) {
                     console.error('Failed to log PII access:', error);
                 }
             }
         };
-        
+
         // Load initial data
         window.companiesData.loadData();
     }
-    
+
     async loadData() {
         if (window.companiesData) {
             await window.companiesData.loadData();

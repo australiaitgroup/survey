@@ -8,7 +8,7 @@ class TransactionsComponent {
         this.banks = [];
         this.loading = false;
         this.activeTab = 'purchases';
-        
+
         // Filters and search
         this.filters = {
             search: '',
@@ -21,7 +21,7 @@ class TransactionsComponent {
             sortBy: 'purchasedAt',
             sortOrder: 'desc'
         };
-        
+
         // Pagination
         this.pagination = {
             page: 1,
@@ -29,7 +29,7 @@ class TransactionsComponent {
             total: 0,
             pages: 0
         };
-        
+
         // Resale policies filters
         this.resaleFilters = {
             search: '',
@@ -39,7 +39,7 @@ class TransactionsComponent {
             sortBy: 'createdAt',
             sortOrder: 'desc'
         };
-        
+
         // Resale policies pagination
         this.resalePagination = {
             page: 1,
@@ -47,39 +47,39 @@ class TransactionsComponent {
             total: 0,
             pages: 0
         };
-        
+
         this.init();
     }
-    
+
     init() {
         this.renderContent();
         this.setupEventListeners();
         console.log('Transactions component initialized');
     }
-    
+
     renderContent() {
         const content = document.getElementById('transactions-content');
         if (!content) return;
-        
+
         content.innerHTML = `
             <div x-data="transactionsData" class="space-y-6">
                 <!-- Header with tabs -->
                 <div class="bg-white rounded-lg shadow">
                     <div class="border-b border-gray-200">
                         <nav class="-mb-px flex space-x-8 px-6">
-                            <button @click="setActiveTab('purchases')" 
+                            <button @click="setActiveTab('purchases')"
                                     :class="activeTab === 'purchases' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                                 Purchases & Subscriptions
                             </button>
-                            <button @click="setActiveTab('resale')" 
+                            <button @click="setActiveTab('resale')"
                                     :class="activeTab === 'resale' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                                     class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                                 Resale Policies
                             </button>
                         </nav>
                     </div>
-                    
+
                     <div class="p-6">
                         <div x-show="activeTab === 'purchases'">
                             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
@@ -87,9 +87,9 @@ class TransactionsComponent {
                                     <h2 class="text-xl font-semibold text-gray-900">Purchases & Subscriptions</h2>
                                     <p class="text-sm text-gray-600 mt-1">Manage all transactions and subscriptions</p>
                                 </div>
-                                
+
                                 <!-- Export button -->
-                                <button @click="exportCSV()" 
+                                <button @click="exportCSV()"
                                         :disabled="loading"
                                         class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,21 +98,21 @@ class TransactionsComponent {
                                     Export CSV
                                 </button>
                             </div>
-                            
+
                             <!-- Filters -->
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-6">
                                 <!-- Search -->
                                 <div class="lg:col-span-2">
-                                    <input type="text" 
+                                    <input type="text"
                                            x-model="filters.search"
                                            @input="debounceSearch()"
                                            placeholder="Search transactions..."
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 </div>
-                                
+
                                 <!-- Company filter -->
                                 <div>
-                                    <select x-model="filters.companyId" 
+                                    <select x-model="filters.companyId"
                                             @change="applyFilters()"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                         <option value="">All Companies</option>
@@ -121,22 +121,22 @@ class TransactionsComponent {
                                         </template>
                                     </select>
                                 </div>
-                                
+
                                 <!-- Bank filter -->
                                 <div>
-                                    <select x-model="filters.bankId" 
+                                    <select x-model="filters.bankId"
                                             @change="applyFilters()"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                         <option value="">All Banks</option>
                                         <template x-for="bank in banks" :key="bank._id">
-                                            <option :value="bank._id" x-text="bank.title"></option>
+                                            <option :value="bank._id" x-text="bank?.title || 'Untitled'"></option>
                                         </template>
                                     </select>
                                 </div>
-                                
+
                                 <!-- Type filter -->
                                 <div>
-                                    <select x-model="filters.type" 
+                                    <select x-model="filters.type"
                                             @change="applyFilters()"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                         <option value="">All Types</option>
@@ -144,10 +144,10 @@ class TransactionsComponent {
                                         <option value="subscription">Subscription</option>
                                     </select>
                                 </div>
-                                
+
                                 <!-- Status filter -->
                                 <div>
-                                    <select x-model="filters.status" 
+                                    <select x-model="filters.status"
                                             @change="applyFilters()"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                         <option value="">All Status</option>
@@ -159,32 +159,32 @@ class TransactionsComponent {
                                     </select>
                                 </div>
                             </div>
-                            
+
                             <!-- Date range -->
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                                    <input type="date" 
+                                    <input type="date"
                                            x-model="filters.startDate"
                                            @change="applyFilters()"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                                    <input type="date" 
+                                    <input type="date"
                                            x-model="filters.endDate"
                                            @change="applyFilters()"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 </div>
                                 <div class="flex items-end">
-                                    <button @click="clearDateFilters()" 
+                                    <button @click="clearDateFilters()"
                                             class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
                                         Clear Dates
                                     </button>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div x-show="activeTab === 'resale'">
                             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
                                 <div>
@@ -192,21 +192,21 @@ class TransactionsComponent {
                                     <p class="text-sm text-gray-600 mt-1">Manage company-specific resale pricing</p>
                                 </div>
                             </div>
-                            
+
                             <!-- Resale filters -->
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                                 <!-- Search -->
                                 <div>
-                                    <input type="text" 
+                                    <input type="text"
                                            x-model="resaleFilters.search"
                                            @input="debounceResaleSearch()"
                                            placeholder="Search policies..."
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 </div>
-                                
+
                                 <!-- Company filter -->
                                 <div>
-                                    <select x-model="resaleFilters.companyId" 
+                                    <select x-model="resaleFilters.companyId"
                                             @change="applyResaleFilters()"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                         <option value="">All Companies</option>
@@ -215,22 +215,22 @@ class TransactionsComponent {
                                         </template>
                                     </select>
                                 </div>
-                                
+
                                 <!-- Bank filter -->
                                 <div>
-                                    <select x-model="resaleFilters.bankId" 
+                                    <select x-model="resaleFilters.bankId"
                                             @change="applyResaleFilters()"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                         <option value="">All Banks</option>
                                         <template x-for="bank in banks" :key="bank._id">
-                                            <option :value="bank._id" x-text="bank.title"></option>
+                                            <option :value="bank._id" x-text="bank?.title || 'Untitled'"></option>
                                         </template>
                                     </select>
                                 </div>
-                                
+
                                 <!-- Enabled filter -->
                                 <div>
-                                    <select x-model="resaleFilters.isEnabled" 
+                                    <select x-model="resaleFilters.isEnabled"
                                             @change="applyResaleFilters()"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                         <option value="">All Policies</option>
@@ -242,7 +242,7 @@ class TransactionsComponent {
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Purchases Table -->
                 <div x-show="activeTab === 'purchases'" class="bg-white rounded-lg shadow overflow-hidden">
                     <div class="overflow-x-auto">
@@ -318,7 +318,7 @@ class TransactionsComponent {
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatDate(purchase.purchasedAt)"></td>
                                     </tr>
                                 </template>
-                                
+
                                 <!-- Empty state -->
                                 <tr x-show="filteredData.length === 0 && !loading">
                                     <td colspan="7" class="px-6 py-12 text-center">
@@ -330,7 +330,7 @@ class TransactionsComponent {
                                         </div>
                                     </td>
                                 </tr>
-                                
+
                                 <!-- Loading state -->
                                 <tr x-show="loading">
                                     <td colspan="7" class="px-6 py-12 text-center">
@@ -343,30 +343,30 @@ class TransactionsComponent {
                             </tbody>
                         </table>
                     </div>
-                    
+
                     <!-- Purchases Pagination -->
                     <div x-show="pagination.pages > 1" class="bg-white px-6 py-3 border-t border-gray-200 flex items-center justify-between">
                         <div class="text-sm text-gray-700">
-                            Showing <span x-text="(pagination.page - 1) * pagination.limit + 1"></span> to 
-                            <span x-text="Math.min(pagination.page * pagination.limit, pagination.total)"></span> of 
+                            Showing <span x-text="(pagination.page - 1) * pagination.limit + 1"></span> to
+                            <span x-text="Math.min(pagination.page * pagination.limit, pagination.total)"></span> of
                             <span x-text="pagination.total"></span> results
                         </div>
-                        
+
                         <div class="flex items-center gap-2">
-                            <button @click="changePage(pagination.page - 1)" 
+                            <button @click="changePage(pagination.page - 1)"
                                     :disabled="pagination.page <= 1"
                                     class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
                                 Previous
                             </button>
-                            
+
                             <template x-for="page in getVisiblePages()" :key="page">
-                                <button @click="changePage(page)" 
+                                <button @click="changePage(page)"
                                         :class="page === pagination.page ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
                                         class="px-3 py-1 border border-gray-300 rounded"
                                         x-text="page"></button>
                             </template>
-                            
-                            <button @click="changePage(pagination.page + 1)" 
+
+                            <button @click="changePage(pagination.page + 1)"
                                     :disabled="pagination.page >= pagination.pages"
                                     class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
                                 Next
@@ -374,7 +374,7 @@ class TransactionsComponent {
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Resale Policies Table -->
                 <div x-show="activeTab === 'resale'" class="bg-white rounded-lg shadow overflow-hidden">
                     <div class="overflow-x-auto">
@@ -419,7 +419,7 @@ class TransactionsComponent {
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div x-show="!editingPolicy || editingPolicy._id !== policy._id" class="text-sm font-medium text-gray-900" x-text="formatCurrency(policy.resalePrice, policy.currency)"></div>
                                             <div x-show="editingPolicy && editingPolicy._id === policy._id" class="flex items-center gap-2">
-                                                <input type="number" 
+                                                <input type="number"
                                                        x-model.number="editingPolicy.resalePrice"
                                                        min="0"
                                                        step="0.01"
@@ -437,7 +437,7 @@ class TransactionsComponent {
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <button @click="togglePolicyStatus(policy)" 
+                                            <button @click="togglePolicyStatus(policy)"
                                                     :class="policy.isEnabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
                                                     class="inline-flex px-2 py-1 text-xs font-semibold rounded-full cursor-pointer hover:opacity-80"
                                                     x-text="policy.isEnabled ? 'Enabled' : 'Disabled'"></button>
@@ -447,7 +447,7 @@ class TransactionsComponent {
                                             <div class="text-xs text-gray-500" x-text="formatCurrency(policy.totalRevenue || 0, policy.currency)"></div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <button @click="editResalePrice(policy)" 
+                                            <button @click="editResalePrice(policy)"
                                                     x-show="!editingPolicy || editingPolicy._id !== policy._id"
                                                     class="text-indigo-600 hover:text-indigo-900 mr-3">
                                                 Edit Price
@@ -455,7 +455,7 @@ class TransactionsComponent {
                                         </td>
                                     </tr>
                                 </template>
-                                
+
                                 <!-- Empty state -->
                                 <tr x-show="resalePolicies.length === 0 && !loading">
                                     <td colspan="7" class="px-6 py-12 text-center">
@@ -467,7 +467,7 @@ class TransactionsComponent {
                                         </div>
                                     </td>
                                 </tr>
-                                
+
                                 <!-- Loading state -->
                                 <tr x-show="loading">
                                     <td colspan="7" class="px-6 py-12 text-center">
@@ -480,30 +480,30 @@ class TransactionsComponent {
                             </tbody>
                         </table>
                     </div>
-                    
+
                     <!-- Resale Policies Pagination -->
                     <div x-show="resalePagination.pages > 1" class="bg-white px-6 py-3 border-t border-gray-200 flex items-center justify-between">
                         <div class="text-sm text-gray-700">
-                            Showing <span x-text="(resalePagination.page - 1) * resalePagination.limit + 1"></span> to 
-                            <span x-text="Math.min(resalePagination.page * resalePagination.limit, resalePagination.total)"></span> of 
+                            Showing <span x-text="(resalePagination.page - 1) * resalePagination.limit + 1"></span> to
+                            <span x-text="Math.min(resalePagination.page * resalePagination.limit, resalePagination.total)"></span> of
                             <span x-text="resalePagination.total"></span> results
                         </div>
-                        
+
                         <div class="flex items-center gap-2">
-                            <button @click="changeResalePage(resalePagination.page - 1)" 
+                            <button @click="changeResalePage(resalePagination.page - 1)"
                                     :disabled="resalePagination.page <= 1"
                                     class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
                                 Previous
                             </button>
-                            
+
                             <template x-for="page in getVisibleResalePages()" :key="page">
-                                <button @click="changeResalePage(page)" 
+                                <button @click="changeResalePage(page)"
                                         :class="page === resalePagination.page ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'"
                                         class="px-3 py-1 border border-gray-300 rounded"
                                         x-text="page"></button>
                             </template>
-                            
-                            <button @click="changeResalePage(resalePagination.page + 1)" 
+
+                            <button @click="changeResalePage(resalePagination.page + 1)"
                                     :disabled="resalePagination.page >= resalePagination.pages"
                                     class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
                                 Next
@@ -514,7 +514,7 @@ class TransactionsComponent {
             </div>
         `;
     }
-    
+
     setupEventListeners() {
         // Set up Alpine.js data
         window.transactionsData = {
@@ -533,13 +533,13 @@ class TransactionsComponent {
             searchTimeout: null,
             resaleSearchTimeout: null,
             editingPolicy: null,
-            
+
             // Methods
             async init() {
                 await this.loadFilterData();
                 await this.loadData();
             },
-            
+
             async loadFilterData() {
                 try {
                     // Load companies and banks for filters
@@ -547,11 +547,11 @@ class TransactionsComponent {
                         API.getCompanies({ limit: 1000 }),
                         API.getPublicBanks({ limit: 1000 })
                     ]);
-                    
+
                     if (companiesResponse.success) {
                         this.companies = companiesResponse.data;
                     }
-                    
+
                     if (banksResponse.success) {
                         this.banks = banksResponse.data;
                     }
@@ -559,7 +559,7 @@ class TransactionsComponent {
                     console.error('Failed to load filter data:', error);
                 }
             },
-            
+
             async loadData() {
                 this.loading = true;
                 try {
@@ -574,7 +574,7 @@ class TransactionsComponent {
                     this.loading = false;
                 }
             },
-            
+
             async loadPurchases() {
                 const params = {
                     page: this.pagination.page,
@@ -582,7 +582,7 @@ class TransactionsComponent {
                     sortBy: this.filters.sortBy,
                     sortOrder: this.filters.sortOrder,
                 };
-                
+
                 if (this.filters.search) params.search = this.filters.search;
                 if (this.filters.companyId) params.companyId = this.filters.companyId;
                 if (this.filters.bankId) params.bankId = this.filters.bankId;
@@ -590,16 +590,16 @@ class TransactionsComponent {
                 if (this.filters.status) params.status = this.filters.status;
                 if (this.filters.startDate) params.startDate = this.filters.startDate;
                 if (this.filters.endDate) params.endDate = this.filters.endDate;
-                
+
                 const response = await API.getPurchases(params);
-                
+
                 if (response.success) {
                     this.data = response.data;
                     this.filteredData = response.data;
                     this.pagination = response.pagination;
                 }
             },
-            
+
             async loadResalePolicies() {
                 const params = {
                     page: this.resalePagination.page,
@@ -607,57 +607,57 @@ class TransactionsComponent {
                     sortBy: this.resaleFilters.sortBy,
                     sortOrder: this.resaleFilters.sortOrder,
                 };
-                
+
                 if (this.resaleFilters.search) params.search = this.resaleFilters.search;
                 if (this.resaleFilters.companyId) params.companyId = this.resaleFilters.companyId;
                 if (this.resaleFilters.bankId) params.bankId = this.resaleFilters.bankId;
                 if (this.resaleFilters.isEnabled) params.isEnabled = this.resaleFilters.isEnabled;
-                
+
                 const response = await API.getResalePolicies(params);
-                
+
                 if (response.success) {
                     this.resalePolicies = response.data;
                     this.resalePagination = response.pagination;
                 }
             },
-            
+
             async setActiveTab(tab) {
                 if (this.activeTab === tab) return;
-                
+
                 this.activeTab = tab;
                 await this.loadData();
             },
-            
+
             debounceSearch() {
                 clearTimeout(this.searchTimeout);
                 this.searchTimeout = setTimeout(() => {
                     this.applyFilters();
                 }, 300);
             },
-            
+
             debounceResaleSearch() {
                 clearTimeout(this.resaleSearchTimeout);
                 this.resaleSearchTimeout = setTimeout(() => {
                     this.applyResaleFilters();
                 }, 300);
             },
-            
+
             applyFilters() {
                 this.pagination.page = 1;
                 this.loadPurchases();
             },
-            
+
             applyResaleFilters() {
                 this.resalePagination.page = 1;
                 this.loadResalePolicies();
             },
-            
+
             clearDateFilters() {
                 this.filters.startDate = '';
                 this.filters.endDate = '';
                 this.applyFilters();
             },
-            
+
             sortBy(field) {
                 if (this.filters.sortBy === field) {
                     this.filters.sortOrder = this.filters.sortOrder === 'asc' ? 'desc' : 'asc';
@@ -667,52 +667,52 @@ class TransactionsComponent {
                 }
                 this.applyFilters();
             },
-            
+
             changePage(page) {
                 if (page >= 1 && page <= this.pagination.pages) {
                     this.pagination.page = page;
                     this.loadPurchases();
                 }
             },
-            
+
             changeResalePage(page) {
                 if (page >= 1 && page <= this.resalePagination.pages) {
                     this.resalePagination.page = page;
                     this.loadResalePolicies();
                 }
             },
-            
+
             getVisiblePages() {
                 const current = this.pagination.page;
                 const total = this.pagination.pages;
                 const delta = 2;
-                
+
                 const range = [];
                 for (let i = Math.max(1, current - delta); i <= Math.min(total, current + delta); i++) {
                     range.push(i);
                 }
-                
+
                 return range;
             },
-            
+
             getVisibleResalePages() {
                 const current = this.resalePagination.page;
                 const total = this.resalePagination.pages;
                 const delta = 2;
-                
+
                 const range = [];
                 for (let i = Math.max(1, current - delta); i <= Math.min(total, current + delta); i++) {
                     range.push(i);
                 }
-                
+
                 return range;
             },
-            
+
             // Export functionality
             async exportCSV() {
                 try {
                     this.loading = true;
-                    
+
                     const params = {};
                     if (this.filters.companyId) params.companyId = this.filters.companyId;
                     if (this.filters.bankId) params.bankId = this.filters.bankId;
@@ -720,16 +720,16 @@ class TransactionsComponent {
                     if (this.filters.status) params.status = this.filters.status;
                     if (this.filters.startDate) params.startDate = this.filters.startDate;
                     if (this.filters.endDate) params.endDate = this.filters.endDate;
-                    
+
                     await API.downloadCSV('/sa/purchases/export?' + new URLSearchParams(params), 'purchases-export.csv');
-                    
+
                     window.dispatchEvent(new CustomEvent('showNotification', {
                         detail: {
                             message: 'CSV export completed successfully',
                             type: 'success'
                         }
                     }));
-                    
+
                 } catch (error) {
                     console.error('Failed to export CSV:', error);
                     window.dispatchEvent(new CustomEvent('showNotification', {
@@ -742,7 +742,7 @@ class TransactionsComponent {
                     this.loading = false;
                 }
             },
-            
+
             // Resale policy management
             editResalePrice(policy) {
                 this.editingPolicy = {
@@ -750,21 +750,21 @@ class TransactionsComponent {
                     resalePrice: policy.resalePrice
                 };
             },
-            
+
             cancelEditPrice() {
                 this.editingPolicy = null;
             },
-            
+
             async saveResalePrice() {
                 try {
                     const response = await API.updateResalePolicy(this.editingPolicy._id, {
                         resalePrice: this.editingPolicy.resalePrice
                     });
-                    
+
                     if (response.success) {
                         this.editingPolicy = null;
                         await this.loadResalePolicies();
-                        
+
                         window.dispatchEvent(new CustomEvent('showNotification', {
                             detail: {
                                 message: 'Resale price updated successfully',
@@ -782,16 +782,16 @@ class TransactionsComponent {
                     }));
                 }
             },
-            
+
             async togglePolicyStatus(policy) {
                 try {
                     const response = await API.updateResalePolicy(policy._id, {
                         isEnabled: !policy.isEnabled
                     });
-                    
+
                     if (response.success) {
                         await this.loadResalePolicies();
-                        
+
                         window.dispatchEvent(new CustomEvent('showNotification', {
                             detail: {
                                 message: `Resale policy ${policy.isEnabled ? 'disabled' : 'enabled'} successfully`,
@@ -809,24 +809,24 @@ class TransactionsComponent {
                     }));
                 }
             },
-            
+
             refreshData() {
                 this.loadData();
             },
-            
+
             // Utility methods
             formatDate(dateString) {
                 if (!dateString) return 'N/A';
                 return new Date(dateString).toLocaleDateString();
             },
-            
+
             formatCurrency(amount, currency = 'USD') {
                 return new Intl.NumberFormat('en-US', {
                     style: 'currency',
                     currency: currency
                 }).format(amount || 0);
             },
-            
+
             getStatusBadgeClass(status) {
                 const classes = {
                     pending: 'bg-yellow-100 text-yellow-800',
@@ -838,11 +838,11 @@ class TransactionsComponent {
                 return classes[status] || classes.pending;
             }
         };
-        
+
         // Initialize data
         window.transactionsData.init();
     }
-    
+
     async loadData() {
         if (window.transactionsData) {
             await window.transactionsData.loadData();

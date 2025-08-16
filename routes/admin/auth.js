@@ -148,7 +148,7 @@ router.post(
 		try {
 			const user = await User.findOne({
 				email: username.toLowerCase(),
-				role: 'admin',
+				$or: [{ role: 'admin' }, { role: 'superAdmin' }],
 			}).select('+password');
 
 			if (!user) {

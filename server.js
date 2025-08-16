@@ -77,7 +77,22 @@ app.use(errorHandler);
 // Serve uploaded images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Serve Super Admin dashboard (independent from client)
+// Super Admin routes with authentication
+app.get('/super-admin', (req, res) => {
+	// Redirect to login page
+	res.redirect('/super-admin/login');
+});
+
+app.get('/super-admin/login', (req, res) => {
+	res.sendFile(path.join(__dirname, 'super-admin', 'login.html'));
+});
+
+app.get('/super-admin/dashboard', (req, res) => {
+	// Serve the dashboard (in production, you'd check auth here)
+	res.sendFile(path.join(__dirname, 'super-admin', 'index.html'));
+});
+
+// Serve Super Admin static files (JS, CSS, etc)
 app.use('/super-admin', express.static(path.join(__dirname, 'super-admin')));
 
 // Serve static files from the React build

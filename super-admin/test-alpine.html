@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpine.js Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Alpine.js Test for Super Admin</h1>
+        
+        <!-- Test basic Alpine.js -->
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 class="text-xl font-bold mb-4">Basic Alpine.js Test</h2>
+            <div x-data="{ message: 'Alpine.js is working!' }">
+                <p x-text="message" class="text-green-600"></p>
+            </div>
+        </div>
+        
+        <!-- Test superAdminApp function -->
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 class="text-xl font-bold mb-4">SuperAdminApp Test</h2>
+            <div x-data="testApp()" x-cloak>
+                <p>Navigation items: <span x-text="navigation.length" class="font-bold text-blue-600"></span></p>
+                <p>Sidebar open: <span x-text="sidebarOpen" class="font-bold text-blue-600"></span></p>
+                <p>Active tab: <span x-text="activeTab" class="font-bold text-blue-600"></span></p>
+                <p>User: <span x-text="user.name || 'No user'" class="font-bold text-blue-600"></span></p>
+                
+                <div class="mt-4">
+                    <h3 class="font-bold mb-2">Navigation Items:</h3>
+                    <template x-for="item in navigation" :key="item.id">
+                        <div class="p-2 bg-gray-100 rounded mb-2">
+                            <span x-text="item.name"></span> (<span x-text="item.id"></span>)
+                        </div>
+                    </template>
+                </div>
+                
+                <button @click="sidebarOpen = !sidebarOpen" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
+                    Toggle Sidebar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="./js/api.js"></script>
+    <script src="./js/app.js"></script>
+    <script>
+        function testApp() {
+            console.log('Creating test app...');
+            const app = superAdminApp();
+            console.log('Test app created:', app);
+            return app;
+        }
+    </script>
+</body>
+</html>
