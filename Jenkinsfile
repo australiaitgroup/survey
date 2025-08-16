@@ -52,16 +52,16 @@ pipeline {
 							echo "=== File Listing ==="
 							ls -la
 
-							# Step 1: Install Docker Compose
-							echo "=== Installing Docker Compose ==="
-							if command -v docker-compose &> /dev/null; then
+							# Step 1: Check Docker Compose version
+							echo "=== Checking Docker Compose version ==="
+							if command -v docker &> /dev/null && docker compose version &> /dev/null; then
 								echo "Docker Compose is already installed"
-								docker-compose --version
+								docker compose version
 							else
 								echo "Installing Docker Compose..."
-								curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
+								curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
 								chmod +x /usr/local/bin/docker-compose
-								docker-compose --version
+								docker compose version
 								echo "Docker Compose installed successfully"
 							fi
 
@@ -76,7 +76,7 @@ pipeline {
 							fi
 
 							# Stop and remove existing survey containers
-							COMPOSE_PROJECT_NAME=survey docker-compose -f docker-compose.prod.yml down || true
+							COMPOSE_PROJECT_NAME=survey docker compose -f docker-compose.prod.yml down || true
 
 							# Remove only survey-related images
 							docker images | grep survey | awk '{print \$3}' | xargs -r docker rmi -f || true
@@ -108,19 +108,19 @@ EOF
 
 							# Build and start services
 							echo "Building and starting services..."
-							COMPOSE_PROJECT_NAME=survey docker-compose -f docker-compose.prod.yml up --build -d
+							COMPOSE_PROJECT_NAME=survey docker compose -f docker-compose.prod.yml up --build -d
 
 							# Wait for services to start
 							sleep 15
 
 							# Check container status
 							echo "=== Container Status ==="
-							docker-compose -f docker-compose.prod.yml ps
+							docker compose -f docker-compose.prod.yml ps
 
 							# Show logs if there are issues
-							if ! docker-compose -f docker-compose.prod.yml ps | grep -q "Up"; then
+							if ! docker compose -f docker-compose.prod.yml ps | grep -q "Up"; then
 								echo "=== Container Logs ==="
-								docker-compose -f docker-compose.prod.yml logs
+								docker compose -f docker-compose.prod.yml logs
 								exit 1
 							fi
 
