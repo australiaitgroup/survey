@@ -133,8 +133,8 @@ EOF
 								# Copy project files to EC2 using tar over ssh (more commonly available than rsync)
 								tar -czf - --exclude='.git' --exclude='node_modules' --exclude='client/node_modules' . | ssh -o StrictHostKeyChecking=no $SSHUser@$SSHServerIP 'mkdir -p /home/ubuntu/survey && cd /home/ubuntu/survey && tar -xzf -'
 
-								# Execute deployment script on EC2 with environment variables
-								ssh -o StrictHostKeyChecking=no $SSHUser@$SSHServerIP "MONGO_URI='${MONGO_URI}' ADMIN_USERNAME='${ADMIN_USERNAME}' ADMIN_PASSWORD='${ADMIN_PASSWORD}' bash -s" << 'EOF'
+								# Execute deployment script on EC2 with environment variables and full shell environment
+								ssh -o StrictHostKeyChecking=no $SSHUser@$SSHServerIP "source ~/.bashrc && source ~/.profile && MONGO_URI='${MONGO_URI}' ADMIN_USERNAME='${ADMIN_USERNAME}' ADMIN_PASSWORD='${ADMIN_PASSWORD}' /bin/bash -l -s" << 'EOF'
 ${deployScriptContent}
 EOF
 							"""
