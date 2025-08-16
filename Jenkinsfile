@@ -76,7 +76,7 @@ pipeline {
 							fi
 
 							# Stop and remove existing survey containers
-							COMPOSE_PROJECT_NAME=survey docker compose -f docker-compose.prod.yml down || true
+							docker compose -f docker-compose.prod.yml down || true
 
 							# Remove only survey-related images
 							docker images | grep survey | awk '{print \$3}' | xargs -r docker rmi -f || true
@@ -108,7 +108,7 @@ EOF
 
 							# Build and start services
 							echo "Building and starting services..."
-							COMPOSE_PROJECT_NAME=survey docker compose -f docker-compose.prod.yml up --build -d
+							docker compose -f docker-compose.prod.yml up --build -d
 
 							# Wait for services to start
 							sleep 15
