@@ -10,88 +10,22 @@ pipeline {
 
 		ADMIN_USERNAME = 'admin'
 		ADMIN_PASSWORD = 'password'
+
+		// EC2 deployment configuration
+		REGION      = 'ap-southeast-2'
+		SSHCreds    = 'jr-keystone-prod' //Runs in the same server as keystone
+		SSHUser     = 'ubuntu'
+		SSHServerIP = '13.238.204.157'
 	}
 
 	stages {
-		stage('Checkout') {
+		stage('SSH to EC2 and Deploy') {
 			steps {
-				echo 'Checking out source code...'
+				echo 'SSH to EC2 and deploying...'
+
+				// Checkout code first
 				checkout scm
-			}
-		}
 
-		stage('Install Docker Compose') {
-			steps {
-				echo 'Installing Docker Compose...'
-				sh '''
-					# Check if Docker Compose is already installed
-					if command -v docker-compose &> /dev/null; then
-						echo "Docker Compose is already installed"
-						docker-compose --version
-					else
-						echo "Installing Docker Compose..."
-
-						# Install Docker Compose
-						curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-						chmod +x /usr/local/bin/docker-compose
-
-						# Verify installation
-						docker-compose --version
-
-						echo "Docker Compose installed successfully"
-					fi
-				'''
-			}
-		}
-
-		stage('Stop Old Containers') {
-			steps {
-				echo 'Stopping old survey containers...'
-				sh '''
-					echo "=== Current Working Directory ==="
-					pwd
-					echo "=== File Listing ==="
-					ls -la
-					echo "=== Docker Compose Files Check ==="
-					if [ -f "docker-compose.prod.yml" ]; then
-						echo "✓ docker-compose.prod.yml exists"
-					else
-						echo "✗ docker-compose.prod.yml missing"
-					fi
-					echo "=== Key Files Check ==="
-					if [ -f "server.js" ]; then
-						echo "✓ server.js exists"
-					else
-						echo "✗ server.js missing"
-					fi
-					if [ -f "Dockerfile.backend" ]; then
-						echo "✓ Dockerfile.backend exists"
-					else
-						echo "✗ Dockerfile.backend missing"
-					fi
-					if [ -d "client" ]; then
-						echo "✓ client directory exists"
-						echo "Client directory contents:"
-						ls -la client/ | head -10
-					else
-						echo "✗ client directory missing"
-					fi
-
-					# Stop and remove existing survey containers
-					docker-compose -f docker-compose.prod.yml down || true
-
-					# Remove only survey-related images
-					docker images | grep survey | awk '{print $3}' | xargs -r docker rmi -f || true
-
-					# Clean up only dangling images (not used by any container)
-					docker image prune -f
-				'''
-			}
-		}
-
-		stage('Build and Deploy') {
-			steps {
-				echo 'Building and deploying survey application...'
 				withVault([configuration: [ vaultUrl: 'https://vault.jiangren.com.au', vaultCredentialId: 'Vault Credential', timeout: 120],
 					vaultSecrets: [[path: 'jr-survey/prod',
 						secretValues: [
@@ -103,14 +37,58 @@ pipeline {
 						echo "Environment variables loaded from Vault"
 						echo "MONGO_URI: ${MONGO_URI}"
 
-						// Use production compose file only
-						def composeFile = 'docker-compose.prod.yml'
-						echo "Using compose file: ${composeFile}"
+						// Create deployment script for EC2
+						def deployScriptContent = """
+							#!/bin/bash
+							set -e
 
-						withEnv(["COMPOSE_FILE=${composeFile}"]) {
-							sh '''
+							echo "=== Deploying Survey App to EC2 ==="
+
+							# Navigate to project directory
+							cd /home/ubuntu/survey || mkdir -p /home/ubuntu/survey
+
+							echo "=== Current Working Directory ==="
+							pwd
+							echo "=== File Listing ==="
+							ls -la
+
+							# Step 1: Install Docker Compose
+							echo "=== Installing Docker Compose ==="
+							if command -v docker-compose &> /dev/null; then
+								echo "Docker Compose is already installed"
+								docker-compose --version
+							else
+								echo "Installing Docker Compose..."
+								curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
+								chmod +x /usr/local/bin/docker-compose
+								docker-compose --version
+								echo "Docker Compose installed successfully"
+							fi
+
+							# Step 2: Stop Old Containers
+							echo "=== Stopping Old Containers ==="
+							echo "=== Docker Compose Files Check ==="
+							if [ -f "docker-compose.prod.yml" ]; then
+								echo "✓ docker-compose.prod.yml exists"
+							else
+								echo "✗ docker-compose.prod.yml missing"
+								exit 1
+							fi
+
+							# Stop and remove existing survey containers
+							docker-compose -f docker-compose.prod.yml down || true
+
+							# Remove only survey-related images
+							docker images | grep survey | awk '{print \$3}' | xargs -r docker rmi -f || true
+
+							# Clean up only dangling images
+							docker image prune -f
+
+							# Step 3: Build and Deploy
+							echo "=== Building and Deploying ==="
+
 							# Create .env file with environment variables
-							cat > .env << EOF
+							cat > .env << 'EOF'
 MONGODB_URI=${MONGO_URI}
 PORT=5173
 NODE_ENV=production
@@ -118,38 +96,48 @@ ADMIN_USERNAME=${ADMIN_USERNAME}
 ADMIN_PASSWORD=${ADMIN_PASSWORD}
 EOF
 
+							echo "✅ Environment file created"
+
 							# Validate that required environment variables are set
 							if [ -z "${MONGO_URI}" ]; then
 								echo "ERROR: MONGO_URI environment variable is required but not set"
-								echo "Please ensure your external MongoDB URI is configured in Vault"
 								exit 1
 							fi
-							
+
 							echo "✅ Using external MongoDB at: ${MONGO_URI}"
 
-							echo "=== Starting Docker Containers ==="
-							echo "Using compose file: $COMPOSE_FILE"
-
-							# Stop any existing containers
-							docker-compose -f $COMPOSE_FILE down || true
-
 							# Build and start services
-							docker-compose -f $COMPOSE_FILE up --build -d
+							echo "Building and starting services..."
+							docker-compose -f docker-compose.prod.yml up --build -d
 
 							# Wait for services to start
 							sleep 15
 
 							# Check container status
 							echo "=== Container Status ==="
-							docker-compose -f $COMPOSE_FILE ps
+							docker-compose -f docker-compose.prod.yml ps
 
 							# Show logs if there are issues
-							if ! docker-compose -f $COMPOSE_FILE ps | grep -q "Up"; then
+							if ! docker-compose -f docker-compose.prod.yml ps | grep -q "Up"; then
 								echo "=== Container Logs ==="
-								docker-compose -f $COMPOSE_FILE logs
+								docker-compose -f docker-compose.prod.yml logs
 								exit 1
 							fi
-							'''
+
+							echo "=== Deployment completed successfully ==="
+						"""
+
+						// Execute deployment on EC2
+						sshagent(credentials: ["$SSHCreds"]) {
+							sh """
+								# Copy project files to EC2
+								rsync -avz --exclude='.git' --exclude='node_modules' --exclude='client/node_modules' -e "ssh -o StrictHostKeyChecking=no" ./ $SSHUser@$SSHServerIP:/home/ubuntu/survey/
+
+								# Execute deployment script on EC2
+								ssh -o StrictHostKeyChecking=no $SSHUser@$SSHServerIP 'bash -s' << 'EOF'
+${deployScriptContent}
+EOF
+							"""
 						}
 					}
 				}
@@ -162,36 +150,27 @@ EOF
 				script {
 					sleep 10
 
-					def composeFile = 'docker-compose.prod.yml'
+					sh '''
+					echo "=== Health Check ==="
 
-					withEnv(["COMPOSE_FILE=${composeFile}"]) {
-						sh '''
-						echo "=== Health Check ==="
+					# Test application on EC2
+					echo "Testing application on EC2..."
+					if curl -f --connect-timeout 10 --max-time 30 -s http://13.238.204.157:5173 >/dev/null 2>&1; then
+						echo "✅ Application is accessible on EC2 port 5173"
+					else
+						echo "❌ Application health check failed on EC2"
+						exit 1
+					fi
 
-						# Check container status
-						docker-compose -f $COMPOSE_FILE ps
+					# Test API endpoint
+					if curl -f --connect-timeout 10 --max-time 30 -s http://13.238.204.157:5173/api/surveys >/dev/null 2>&1; then
+						echo "✅ API endpoint is working on EC2"
+					else
+						echo "⚠️ API endpoint test failed but continuing..."
+					fi
 
-						# Test application on port 5173
-						echo "Testing application..."
-						if curl -f --connect-timeout 10 --max-time 30 -s http://localhost:5173 >/dev/null 2>&1; then
-							echo "✅ Application is accessible on port 5173"
-						else
-							echo "❌ Application health check failed"
-							echo "Container logs:"
-							docker-compose -f $COMPOSE_FILE logs --tail 20
-							exit 1
-						fi
-
-						# Test API endpoint
-						if curl -f --connect-timeout 10 --max-time 30 -s http://localhost:5173/api/surveys >/dev/null 2>&1; then
-							echo "✅ API endpoint is working"
-						else
-							echo "⚠️ API endpoint test failed but continuing..."
-						fi
-
-						echo "=== Health Check Completed ==="
-						'''
-					}
+					echo "=== Health Check Completed ==="
+					'''
 				}
 			}
 		}
@@ -205,10 +184,9 @@ EOF
 		success {
 			echo 'Deployment successful!'
 			echo 'Access your application at:'
-			echo "  Application: http://localhost:5173"
-			echo "  Admin Dashboard: http://localhost:5173/admin"
-			echo "  API: http://localhost:5173/api"
-			// You can add notifications here (Slack, email, etc.)
+			echo "  Application: http://13.238.204.157:5173"
+			echo "  Admin Dashboard: http://13.238.204.157:5173/admin"
+			echo "  API: http://13.238.204.157:5173/api"
 		}
 		failure {
 			echo 'Deployment failed!'
