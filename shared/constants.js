@@ -19,10 +19,16 @@ const SURVEY_STATUS = {
 	CLOSED: 'closed',
 };
 
-// 类型常量
+// 类型常量（当前可用）
 const SURVEY_TYPE = {
 	SURVEY: 'survey',
 	ASSESSMENT: 'assessment',
+	ONBOARDING: 'onboarding',
+	LIVE_QUIZ: 'live_quiz',
+};
+
+// 旧类型（兼容读取，前端不再创建）
+const LEGACY_SURVEY_TYPE = {
 	QUIZ: 'quiz',
 	IQ: 'iq',
 };
@@ -55,8 +61,13 @@ const HTTP_STATUS = {
 const VALID_STATUSES = [SURVEY_STATUS.DRAFT, SURVEY_STATUS.ACTIVE, SURVEY_STATUS.CLOSED];
 
 
-// 需要正确答案的题目类型
-const TYPES_REQUIRING_ANSWERS = [SURVEY_TYPE.ASSESSMENT, SURVEY_TYPE.QUIZ, SURVEY_TYPE.IQ];
+// 需要正确答案的题目类型（包含旧类型以保持向后兼容）
+const TYPES_REQUIRING_ANSWERS = [
+	SURVEY_TYPE.ASSESSMENT,
+	SURVEY_TYPE.LIVE_QUIZ,
+	LEGACY_SURVEY_TYPE.QUIZ,
+	LEGACY_SURVEY_TYPE.IQ,
+];
 
 // 问题来源类型常量
 const SOURCE_TYPE = {
@@ -85,6 +96,7 @@ module.exports = {
 	ERROR_MESSAGES,
 	SURVEY_STATUS,
 	SURVEY_TYPE,
+	LEGACY_SURVEY_TYPE,
 	QUESTION_TYPE,
 	SOURCE_TYPE,
 	DATA_TYPES,

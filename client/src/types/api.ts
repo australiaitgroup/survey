@@ -1,6 +1,6 @@
 // ===== 基础类型定义 =====
 
-export type SurveyType = 'survey' | 'assessment' | 'quiz' | 'iq';
+export type SurveyType = 'survey' | 'assessment' | 'onboarding' | 'live_quiz' | 'quiz' | 'iq';
 export type SurveyStatus = 'draft' | 'active' | 'closed';
 export type QuestionType = 'single_choice' | 'multiple_choice' | 'short_text';
 export type NavigationMode = 'step-by-step' | 'one-question-per-page';
@@ -183,6 +183,7 @@ export interface QuestionBankUpdateRequest extends Partial<QuestionBankCreateReq
 export interface MultiQuestionBankConfig {
 	questionBankId: string;
 	questionCount: number;
+	isPublic?: boolean; // Flag to indicate if this is from a public bank
 	filters?: {
 		tags?: string[];
 		difficulty?: QuestionDifficulty;
@@ -193,6 +194,7 @@ export interface MultiQuestionBankConfig {
 export interface SelectedQuestion {
 	questionBankId: string;
 	questionId: string;
+	isPublic?: boolean; // Flag to indicate if this is from a public bank
 	questionSnapshot?: {
 		text: string;
 		type: string;

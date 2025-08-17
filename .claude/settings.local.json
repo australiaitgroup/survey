@@ -68,7 +68,8 @@
       "Bash(python3:*)",
       "Bash(npx vite:*)",
       "Bash(NODE_ENV=development node server.js)",
-      "Bash(npm:*)"
+      "Bash(npm:*)",
+      "Bash(json -c:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

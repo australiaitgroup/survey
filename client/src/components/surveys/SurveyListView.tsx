@@ -100,8 +100,8 @@ const SurveyListView: React.FC = () => {
 						<option value=''>All types</option>
 						<option value={SURVEY_TYPE.SURVEY}>Survey</option>
 						<option value={SURVEY_TYPE.ASSESSMENT}>Assessment</option>
-						<option value={SURVEY_TYPE.QUIZ}>Quiz</option>
-						<option value={SURVEY_TYPE.IQ}>IQ</option>
+						<option value={SURVEY_TYPE.ONBOARDING}>Onboarding</option>
+						<option value={SURVEY_TYPE.LIVE_QUIZ}>Kahoot (Live Quiz)</option>
 					</select>
 					<select
 						className='input-field w-auto min-w-[140px] md:min-w-[180px] px-2 py-1 text-sm h-8 shrink-0'

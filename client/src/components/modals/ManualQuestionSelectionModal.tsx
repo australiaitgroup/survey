@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuestionBanks } from '../../hooks/useQuestionBanks';
+import { usePublicBanksForSurvey } from '../../hooks/usePublicBanksForSurvey';
+import { useAdmin } from '../../contexts/AdminContext';
 import Modal from '../Modal';
 import axios from 'axios';
 import { QUESTION_TYPE, type QuestionType } from '../../constants';
@@ -37,7 +39,10 @@ const ManualQuestionSelectionModal: React.FC<ManualQuestionSelectionModalProps> 
 	initialSelection = [],
 }) => {
 	const { questionBanks } = useQuestionBanks();
+	const { authorized: publicBanks, locked: lockedPublicBanks } = usePublicBanksForSurvey();
+	const { navigate } = useAdmin();
 	const [selectedBankId, setSelectedBankId] = useState<string>('');
+	const [selectedBankType, setSelectedBankType] = useState<'local' | 'public'>('local');
 	const [questions, setQuestions] = useState<Question[]>([]);
 	const [questionBankInfo, setQuestionBankInfo] = useState<QuestionBankInfo | null>(null);
 	const [selectedQuestions, setSelectedQuestions] = useState<Set<string>>(new Set());
@@ -103,21 +108,54 @@ const ManualQuestionSelectionModal: React.FC<ManualQuestionSelectionModalProps> 
 				params.append('tags', selectedTags.join(','));
 			}
 
-			const response = await axios.get(
-				`/api/question-banks/${selectedBankId}/questions?${params}`
-			);
-			const data = response.data;
+			let response;
+			let data;
 
-			setQuestions(data.questions);
-			setQuestionBankInfo(data.questionBank);
-			setTotalPages(data.pagination.totalPages);
-			setTotalQuestions(data.pagination.totalQuestions);
+			if (selectedBankType === 'local') {
+				// Fetch from local question banks
+				response = await axios.get(
+					`/api/question-banks/${selectedBankId}/questions?${params}`
+				);
+				data = response.data;
 
-			// Extract available tags from the selected bank
-			const bank = questionBanks.find(b => b._id === selectedBankId);
-			if (bank) {
+				setQuestions(data.questions);
+				setQuestionBankInfo(data.questionBank);
+				setTotalPages(data.pagination.totalPages);
+				setTotalQuestions(data.pagination.totalQuestions);
+
+				// Extract available tags from the selected bank
+				const bank = questionBanks.find(b => b._id === selectedBankId);
+				if (bank) {
+					const tags = new Set<string>();
+					bank.questions.forEach(q => {
+						q.tags?.forEach(tag => tags.add(tag));
+					});
+					setAvailableTags(Array.from(tags));
+				}
+			} else {
+				// Fetch from public banks
+				response = await axios.get(`/api/public-banks/${selectedBankId}/sample-questions`);
+				data = response.data;
+
+				setQuestions(data.questions);
+				setQuestionBankInfo({
+					_id: data.bankId,
+					name: data.bankTitle,
+					description: `Public Bank - ${data.totalQuestions} questions total`
+				});
+
+				// Simple pagination for public banks
+				const startIndex = (currentPage - 1) * questionsPerPage;
+				const endIndex = currentPage * questionsPerPage;
+				const paginatedQuestions = data.questions.slice(startIndex, endIndex);
+				
+				setQuestions(paginatedQuestions);
+				setTotalPages(Math.ceil(data.questions.length / questionsPerPage));
+				setTotalQuestions(data.questions.length);
+
+				// Extract available tags from the public bank
 				const tags = new Set<string>();
-				bank.questions.forEach(q => {
+				data.questions.forEach((q: Question) => {
 					q.tags?.forEach(tag => tags.add(tag));
 				});
 				setAvailableTags(Array.from(tags));
@@ -148,11 +186,22 @@ const ManualQuestionSelectionModal: React.FC<ManualQuestionSelectionModalProps> 
 				questionBankId: selectedBankId,
 				questionId: question._id,
 				questionSnapshot: question,
+				isPublic: selectedBankType === 'public', // Track if this is from a public bank
 			});
 		}
 
 		setSelectedQuestions(newSelection);
 		setSelectedQuestionsList(newSelectionList);
+	};
+
+	// Handle marketplace navigation for locked banks
+	const handleGoToMarketplace = (bankId: string) => {
+		// Save current anchor point for return navigation
+		localStorage.setItem('returnToSurveyCreation', 'true');
+		localStorage.setItem('lockedBankId', bankId);
+		
+		// Navigate to marketplace tab
+		navigate('/admin/question-banks?tab=marketplace');
 	};
 
 	const clearAllSelections = () => {
@@ -218,20 +267,93 @@ const ManualQuestionSelectionModal: React.FC<ManualQuestionSelectionModalProps> 
 						Select Question Bank *
 					</label>
 					<select
-						value={selectedBankId}
+						value={selectedBankId ? `${selectedBankType}:${selectedBankId}` : ''}
 						onChange={e => {
-							setSelectedBankId(e.target.value);
-							setCurrentPage(1);
+							const value = e.target.value;
+							if (value) {
+								const [type, bankId] = value.split(':');
+								setSelectedBankType(type as 'local' | 'public');
+								setSelectedBankId(bankId);
+								setCurrentPage(1);
+							} else {
+								setSelectedBankId('');
+								setSelectedBankType('local');
+							}
 						}}
 						className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
 					>
 						<option value=''>Choose a question bank</option>
-						{questionBanks.map(bank => (
-							<option key={bank._id} value={bank._id}>
-								{bank.name} ({bank.questions.length} questions)
-							</option>
-						))}
+						
+						{/* Local Question Banks */}
+						{questionBanks.length > 0 && (
+							<optgroup label='📁 My Banks'>
+								{questionBanks.map(bank => (
+									<option key={bank._id} value={`local:${bank._id}`}>
+										{bank.name} ({bank.questions.length} questions)
+									</option>
+								))}
+							</optgroup>
+						)}
+						
+						{/* Authorized Public Banks */}
+						{publicBanks.length > 0 && (
+							<optgroup label='🌐 Public Banks (Authorized)'>
+								{publicBanks.map(bank => (
+									<option key={bank._id} value={`public:${bank._id}`}>
+										{bank.title} ({bank.questionCount} questions) - {bank.accessType}
+									</option>
+								))}
+							</optgroup>
+						)}
+						
+						{/* Locked Public Banks */}
+						{lockedPublicBanks.length > 0 && (
+							<optgroup label='🔒 Public Banks (Locked)'>
+								{lockedPublicBanks.map(bank => (
+									<option key={bank._id} value='' disabled>
+										🔒 {bank.title} ({bank.questionCount} questions) - Purchase Required
+									</option>
+								))}
+							</optgroup>
+						)}
 					</select>
+					
+					{/* Show locked banks with purchase options */}
+					{lockedPublicBanks.length > 0 && (
+						<div className='mt-2'>
+							<p className='text-xs text-gray-500 mb-2'>
+								To use locked public banks, visit the Marketplace:
+							</p>
+							<div className='space-y-1'>
+								{lockedPublicBanks.slice(0, 3).map(bank => (
+									<div key={bank._id} className='flex items-center justify-between text-xs bg-gray-50 p-2 rounded'>
+										<span className='text-gray-600'>
+											🔒 {bank.title} ({bank.questionCount} questions)
+										</span>
+										<button
+											type='button'
+											onClick={() => handleGoToMarketplace(bank._id)}
+											className='text-blue-600 hover:text-blue-800 underline'
+											title='Go to Marketplace to purchase'
+										>
+											Purchase
+										</button>
+									</div>
+								))}
+								{lockedPublicBanks.length > 3 && (
+									<div className='text-center'>
+										<button
+											type='button'
+											onClick={() => handleGoToMarketplace('')}
+											className='text-blue-600 hover:text-blue-800 text-xs underline'
+										>
+											View all {lockedPublicBanks.length} locked banks in Marketplace
+										</button>
+									</div>
+								)}
+							</div>
+						</div>
+					)}
 				</div>
 
 				{selectedBankId && (

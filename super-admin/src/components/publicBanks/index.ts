@@ -231,7 +231,7 @@ class PublicBanksComponent {
                   <tr class="hover:bg-gray-50">
                     <td class="px-4 py-3 text-sm text-gray-900" x-text="bank.title"></td>
                     <td class="px-4 py-3 text-sm text-gray-600">
-                      <span x-text="bank.description"></span>
+                      <span :title="bank.description" x-text="(bank.description && bank.description.length > 30) ? (bank.description.slice(0, 30) + '…') : (bank.description || '')"></span>
                     </td>
                     <td class="px-4 py-3 text-sm">
                       <span class="px-2 py-1 rounded text-xs" :class="bank.type === 'paid' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'" x-text="bank.type === 'paid' ? 'Paid' : 'Free'"></span>

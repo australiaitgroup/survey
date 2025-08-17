@@ -2,8 +2,8 @@
 export const SURVEY_TYPE = {
 	SURVEY: 'survey',
 	ASSESSMENT: 'assessment',
-	QUIZ: 'quiz',
-	IQ: 'iq',
+	ONBOARDING: 'onboarding',
+	LIVE_QUIZ: 'live_quiz',
 } as const;
 
 // Survey status constants
@@ -67,10 +67,17 @@ export type StatsView = (typeof STATS_VIEW)[keyof typeof STATS_VIEW];
 export type SourceType = (typeof SOURCE_TYPE)[keyof typeof SOURCE_TYPE];
 
 // Types requiring answers
-export const TYPES_REQUIRING_ANSWERS: SurveyType[] = [
+// Include legacy types for backward compatibility
+export const LEGACY_SURVEY_TYPE = {
+  QUIZ: 'quiz',
+  IQ: 'iq',
+} as const;
+
+export const TYPES_REQUIRING_ANSWERS: (SurveyType | typeof LEGACY_SURVEY_TYPE[keyof typeof LEGACY_SURVEY_TYPE])[] = [
   SURVEY_TYPE.ASSESSMENT,
-  SURVEY_TYPE.QUIZ,
-  SURVEY_TYPE.IQ,
+  SURVEY_TYPE.LIVE_QUIZ,
+  LEGACY_SURVEY_TYPE.QUIZ,
+  LEGACY_SURVEY_TYPE.IQ,
 ];
 
 // All valid types and statuses

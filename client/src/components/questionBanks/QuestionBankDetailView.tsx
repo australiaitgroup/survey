@@ -441,10 +441,12 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 									<div key={idx} className='bg-gray-50 rounded-lg p-4'>
 										<div className='flex justify-between items-start mb-2'>
 											<div className='flex-1'>
-												<div className='flex items-center gap-2 mb-1'>
+												<div className='mb-1'>
 													<span className='font-medium text-gray-800'>
 														{idx + 1}. {q.text}
 													</span>
+												</div>
+												<div className='flex items-center gap-2 flex-wrap'>
                                                     <span className='text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded'>
                                                         {q.type === 'multiple_choice'
                                                             ? tq('types.multipleChoice', 'Multiple Choice')
@@ -467,13 +469,11 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 														</span>
 													)}
 													{q.tags && q.tags.length > 0 && (
-														<div className='flex flex-wrap gap-1 mt-1'>
-															{q.tags.map((tag, tagIdx) => (
-																<span key={tagIdx} className='text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded'>
-																	{tag}
-																</span>
-															))}
-														</div>
+														q.tags.map((tag, tagIdx) => (
+															<span key={tagIdx} className='text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded'>
+																{tag}
+															</span>
+														))
 													)}
 												</div>
 												{q.descriptionImage && (

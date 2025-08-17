@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useQuestionBanks } from '../../hooks/useQuestionBanks';
+import { usePublicBanksForSurvey } from '../../hooks/usePublicBanksForSurvey';
+import { useAdmin } from '../../contexts/AdminContext';
 import Modal from '../Modal';
 import { QUESTION_TYPE, type QuestionType } from '../../constants';
 
 interface MultiQuestionBankConfig {
 	questionBankId: string;
 	questionCount: number;
+	isPublic?: boolean;
 	filters?: {
 		tags?: string[];
 		difficulty?: 'easy' | 'medium' | 'hard';
@@ -27,6 +30,8 @@ const MultiQuestionBankModal: React.FC<MultiQuestionBankModalProps> = ({
 	initialConfig = [],
 }) => {
 	const { questionBanks } = useQuestionBanks();
+	const { authorized: publicBanks, locked: lockedPublicBanks } = usePublicBanksForSurvey();
+	const { navigate } = useAdmin();
 	const [configurations, setConfigurations] = useState<MultiQuestionBankConfig[]>([]);
 	const [availableTags, setAvailableTags] = useState<string[]>([]);
 
@@ -48,11 +53,19 @@ const MultiQuestionBankModal: React.FC<MultiQuestionBankModalProps> = ({
 	const createEmptyConfig = (): MultiQuestionBankConfig => ({
 		questionBankId: '',
 		questionCount: 1,
+		isPublic: false,
 		filters: {
 			tags: [],
 			questionTypes: [],
 		},
 	});
+
+	// Handle marketplace navigation for locked banks
+	const handleGoToMarketplace = (bankId: string) => {
+		localStorage.setItem('returnToSurveyCreation', 'true');
+		localStorage.setItem('lockedBankId', bankId);
+		navigate('/admin/question-banks?tab=marketplace');
+	};
 
 	const addConfiguration = () => {
 		setConfigurations([...configurations, createEmptyConfig()]);
@@ -86,33 +99,44 @@ const MultiQuestionBankModal: React.FC<MultiQuestionBankModalProps> = ({
 		setConfigurations(updated);
 	};
 
-	const getSelectedBank = (bankId: string) => {
-		return questionBanks.find(bank => bank._id === bankId);
+	const getSelectedBank = (config: MultiQuestionBankConfig) => {
+		if (config.isPublic) {
+			return publicBanks.find(bank => bank._id === config.questionBankId);
+		} else {
+			return questionBanks.find(bank => bank._id === config.questionBankId);
+		}
 	};
 
 	const getAvailableQuestionCount = (config: MultiQuestionBankConfig) => {
-		const bank = getSelectedBank(config.questionBankId);
+		const bank = getSelectedBank(config);
 		if (!bank) return 0;
 
-		let questions = bank.questions;
+		if (config.isPublic) {
+			// For public banks, use questionCount (since questions array might be placeholder)
+			// TODO: Implement filtering for public banks via API
+			return bank.questionCount;
+		} else {
+			// For local banks, filter the questions array
+			let questions = bank.questions;
 
-		if (config.filters?.tags && config.filters.tags.length > 0) {
-			questions = questions.filter(q =>
-				config.filters!.tags!.some(tag => q.tags?.includes(tag))
-			);
+			if (config.filters?.tags && config.filters.tags.length > 0) {
+				questions = questions.filter(q =>
+					config.filters!.tags!.some(tag => q.tags?.includes(tag))
+				);
+			}
+
+			if (config.filters?.difficulty) {
+				questions = questions.filter(q => q.difficulty === config.filters!.difficulty);
+			}
+
+			if (config.filters?.questionTypes && config.filters.questionTypes.length > 0) {
+				questions = questions.filter(q =>
+					config.filters!.questionTypes!.includes(q.type as QuestionType)
+				);
+			}
+
+			return questions.length;
 		}
-
-		if (config.filters?.difficulty) {
-			questions = questions.filter(q => q.difficulty === config.filters!.difficulty);
-		}
-
-		if (config.filters?.questionTypes && config.filters.questionTypes.length > 0) {
-			questions = questions.filter(q =>
-				config.filters!.questionTypes!.includes(q.type as QuestionType)
-			);
-		}
-
-		return questions.length;
 	};
 
 	const handleSave = () => {
@@ -178,19 +202,69 @@ const MultiQuestionBankModal: React.FC<MultiQuestionBankModalProps> = ({
 									Question Bank *
 								</label>
 								<select
-									value={config.questionBankId}
-									onChange={e =>
-										updateConfiguration(index, 'questionBankId', e.target.value)
-									}
+									value={config.questionBankId ? `${config.isPublic ? 'public' : 'local'}:${config.questionBankId}` : ''}
+									onChange={e => {
+										const value = e.target.value;
+										if (value) {
+											const [type, bankId] = value.split(':');
+											updateConfiguration(index, 'questionBankId', bankId);
+											updateConfiguration(index, 'isPublic', type === 'public');
+										} else {
+											updateConfiguration(index, 'questionBankId', '');
+											updateConfiguration(index, 'isPublic', false);
+										}
+									}}
 									className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
 								>
 									<option value=''>Select a question bank</option>
-									{questionBanks.map(bank => (
-										<option key={bank._id} value={bank._id}>
-											{bank.name} ({bank.questions.length} questions)
-										</option>
-									))}
+									
+									{/* Local Question Banks */}
+									{questionBanks.length > 0 && (
+										<optgroup label='📁 My Banks'>
+											{questionBanks.map(bank => (
+												<option key={bank._id} value={`local:${bank._id}`}>
+													{bank.name} ({bank.questions.length} questions)
+												</option>
+											))}
+										</optgroup>
+									)}
+									
+									{/* Authorized Public Banks */}
+									{publicBanks.length > 0 && (
+										<optgroup label='🌐 Public Banks (Authorized)'>
+											{publicBanks.map(bank => (
+												<option key={bank._id} value={`public:${bank._id}`}>
+													{bank.title} ({bank.questionCount} questions) - {bank.accessType}
+												</option>
+											))}
+										</optgroup>
+									)}
+									
+									{/* Locked Public Banks */}
+									{lockedPublicBanks.length > 0 && (
+										<optgroup label='🔒 Public Banks (Locked)'>
+											{lockedPublicBanks.map(bank => (
+												<option key={bank._id} value='' disabled>
+													🔒 {bank.title} ({bank.questionCount} questions) - Purchase Required
+												</option>
+											))}
+										</optgroup>
+									)}
 								</select>
+								
+								{/* Show locked banks info */}
+								{lockedPublicBanks.length > 0 && (
+									<div className='mt-2 p-2 bg-blue-50 rounded text-xs'>
+										<p className='text-blue-700 mb-1'>💡 Need more banks?</p>
+										<button
+											type='button'
+											onClick={() => handleGoToMarketplace('')}
+											className='text-blue-600 hover:text-blue-800 underline'
+										>
+											Browse {lockedPublicBanks.length} additional banks in Marketplace
+										</button>
+									</div>
+								)}
 							</div>
 
 							{/* Question Count */}

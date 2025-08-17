@@ -8,6 +8,7 @@ import {
 import ImageUpload from '../common/ImageUpload';
 import SimpleQuillEditor from '../common/SimpleQuillEditor';
 import Drawer from '../Drawer';
+import { ListBulletIcon, Squares2X2Icon, PencilSquareIcon } from '@heroicons/react/24/outline';
 
 interface SurveyQuestionForm {
 	text: string;
@@ -175,24 +176,38 @@ const AddSurveyQuestionModal: React.FC<AddSurveyQuestionModalProps> = ({
 							<label className='block text-sm font-medium text-gray-700 mb-2'>
 								Question Type *
 							</label>
-							<select
-								className='input-field'
-								value={form.type}
-								onChange={e => onChange('type', e.target.value)}
-							>
-								<option value={QUESTION_TYPE.SINGLE_CHOICE}>Single Choice</option>
-								<option value={QUESTION_TYPE.MULTIPLE_CHOICE}>
-									Multiple Choice
-								</option>
-								<option value={QUESTION_TYPE.SHORT_TEXT}>Short Text</option>
-							</select>
-							<div className='text-xs text-gray-500 mt-1'>
-								{form.type === QUESTION_TYPE.SINGLE_CHOICE &&
-									'Users can select only one answer'}
-								{form.type === QUESTION_TYPE.MULTIPLE_CHOICE &&
-									'Users can select multiple answers'}
-								{form.type === QUESTION_TYPE.SHORT_TEXT &&
-									'Users can enter a text response'}
+							<div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
+								{[
+									{ value: QUESTION_TYPE.SINGLE_CHOICE, label: 'Single Choice', description: 'Users can select only one answer', Icon: ListBulletIcon },
+									{ value: QUESTION_TYPE.MULTIPLE_CHOICE, label: 'Multiple Choice', description: 'Users can select multiple answers', Icon: Squares2X2Icon },
+									{ value: QUESTION_TYPE.SHORT_TEXT, label: 'Short Text', description: 'Users can enter a text response', Icon: PencilSquareIcon },
+								].map(option => {
+									const isSelected = form.type === option.value;
+									const Icon = option.Icon as any;
+									return (
+										<label key={option.value} className={`relative block border rounded-lg p-4 cursor-pointer transition-all ${isSelected ? 'border-blue-500 ring-2 ring-blue-200 bg-blue-50' : 'border-gray-300 hover:border-blue-400'}`}>
+											<input type='radio' name='survey-question-type' value={option.value} checked={isSelected} onChange={() => onChange('type', option.value)} className='sr-only' />
+											<div className='flex items-start gap-3'>
+												<div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isSelected ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
+													<Icon className='w-6 h-6' />
+												</div>
+												<div>
+													<div className={`text-sm font-medium ${isSelected ? 'text-blue-700' : 'text-gray-900'}`}>{option.label}</div>
+													<div className='text-xs text-gray-500 mt-1'>{option.description}</div>
+												</div>
+											</div>
+											{isSelected && (
+												<div className='absolute top-2 right-2'>
+													<div className='w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center'>
+														<svg className='w-2.5 h-2.5 text-white' fill='currentColor' viewBox='0 0 20 20'>
+															<path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
+														</svg>
+													</div>
+												</div>
+											)}
+										</label>
+									);
+								})}
 							</div>
 						</div>
 

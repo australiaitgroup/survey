@@ -10,6 +10,9 @@ const {
 } = require('../services/surveyService');
 const SurveyModel = require('../models/Survey');
 const QuestionBankModel = require('../models/QuestionBank');
+const PublicBank = require('../models/PublicBank');
+const Entitlement = require('../models/Entitlement');
+const User = require('../models/User');
 const { HTTP_STATUS, ERROR_MESSAGES, SOURCE_TYPE } = require('../shared/constants');
 
 async function submitSurveyResponse(req, res) {
@@ -52,17 +55,59 @@ async function submitSurveyResponse(req, res) {
 }
 
 // Helper function to validate and process multi-question bank configurations
-async function processMultiQuestionBankConfig(config) {
+async function processMultiQuestionBankConfig(config, userId) {
 	for (const bankConfig of config) {
-		const questionBank = await QuestionBankModel.findById(bankConfig.questionBankId);
-		if (!questionBank) {
-			throw new Error(`Question bank with ID ${bankConfig.questionBankId} not found`);
+		let questionBank;
+		let bankName;
+		let availableQuestions;
+		
+		if (bankConfig.isPublic) {
+			// Handle public banks
+			questionBank = await PublicBank.findOne({
+				_id: bankConfig.questionBankId,
+				isActive: true,
+				isPublished: true
+			});
+			
+			if (!questionBank) {
+				throw new Error(`Public question bank with ID ${bankConfig.questionBankId} not found`);
+			}
+			
+			// Check if user has access to this public bank
+			const user = await User.findById(userId).select('companyId subscription');
+			let hasAccess = false;
+			
+			if (user && user.companyId) {
+				hasAccess = await Entitlement.hasAccess(user.companyId, questionBank._id);
+				
+				// Also check if it's free or user has premium subscription
+				if (!hasAccess) {
+					if (questionBank.type === 'free') {
+						hasAccess = true;
+					} else if (user.subscription && user.subscription.plan === 'premium') {
+						hasAccess = true;
+					}
+				}
+			}
+			
+			if (!hasAccess) {
+				throw new Error(`You do not have access to public question bank "${questionBank.title}"`);
+			}
+			
+			bankName = questionBank.title;
+			availableQuestions = questionBank.questions;
+		} else {
+			// Handle local banks
+			questionBank = await QuestionBankModel.findById(bankConfig.questionBankId);
+			if (!questionBank) {
+				throw new Error(`Question bank with ID ${bankConfig.questionBankId} not found`);
+			}
+			
+			bankName = questionBank.name;
+			availableQuestions = questionBank.questions;
 		}
 
-		// Validate that there are enough questions available
-		let availableQuestions = questionBank.questions;
-
-		// Apply filters if provided
+		// Apply filters if provided (for both local and public banks)
 		if (bankConfig.filters) {
 			if (bankConfig.filters.tags && bankConfig.filters.tags.length > 0) {
 				availableQuestions = availableQuestions.filter(q =>
@@ -85,24 +130,68 @@ async function processMultiQuestionBankConfig(config) {
 
 		if (availableQuestions.length < bankConfig.questionCount) {
 			throw new Error(
-				`Question bank "${questionBank.name}" only has ${availableQuestions.length} questions matching the filters, but ${bankConfig.questionCount} were requested`
+				`Question bank "${bankName}" only has ${availableQuestions.length} questions matching the filters, but ${bankConfig.questionCount} were requested`
 			);
 		}
 	}
 }
 
 // Helper function to validate manual selection questions
-async function processSelectedQuestions(selectedQuestions) {
+async function processSelectedQuestions(selectedQuestions, userId) {
 	for (const selection of selectedQuestions) {
-		const questionBank = await QuestionBankModel.findById(selection.questionBankId);
-		if (!questionBank) {
-			throw new Error(`Question bank with ID ${selection.questionBankId} not found`);
+		let questionBank;
+		let question;
+		let bankName;
+		
+		if (selection.isPublic) {
+			// Handle public banks
+			questionBank = await PublicBank.findOne({
+				_id: selection.questionBankId,
+				isActive: true,
+				isPublished: true
+			});
+			
+			if (!questionBank) {
+				throw new Error(`Public question bank with ID ${selection.questionBankId} not found`);
+			}
+			
+			// Check if user has access to this public bank
+			const user = await User.findById(userId).select('companyId subscription');
+			let hasAccess = false;
+			
+			if (user && user.companyId) {
+				hasAccess = await Entitlement.hasAccess(user.companyId, questionBank._id);
+				
+				// Also check if it's free or user has premium subscription
+				if (!hasAccess) {
+					if (questionBank.type === 'free') {
+						hasAccess = true;
+					} else if (user.subscription && user.subscription.plan === 'premium') {
+						hasAccess = true;
+					}
+				}
+			}
+			
+			if (!hasAccess) {
+				throw new Error(`You do not have access to public question bank "${questionBank.title}"`);
+			}
+			
+			bankName = questionBank.title;
+			question = questionBank.questions.id(selection.questionId);
+		} else {
+			// Handle local banks
+			questionBank = await QuestionBankModel.findById(selection.questionBankId);
+			if (!questionBank) {
+				throw new Error(`Question bank with ID ${selection.questionBankId} not found`);
+			}
+			
+			bankName = questionBank.name;
+			question = questionBank.questions.id(selection.questionId);
 		}
 
-		const question = questionBank.questions.id(selection.questionId);
 		if (!question) {
 			throw new Error(
-				`Question with ID ${selection.questionId} not found in question bank "${questionBank.name}"`
+				`Question with ID ${selection.questionId} not found in question bank "${bankName}"`
 			);
 		}
 
@@ -128,9 +217,9 @@ async function createSurvey(req, res) {
 
 		// Validate and process different source types
 		if (data.sourceType === SOURCE_TYPE.MULTI_QUESTION_BANK && data.multiQuestionBankConfig) {
-			await processMultiQuestionBankConfig(data.multiQuestionBankConfig);
+			await processMultiQuestionBankConfig(data.multiQuestionBankConfig, req.user.id);
 		} else if (data.sourceType === SOURCE_TYPE.MANUAL_SELECTION && data.selectedQuestions) {
-			await processSelectedQuestions(data.selectedQuestions);
+			await processSelectedQuestions(data.selectedQuestions, req.user.id);
 		} else if (data.sourceType === SOURCE_TYPE.QUESTION_BANK && data.questionBankId) {
 			// Validate single question bank
 			const questionBank = await QuestionBankModel.findById(data.questionBankId);

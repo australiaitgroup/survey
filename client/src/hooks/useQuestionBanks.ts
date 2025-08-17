@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import api from '../utils/axiosConfig';
 import { useAdmin } from '../contexts/AdminContext';
 import { QuestionBank, Question } from '../types/admin';
+import { usePublicBanksForSurvey, PublicBankForSurvey } from './usePublicBanksForSurvey';
 
 export const useQuestionBanks = () => {
 	const {
@@ -28,6 +29,9 @@ export const useQuestionBanks = () => {
 		location,
 	} = useAdmin();
 
+	// Get authorized public banks to include in "My Banks"
+	const { authorized: authorizedPublicBanks, refresh: refreshPublicBanks } = usePublicBanksForSurvey();
+
 	// Track if question banks have been loaded to prevent duplicate calls
 	const questionBanksLoadedRef = useRef(false);
 
@@ -38,6 +42,13 @@ export const useQuestionBanks = () => {
 			loadQuestionBanks();
 		}
 	}, [loggedIn]);
+
+	// Reload question banks when authorized public banks change
+	useEffect(() => {
+		if (loggedIn && questionBanksLoadedRef.current) {
+			loadQuestionBanks();
+		}
+	}, [authorizedPublicBanks, loggedIn]);
 
 	// Handle URL routing for question banks
 	useEffect(() => {
@@ -71,8 +82,10 @@ export const useQuestionBanks = () => {
 
 	const loadQuestionBanks = async () => {
 		try {
-			const response = await api.get('/admin/question-banks');
-			setQuestionBanks(response.data);
+			// Load local question banks only (not mixing with purchased ones)
+			const localResponse = await api.get('/admin/question-banks');
+			const localBanks = localResponse.data;
+			setQuestionBanks(localBanks);
 		} catch (err) {
 			console.error('Error loading question banks:', err);
 			setError('Failed to load question banks');
@@ -81,6 +94,8 @@ export const useQuestionBanks = () => {
 
 	const refreshQuestionBanks = async () => {
 		questionBanksLoadedRef.current = false;
+		// Refresh both local and public banks
+		await refreshPublicBanks();
 		await loadQuestionBanks();
 		questionBanksLoadedRef.current = true;
 	};
@@ -105,6 +120,13 @@ export const useQuestionBanks = () => {
 		questionBankId: string,
 		formData: { name: string; description: string }
 	) => {
+		// Check if this is a public bank - prevent editing
+		const bank = questionBanks.find(qb => qb._id === questionBankId);
+		if (bank?.isPublic) {
+			setError('Cannot edit public question banks');
+			throw new Error('Cannot edit public question banks');
+		}
+
 		setLoading(true);
 		setError('');
 		try {
@@ -127,6 +149,13 @@ export const useQuestionBanks = () => {
 	};
 
 	const deleteQuestionBank = async (questionBankId: string) => {
+		// Check if this is a public bank - prevent deletion
+		const bank = questionBanks.find(qb => qb._id === questionBankId);
+		if (bank?.isPublic) {
+			setError('Cannot delete public question banks');
+			return;
+		}
+
 		if (!window.confirm('Are you sure you want to delete this question bank?')) return;
 
 		try {
@@ -156,6 +185,13 @@ export const useQuestionBanks = () => {
 	};
 
 	const addQuestionBankQuestion = async (questionBankId: string, formData?: unknown) => {
+		// Check if this is a public bank - prevent adding questions
+		const bank = questionBanks.find(qb => qb._id === questionBankId);
+		if (bank?.isPublic) {
+			setError('Cannot add questions to public question banks');
+			throw new Error('Cannot add questions to public question banks');
+		}
+
 		const currentForm = formData || questionBankQuestionForms[questionBankId];
 
 		if (!currentForm || !currentForm.text.trim()) {
@@ -261,6 +297,13 @@ export const useQuestionBanks = () => {
 		questionIndex: number,
 		formData: unknown
 	) => {
+		// Check if this is a public bank - prevent editing questions
+		const bank = questionBanks.find(qb => qb._id === questionBankId);
+		if (bank?.isPublic) {
+			setError('Cannot edit questions in public question banks');
+			throw new Error('Cannot edit questions in public question banks');
+		}
+
 		if (!selectedQuestionBankDetail) return;
 		const question = selectedQuestionBankDetail.questions[questionIndex];
 		if (!question) return;
@@ -287,6 +330,13 @@ export const useQuestionBanks = () => {
 	};
 
 	const deleteQuestionBankQuestion = async (questionBankId: string, questionIndex: number) => {
+		// Check if this is a public bank - prevent deleting questions
+		const bank = questionBanks.find(qb => qb._id === questionBankId);
+		if (bank?.isPublic) {
+			setError('Cannot delete questions from public question banks');
+			return;
+		}
+
 		if (!window.confirm('Are you sure you want to delete this question?')) return;
 
 		if (!selectedQuestionBankDetail) return;

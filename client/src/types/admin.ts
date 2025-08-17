@@ -102,7 +102,7 @@ export interface NewSurveyForm {
 	title: string;
 	description: string;
 	slug: string;
-	type: 'survey' | 'assessment' | 'quiz' | 'iq';
+	type: 'survey' | 'assessment' | 'onboarding' | 'live_quiz' | 'quiz' | 'iq';
 	questions: {
 		text: string;
 		imageUrl?: string;

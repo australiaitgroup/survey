@@ -194,10 +194,11 @@ router.put(
 			throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
 		}
 
-		// Only allow scoring settings for quiz/assessment/iq types
-		if (!['quiz', 'assessment', 'iq'].includes(survey.type)) {
+		// Only allow scoring settings for assessment/live_quiz and legacy quiz/iq types
+		if (!['assessment', 'live_quiz', 'quiz', 'iq'].includes(survey.type)) {
 			return res.status(HTTP_STATUS.BAD_REQUEST).json({
-				error: 'Scoring settings are only available for quiz, assessment, and IQ test types',
+				error:
+					'Scoring settings are only available for assessment, live quiz, and legacy quiz/IQ types',
 			});
 		}
 

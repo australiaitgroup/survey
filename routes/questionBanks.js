@@ -36,4 +36,7 @@ router.post('/multi-bank-questions', questionBankController.getQuestionsFromMult
 router.get('/:id/questions', questionBankController.getQuestionBankQuestions);
 router.get('/:bankId/questions/:questionId', questionBankController.getQuestionDetails);
 
+// Copy questions from public banks
+router.post('/:targetBankId/questions/copy', questionBankController.copyQuestionsFromPublicBank);
+
 module.exports = router;

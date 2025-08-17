@@ -171,14 +171,14 @@ const EditSurveyModal: React.FC = () => {
 													navigationMode:
 														e.target.value === 'survey'
 															? ((editForm.navigationMode as string) || 'step-by-step')
-															: 'step-by-step', // Assessment types default to step-by-step
+															: 'step-by-step', // Non-survey types default to step-by-step
 												})
 											}
 										>
 											<option value='survey'>Survey</option>
 											<option value='assessment'>Assessment</option>
-											<option value='quiz'>Quiz</option>
-											<option value='iq'>IQ Test</option>
+											<option value='onboarding'>Onboarding</option>
+											<option value='live_quiz'>Kahoot (Live Quiz)</option>
 										</select>
 									</div>
 

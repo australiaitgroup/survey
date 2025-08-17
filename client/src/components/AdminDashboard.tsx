@@ -9,7 +9,7 @@ import NavigationTabs from './navigation/NavigationTabs';
 import SurveyListView from './surveys/SurveyListView';
 import SurveyDetailView from './surveys/SurveyDetailView';
 import CandidateDetailView from './surveys/CandidateDetailView';
-import QuestionBankListView from './questionBanks/QuestionBankListView';
+import QuestionBanksTabbedView from './questionBanks/QuestionBanksTabbedView';
 import QuestionBankDetailView from './questionBanks/QuestionBankDetailView';
 import ProfileView from './profile/ProfileView';
 import BillingView from './billing/BillingView';
@@ -105,7 +105,7 @@ const AdminDashboard: React.FC = () => {
 			if (selectedQuestionBankDetail) {
 				return <QuestionBankDetailView questionBank={selectedQuestionBankDetail} />;
 			}
-			return <QuestionBankListView />;
+			return <QuestionBanksTabbedView />;
 		}
 
 		if (tab === 'collections') {

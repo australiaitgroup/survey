@@ -664,7 +664,7 @@ exports.downloadCSVTemplate = async (req, res) => {
 // Get questions from multiple question banks with filters
 exports.getQuestionsFromMultipleBanks = async (req, res) => {
 	try {
-		const { configurations } = req.body; // Array of { questionBankId, questionCount, filters }
+		const { configurations } = req.body; // Array of { questionBankId, questionCount, filters, isPublic }
 
 		if (!Array.isArray(configurations) || configurations.length === 0) {
 			return res.status(HTTP_STATUS.BAD_REQUEST).json({
@@ -675,19 +675,70 @@ exports.getQuestionsFromMultipleBanks = async (req, res) => {
 		const results = [];
 
 		for (const config of configurations) {
-			const { questionBankId, questionCount, filters = {} } = config;
+			const { questionBankId, questionCount, filters = {}, isPublic } = config;
+			let questionBank;
+			let bankName;
+			let questions;
 
-			const questionBank = await QuestionBank.findOne({
-				_id: questionBankId,
-				createdBy: req.user.id,
-			});
-			if (!questionBank) {
-				return res.status(HTTP_STATUS.NOT_FOUND).json({
-					error: `Question bank with ID ${questionBankId} not found`,
+			if (isPublic) {
+				// Handle public banks
+				const PublicBank = require('../models/PublicBank');
+				const Entitlement = require('../models/Entitlement');
+				const User = require('../models/User');
+
+				questionBank = await PublicBank.findOne({
+					_id: questionBankId,
+					isActive: true,
+					isPublished: true
 				});
-			}
 
-			let questions = [...questionBank.questions];
+				if (!questionBank) {
+					return res.status(HTTP_STATUS.NOT_FOUND).json({
+						error: `Public question bank with ID ${questionBankId} not found`,
+					});
+				}
+
+				// Check if user has access to this public bank
+				const user = await User.findById(req.user.id).select('companyId subscription');
+				let hasAccess = false;
+
+				if (user && user.companyId) {
+					hasAccess = await Entitlement.hasAccess(user.companyId, questionBank._id);
+
+					// Also check if it's free or user has premium subscription
+					if (!hasAccess) {
+						if (questionBank.type === 'free') {
+							hasAccess = true;
+						} else if (user.subscription && user.subscription.plan === 'premium') {
+							hasAccess = true;
+						}
+					}
+				}
+
+				if (!hasAccess) {
+					return res.status(HTTP_STATUS.FORBIDDEN).json({
+						error: `You do not have access to public question bank "${questionBank.title}"`,
+					});
+				}
+
+				bankName = questionBank.title;
+				questions = [...questionBank.questions];
+			} else {
+				// Handle local banks
+				questionBank = await QuestionBank.findOne({
+					_id: questionBankId,
+					createdBy: req.user.id,
+				});
+
+				if (!questionBank) {
+					return res.status(HTTP_STATUS.NOT_FOUND).json({
+						error: `Question bank with ID ${questionBankId} not found`,
+					});
+				}
+
+				bankName = questionBank.name;
+				questions = [...questionBank.questions];
+			}
 
 			// Apply filters
 			if (filters.tags && filters.tags.length > 0) {
@@ -713,16 +764,18 @@ exports.getQuestionsFromMultipleBanks = async (req, res) => {
 				selectedQuestions.push({
 					...selectedQuestion.toObject(),
 					questionBankId,
-					questionBankName: questionBank.name,
+					questionBankName: bankName,
+					isPublic: !!isPublic,
 				});
 			}
 
 			results.push({
 				questionBankId,
-				questionBankName: questionBank.name,
+				questionBankName: bankName,
 				requestedCount: questionCount,
 				actualCount: selectedQuestions.length,
 				questions: selectedQuestions,
+				isPublic: !!isPublic,
 			});
 		}
 
@@ -849,6 +902,119 @@ exports.getQuestionDetails = async (req, res) => {
 		console.error('Error getting question details:', error);
 		res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
 			error: 'Failed to get question details',
+		});
+	}
+};
+
+// Copy questions from public bank to user's question bank
+exports.copyQuestionsFromPublicBank = async (req, res) => {
+	try {
+		const { targetBankId } = req.params;
+		const { sourceBankId, questionIds } = req.body;
+
+		if (!sourceBankId || !questionIds || !Array.isArray(questionIds)) {
+			return res.status(HTTP_STATUS.BAD_REQUEST).json({
+				error: 'sourceBankId and questionIds array are required',
+			});
+		}
+
+		// Verify target bank belongs to user
+		const targetBank = await QuestionBank.findOne({
+			_id: targetBankId,
+			createdBy: req.user.id,
+		});
+
+		if (!targetBank) {
+			return res.status(HTTP_STATUS.NOT_FOUND).json({
+				error: 'Target question bank not found',
+			});
+		}
+
+		// Get source public bank
+		const PublicBank = require('../models/PublicBank');
+		const Entitlement = require('../models/Entitlement');
+		const User = require('../models/User');
+
+		const sourceBank = await PublicBank.findOne({
+			_id: sourceBankId,
+			isActive: true,
+			isPublished: true,
+		});
+
+		if (!sourceBank) {
+			return res.status(HTTP_STATUS.NOT_FOUND).json({
+				error: 'Source public bank not found',
+			});
+		}
+
+		// Check if user has access to source bank
+		const user = await User.findById(req.user.id).select('companyId subscription');
+		let hasAccess = false;
+
+		if (user && user.companyId) {
+			hasAccess = await Entitlement.hasAccess(user.companyId, sourceBank._id);
+			
+			// Also check if it's free or user has premium subscription
+			if (!hasAccess) {
+				if (sourceBank.type === 'free') {
+					hasAccess = true;
+				} else if (user.subscription && user.subscription.plan === 'premium') {
+					hasAccess = true;
+				}
+			}
+		}
+
+		if (!hasAccess) {
+			return res.status(HTTP_STATUS.FORBIDDEN).json({
+				error: 'You do not have access to copy questions from this bank',
+			});
+		}
+
+		// Get the specific questions to copy
+		const questionsToCopy = sourceBank.questions.filter(q => 
+			questionIds.includes(q._id.toString())
+		);
+
+		if (questionsToCopy.length === 0) {
+			return res.status(HTTP_STATUS.BAD_REQUEST).json({
+				error: 'No valid questions found to copy',
+			});
+		}
+
+		// Copy questions to target bank (without IDs to create new ones)
+		const copiedQuestions = questionsToCopy.map(q => ({
+			text: q.text,
+			description: q.description,
+			type: q.type,
+			options: q.options,
+			correctAnswer: q.correctAnswer,
+			explanation: q.explanation,
+			descriptionImage: q.descriptionImage,
+			points: q.points,
+			tags: [...q.tags, `copied-from-${sourceBank.title.toLowerCase().replace(/\s+/g, '-')}`],
+			difficulty: q.difficulty,
+		}));
+
+		// Add questions to target bank
+		targetBank.questions.push(...copiedQuestions);
+		await targetBank.save();
+
+		res.status(HTTP_STATUS.OK).json({
+			success: true,
+			message: `Successfully copied ${copiedQuestions.length} questions`,
+			targetBank: {
+				_id: targetBank._id,
+				name: targetBank.name,
+				questionCount: targetBank.questions.length,
+			},
+			copiedCount: copiedQuestions.length,
+		});
+
+	} catch (error) {
+		console.error('Error copying questions from public bank:', error);
+		res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+			error: 'Failed to copy questions',
+			details: error.message,
 		});
 	}
 };

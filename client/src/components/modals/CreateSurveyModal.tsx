@@ -36,14 +36,6 @@ const CreateSurveyModal: React.FC = () => {
 			}),
 		},
 		{
-			value: SURVEY_TYPE.QUIZ,
-			label: t('createModal.surveyTypes.quiz.label', { defaultValue: 'Quiz' }),
-			icon: PuzzlePieceIcon,
-			description: t('createModal.surveyTypes.quiz.description', {
-				defaultValue: 'Test knowledge with scoring',
-			}),
-		},
-		{
 			value: SURVEY_TYPE.ASSESSMENT,
 			label: t('createModal.surveyTypes.assessment.label', { defaultValue: 'Assessment' }),
 			icon: CheckBadgeIcon,
@@ -52,11 +44,19 @@ const CreateSurveyModal: React.FC = () => {
 			}),
 		},
 		{
-			value: SURVEY_TYPE.IQ,
-			label: t('createModal.surveyTypes.iq.label', { defaultValue: 'IQ Test' }),
+			value: SURVEY_TYPE.ONBOARDING,
+			label: t('createModal.surveyTypes.onboarding.label', { defaultValue: 'Onboarding' }),
 			icon: AcademicCapIcon,
-			description: t('createModal.surveyTypes.iq.description', {
-				defaultValue: 'Intelligence assessment',
+			description: t('createModal.surveyTypes.onboarding.description', {
+				defaultValue: 'Company onboarding and training',
+			}),
+		},
+		{
+			value: SURVEY_TYPE.LIVE_QUIZ,
+			label: t('createModal.surveyTypes.live_quiz.label', { defaultValue: 'Kahoot (Live Quiz)' }),
+			icon: PuzzlePieceIcon,
+			description: t('createModal.surveyTypes.live_quiz.description', {
+				defaultValue: 'Interactive real-time quiz mode',
 			}),
 		},
 	];
@@ -112,9 +112,8 @@ const CreateSurveyModal: React.FC = () => {
 	};
 
 	const isAssessmentType =
-		newSurvey.type === SURVEY_TYPE.QUIZ ||
 		newSurvey.type === SURVEY_TYPE.ASSESSMENT ||
-		newSurvey.type === SURVEY_TYPE.IQ;
+		newSurvey.type === SURVEY_TYPE.LIVE_QUIZ;
 
 	const handleMultiBankSave = (config: MultiQuestionBankConfig[]) => {
 		setNewSurvey(prev => ({ ...prev, multiQuestionBankConfig: config }));

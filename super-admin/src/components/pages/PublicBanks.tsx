@@ -140,6 +140,11 @@ const PublicBanks: React.FC = () => {
     }
   }
 
+  const truncateText = (text: string, maxLength: number) => {
+    if (!text) return ''
+    return text.length > maxLength ? text.slice(0, maxLength) + '…' : text
+  }
+
   // Standalone detail route now handles detail view
 
   if (loading) {
@@ -304,7 +309,9 @@ const PublicBanks: React.FC = () => {
                         <Link to={`/public-banks/${bank._id}`} className="text-sm font-medium text-blue-600 hover:underline">
                           {bank.title}
                         </Link>
-                        <div className="text-sm text-gray-500">{bank.description || 'No description'}</div>
+                        <div className="text-sm text-gray-500" title={bank.description || undefined}>
+                          {bank.description ? truncateText(bank.description, 30) : 'No description'}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
