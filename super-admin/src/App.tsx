@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import PublicBanks from './components/pages/PublicBanks'
+import Overview from './components/pages/Overview'
+import Companies from './components/pages/Companies'
+import Transactions from './components/pages/Transactions'
+import Audit from './components/pages/Audit'
 
 // Simple Login Component
 function Login() {
@@ -101,11 +106,9 @@ function Login() {
   )
 }
 
-// Simple Dashboard Component
-function Dashboard() {
-  const [loading, setLoading] = useState(true)
+// Layout Component with Navigation
+function Layout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null)
-  const [stats, setStats] = useState<any>(null)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -119,7 +122,6 @@ function Dashboard() {
         const parsedUser = JSON.parse(userData)
         if (parsedUser.role === 'superAdmin' || parsedUser.role === 'admin') {
           setUser(parsedUser)
-          loadStats()
         } else {
           navigate('/login')
           return
@@ -132,27 +134,7 @@ function Dashboard() {
       navigate('/login')
       return
     }
-    
-    setLoading(false)
   }, [navigate])
-
-  const loadStats = async () => {
-    try {
-      const token = localStorage.getItem('sa_token')
-      const response = await fetch('/api/sa/stats', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setStats(data.data)
-      }
-    } catch (error) {
-      console.error('Error loading stats:', error)
-    }
-  }
 
   const handleLogout = () => {
     localStorage.removeItem('sa_token')
@@ -160,16 +142,13 @@ function Dashboard() {
     navigate('/login')
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    )
-  }
+  const navigation = [
+    { name: 'Overview', path: '/overview' },
+    { name: 'Companies', path: '/companies' },
+    { name: 'Public Banks', path: '/public-banks' },
+    { name: 'Transactions', path: '/transactions' },
+    { name: 'Audit', path: '/audit' },
+  ]
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -189,65 +168,37 @@ function Dashboard() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="p-6">
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">System Overview</h2>
-          
-          {stats ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-sm font-medium text-gray-500">Total Companies</h3>
-                <p className="text-3xl font-bold text-blue-600">{stats.overview?.totalCompanies || 0}</p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-sm font-medium text-gray-500">Active Companies</h3>
-                <p className="text-3xl font-bold text-green-600">{stats.overview?.activeCompanies || 0}</p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-sm font-medium text-gray-500">Total Users</h3>
-                <p className="text-3xl font-bold text-purple-600">{stats.overview?.totalUsers || 0}</p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-sm font-medium text-gray-500">Total Surveys</h3>
-                <p className="text-3xl font-bold text-orange-600">{stats.overview?.totalSurveys || 0}</p>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-              <p>Loading statistics...</p>
-            </div>
-          )}
-        </div>
+      <div className="flex">
+        {/* Sidebar */}
+        <nav className="w-64 bg-white shadow-sm min-h-screen">
+          <div className="p-4">
+            <ul className="space-y-2">
+              {navigation.map((item) => {
+                const isActive = location.pathname === item.path
+                return (
+                  <li key={item.name}>
+                    <button
+                      onClick={() => navigate(item.path)}
+                      className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
+                        isActive
+                          ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {item.name}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        </nav>
 
-        {/* Recent Activity */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-          {stats?.recentActivity && stats.recentActivity.length > 0 ? (
-            <div className="space-y-3">
-              {stats.recentActivity.slice(0, 5).map((activity: any, index: number) => (
-                <div key={index} className="flex justify-between items-center border-b pb-2">
-                  <div>
-                    <p className="font-medium capitalize">{activity.action.replace(/_/g, ' ')}</p>
-                    <p className="text-sm text-gray-500">
-                      {activity.actor?.userId?.email || activity.actor?.email || 'System'}
-                    </p>
-                  </div>
-                  <span className="text-sm text-gray-400">
-                    {new Date(activity.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500">No recent activity</p>
-          )}
-        </div>
-      </main>
+        {/* Main Content */}
+        <main className="flex-1 p-6">
+          {children}
+        </main>
+      </div>
     </div>
   )
 }
@@ -258,7 +209,11 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/overview" element={<Dashboard />} />
+        <Route path="/overview" element={<Layout><Overview /></Layout>} />
+        <Route path="/companies" element={<Layout><Companies /></Layout>} />
+        <Route path="/public-banks" element={<Layout><PublicBanks /></Layout>} />
+        <Route path="/transactions" element={<Layout><Transactions /></Layout>} />
+        <Route path="/audit" element={<Layout><Audit /></Layout>} />
         <Route path="/" element={<Navigate to="/overview" replace />} />
       </Routes>
     </Router>

@@ -114,7 +114,7 @@ const QuestionDrawer: React.FC<QuestionDrawerProps> = ({
       if (prev.type === 'single_choice' && prev.correctAnswer === index) {
         newCorrectAnswer = undefined;
       } else if (prev.type === 'multiple_choice' && Array.isArray(prev.correctAnswer)) {
-        newCorrectAnswer = prev.correctAnswer
+        newCorrectAnswer = (prev.correctAnswer as number[])
           .filter(i => i !== index)
           .map(i => i > index ? i - 1 : i);
         if (newCorrectAnswer.length === 0) newCorrectAnswer = undefined;
@@ -156,7 +156,7 @@ const QuestionDrawer: React.FC<QuestionDrawerProps> = ({
         } else {
           if (Array.isArray(prev.correctAnswer)) {
             newCorrectAnswer = [...prev.correctAnswer, optionIndex].sort((a, b) => a - b);
-          } else if (prev.correctAnswer !== undefined) {
+          } else if (prev.correctAnswer !== undefined && typeof prev.correctAnswer === 'number') {
             newCorrectAnswer = [prev.correctAnswer, optionIndex].sort((a, b) => a - b);
           } else {
             newCorrectAnswer = [optionIndex];

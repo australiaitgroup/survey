@@ -1,4 +1,4 @@
-import { Question, QuestionFormData } from '../../types/publicBanks';
+import { Question, QuestionFormData, QuestionDifficulty } from '../../types/publicBanks';
 import { PaginationParams, FilterParams } from '../../types';
 import { PublicBanksAPI } from '../../api/publicBanks';
 
@@ -323,7 +323,7 @@ export class QuestionsManager {
       type: this.questionForm.type,
       points: this.questionForm.points,
       tags: this.questionForm.tags,
-      difficulty: this.questionForm.difficulty
+      difficulty: this.questionForm.difficulty as QuestionDifficulty
     };
     
     if (this.questionForm.description?.trim()) {
@@ -337,7 +337,12 @@ export class QuestionsManager {
     if (this.questionForm.type === 'single_choice' || 
         this.questionForm.type === 'multiple_choice' || 
         this.questionForm.type === 'true_false') {
-      data.options = this.questionForm.options?.filter(opt => opt.trim()) || [];
+      data.options = this.questionForm.options?.filter(opt => {
+        if (typeof opt === 'string') {
+          return opt.trim();
+        }
+        return opt.text?.trim();
+      }) || [];
       data.correctAnswer = this.questionForm.correctAnswer;
     }
     

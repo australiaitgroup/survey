@@ -214,7 +214,7 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
     
     if (searchTerm) {
       matches = q.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (q.description && q.description.toLowerCase().includes(searchTerm.toLowerCase()));
+                (q.description ? q.description.toLowerCase().includes(searchTerm.toLowerCase()) : false);
     }
     
     if (filterType && q.type !== filterType) {
@@ -264,9 +264,9 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
             <div>
               <p className="text-sm text-gray-600">Status</p>
               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                bank.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                bank.isActive === true ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
               }`}>
-                {bank.isActive ? 'Active' : 'Inactive'}
+                {bank.isActive === true ? 'Active' : 'Inactive'}
               </span>
             </div>
             <div>

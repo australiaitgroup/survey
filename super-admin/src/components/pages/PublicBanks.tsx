@@ -3,6 +3,7 @@ import PublicBankDetailView from '../publicBanks/PublicBankDetailView'
 import PublicBankModal from '../publicBanks/PublicBankModal'
 import { PublicBank, PublicBankFormData } from '../../types/publicBanks'
 import { PublicBanksAPI } from '../../api/publicBanks'
+import { mockPublicBanks } from '../../data/mockPublicBanks'
 
 const PublicBanks: React.FC = () => {
   const api = new PublicBanksAPI()
@@ -35,9 +36,13 @@ const PublicBanks: React.FC = () => {
           if (data.success && data.data) {
             setBanks(data.data)
           }
+        } else {
+          // Use mock data for demo
+          setBanks(mockPublicBanks)
         }
       } catch (fallbackError) {
-        console.log('API not available, showing empty state')
+        console.log('API not available, using mock data')
+        setBanks(mockPublicBanks)
       }
     } finally {
       setLoading(false)
