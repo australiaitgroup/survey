@@ -434,6 +434,12 @@ router.get('/audit-logs', asyncHandler(async (req, res) => {
  * @access  SuperAdmin only
  */
 router.get('/stats', asyncHandler(async (req, res) => {
+	const daysParam = parseInt(req.query.days || '14', 10);
+	const days = Number.isNaN(daysParam) ? 14 : Math.max(1, Math.min(daysParam, 90));
+	const startDate = new Date();
+	startDate.setHours(0, 0, 0, 0);
+	startDate.setDate(startDate.getDate() - (days - 1));
+
 	const [
 		totalCompanies,
 		activeCompanies,
@@ -442,6 +448,9 @@ router.get('/stats', asyncHandler(async (req, res) => {
 		totalSurveys,
 		totalResponses,
 		recentAuditLogs,
+		companiesDaily,
+		surveysDaily,
+		responsesDaily,
 	] = await Promise.all([
 		Company.countDocuments(),
 		Company.countDocuments({ isActive: true }),
@@ -455,6 +464,21 @@ router.get('/stats', asyncHandler(async (req, res) => {
 			.populate('actor.userId', 'name email')
 			.populate('companyId', 'name')
 			.lean(),
+		Company.aggregate([
+			{ $match: { createdAt: { $gte: startDate } } },
+			{ $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 } } },
+			{ $sort: { _id: 1 } },
+		]),
+		Survey.aggregate([
+			{ $match: { createdAt: { $gte: startDate } } },
+			{ $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 } } },
+			{ $sort: { _id: 1 } },
+		]),
+		Response.aggregate([
+			{ $match: { createdAt: { $gte: startDate } } },
+			{ $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 } } },
+			{ $sort: { _id: 1 } },
+		]),
 	]);
 
 	// Get user role distribution
@@ -485,6 +509,12 @@ router.get('/stats', asyncHandler(async (req, res) => {
 			distributions: {
 				userRoles: roleDistribution,
 				companySizes: companySizeDistribution,
+			},
+			daily: {
+				companies: companiesDaily.map(d => ({ date: d._id, count: d.count })),
+				surveys: surveysDaily.map(d => ({ date: d._id, count: d.count })),
+				responses: responsesDaily.map(d => ({ date: d._id, count: d.count })),
+				range: { from: startDate.toISOString().slice(0, 10), to: new Date().toISOString().slice(0, 10), days },
 			},
 			recentActivity: recentAuditLogs,
 		},

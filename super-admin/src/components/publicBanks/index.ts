@@ -362,5 +362,5 @@ declare global {
 
 // Initialize when loaded
 if (typeof window !== 'undefined') {
-  window.publicBanksComponent = new PublicBanksComponent();
+  (window as any).publicBanksComponent = new PublicBanksComponent();
 }

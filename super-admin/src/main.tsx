@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation, useParams, Link } from 'react-router-dom'
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts'
 
 // Login Component
 function Login() {
@@ -55,7 +56,7 @@ function Login() {
           <h1 className="text-3xl font-bold text-gray-900">Super Admin</h1>
           <p className="text-gray-600 mt-2">System Management Portal</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -70,7 +71,7 @@ function Login() {
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-          
+
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
@@ -84,11 +85,11 @@ function Login() {
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-          
+
           {error && (
             <div className="text-red-600 text-sm bg-red-50 p-3 rounded">{error}</div>
           )}
-          
+
           <button
             type="submit"
             disabled={loading}
@@ -97,7 +98,7 @@ function Login() {
             {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
-        
+
         <div className="mt-6 text-center text-sm text-gray-600">
           <p>Super Admin access only</p>
           <p className="mt-2">
@@ -118,7 +119,7 @@ function Sidebar({ navigation, currentPath, user, onNavigate, onLogout }: any) {
         <p className="text-gray-300 text-sm mt-1">{user?.name || 'Administrator'}</p>
         <p className="text-gray-400 text-xs">{user?.email || 'admin@system.com'}</p>
       </div>
-      
+
       <nav className="mt-8">
         <div className="px-6 space-y-2">
           {navigation.map((item: any) => (
@@ -136,7 +137,7 @@ function Sidebar({ navigation, currentPath, user, onNavigate, onLogout }: any) {
             </button>
           ))}
         </div>
-        
+
         <div className="px-6 mt-8">
           <button
             onClick={onLogout}
@@ -155,6 +156,45 @@ function Sidebar({ navigation, currentPath, user, onNavigate, onLogout }: any) {
 
 // Overview Page Component
 function Overview({ stats, onRefresh }: any) {
+  // Build continuous daily dataset so the chart always renders
+  const buildChartData = () => {
+    if (!stats) return []
+    const days = stats.daily?.range?.days || 14
+    const toDate = stats.daily?.range?.to ? new Date(stats.daily.range.to) : new Date()
+    const fromDate = stats.daily?.range?.from ? new Date(stats.daily.range.from) : new Date(new Date().setDate(new Date().getDate() - (days - 1)))
+    fromDate.setHours(0, 0, 0, 0)
+    toDate.setHours(0, 0, 0, 0)
+
+    const format = (d: Date) => d.toISOString().slice(0, 10)
+    const dates: string[] = []
+    for (let d = new Date(fromDate); d <= toDate; d.setDate(d.getDate() + 1)) {
+      dates.push(format(new Date(d)))
+    }
+
+    const companies = (stats.daily?.companies || []) as Array<{ date: string; count: number }>
+    const surveys = (stats.daily?.surveys || []) as Array<{ date: string; count: number }>
+    const responses = (stats.daily?.responses || []) as Array<{ date: string; count: number }>
+
+    const mapByDate = (arr: Array<{ date: string; count: number }>) => {
+      const m: Record<string, number> = {}
+      for (const item of arr) m[item.date] = item.count
+      return m
+    }
+
+    const mCompanies = mapByDate(companies)
+    const mSurveys = mapByDate(surveys)
+    const mResponses = mapByDate(responses)
+
+    return dates.map(date => ({
+      date,
+      companies: mCompanies[date] || 0,
+      surveys: mSurveys[date] || 0,
+      responses: mResponses[date] || 0,
+    }))
+  }
+
+  const chartData = buildChartData()
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -255,6 +295,34 @@ function Overview({ stats, onRefresh }: any) {
               )}
             </div>
           </div>
+
+          {/* Daily New Metrics */}
+          <div className="bg-white p-6 rounded-lg shadow mt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Daily New (Last {stats.daily?.range?.days || 14} days)</h3>
+              <span className="text-sm text-gray-500">
+                {stats.daily?.range?.from} → {stats.daily?.range?.to}
+              </span>
+            </div>
+            {chartData.length > 0 ? (
+              <div className="w-full h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="companies" name="Companies" stroke="#2563eb" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="surveys" name="Surveys" stroke="#f59e0b" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="responses" name="Responses" stroke="#16a34a" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <p className="text-gray-500">No daily data</p>
+            )}
+          </div>
         </>
       ) : (
         <div className="text-center py-12">
@@ -290,7 +358,7 @@ function Companies() {
         page: currentPage.toString(),
         limit: '20'
       })
-      
+
       if (search) params.append('search', search)
       if (statusFilter) params.append('status', statusFilter)
 
@@ -378,8 +446,8 @@ function Companies() {
                 <div>
                   <label className="block text-sm font-medium text-gray-500">Status</label>
                   <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                    selectedCompany.isActive 
-                      ? 'bg-green-100 text-green-800' 
+                    selectedCompany.isActive
+                      ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
                   }`}>
                     {selectedCompany.isActive ? 'Active' : 'Inactive'}
@@ -521,7 +589,11 @@ function Companies() {
                     <tr key={company._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{company.name}</div>
+                          <div className="text-sm font-medium">
+                            <Link to={`/companies/${company._id}`} className="text-blue-600 hover:text-blue-800">
+                              {company.name}
+                            </Link>
+                          </div>
                           <div className="text-sm text-gray-500 font-mono">{company.slug}</div>
                         </div>
                       </td>
@@ -533,8 +605,8 @@ function Companies() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                          company.isActive 
-                            ? 'bg-green-100 text-green-800' 
+                          company.isActive
+                            ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
                         }`}>
                           {company.isActive ? 'Active' : 'Inactive'}
@@ -613,6 +685,147 @@ function Companies() {
   )
 }
 
+// Company Details Page (routed)
+function CompanyDetails() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [company, setCompany] = useState<any | null>(null)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const token = localStorage.getItem('sa_token')
+        const response = await fetch(`/api/sa/companies/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        if (!response.ok) {
+          throw new Error('Failed to load company details')
+        }
+        const data = await response.json()
+        setCompany(data.data)
+      } catch (e: any) {
+        setError(e.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+        <p className="text-gray-600">Loading company...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">{error}</div>
+    )
+  }
+
+  if (!company) return null
+
+  return (
+    <div>
+      <div className="flex items-center mb-6">
+        <button
+          onClick={() => navigate('/companies')}
+          className="flex items-center text-blue-600 hover:text-blue-800 mr-4"
+        >
+          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Companies
+        </button>
+        <h2 className="text-2xl font-bold text-gray-900">{company.name}</h2>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <div className="bg-white p-6 rounded-lg shadow mb-6">
+            <h3 className="text-lg font-semibold mb-4">Company Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-500">Name</label>
+                <p className="text-gray-900">{company.name}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500">Slug</label>
+                <p className="text-gray-900 font-mono">{company.slug}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500">Contact Email</label>
+                <p className="text-gray-900">{company.contactEmail}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500">Status</label>
+                <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                  company.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {company.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500">Created</label>
+                <p className="text-gray-900">{new Date(company.createdAt).toLocaleDateString()}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500">Updated</label>
+                <p className="text-gray-900">{new Date(company.updatedAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-semibold mb-4">Statistics</h3>
+            <div className="space-y-4">
+              <div className="border-b pb-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Users</span>
+                  <span className="font-semibold text-blue-600">{company.stats?.userCount || 0}</span>
+                </div>
+              </div>
+              <div className="border-b pb-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Surveys</span>
+                  <span className="font-semibold text-purple-600">{company.stats?.surveyCount || 0}</span>
+                </div>
+              </div>
+              <div className="border-b pb-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Responses</span>
+                  <span className="font-semibold text-green-600">{company.stats?.responseCount || 0}</span>
+                </div>
+              </div>
+              <div className="border-b pb-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Question Banks</span>
+                  <span className="font-semibold text-orange-600">{company.stats?.questionBankCount || 0}</span>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Purchased Banks</span>
+                  <span className="font-semibold text-indigo-600">{company.purchasedBanks || 0}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Public Banks Management Component
 function PublicBanks() {
   const [banks, setBanks] = useState<any[]>([])
@@ -638,7 +851,7 @@ function PublicBanks() {
         page: currentPage.toString(),
         limit: '20'
       })
-      
+
       if (search) params.append('search', search)
       if (typeFilter) params.append('type', typeFilter)
       if (statusFilter) params.append('isActive', statusFilter)
@@ -725,8 +938,8 @@ function PublicBanks() {
                 <div>
                   <label className="block text-sm font-medium text-gray-500">Type</label>
                   <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                    selectedBank.type === 'one_time' 
-                      ? 'bg-blue-100 text-blue-800' 
+                    selectedBank.type === 'one_time'
+                      ? 'bg-blue-100 text-blue-800'
                       : 'bg-purple-100 text-purple-800'
                   }`}>
                     {selectedBank.type === 'one_time' ? 'One Time' : 'Subscription'}
@@ -743,8 +956,8 @@ function PublicBanks() {
                 <div>
                   <label className="block text-sm font-medium text-gray-500">Status</label>
                   <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                    selectedBank.isActive 
-                      ? 'bg-green-100 text-green-800' 
+                    selectedBank.isActive
+                      ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
                   }`}>
                     {selectedBank.isActive ? 'Active' : 'Inactive'}
@@ -931,8 +1144,8 @@ function PublicBanks() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                          bank.type === 'one_time' 
-                            ? 'bg-blue-100 text-blue-800' 
+                          bank.type === 'one_time'
+                            ? 'bg-blue-100 text-blue-800'
                             : 'bg-purple-100 text-purple-800'
                         }`}>
                           {bank.type === 'one_time' ? 'One Time' : 'Subscription'}
@@ -952,8 +1165,8 @@ function PublicBanks() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                          bank.isActive 
-                            ? 'bg-green-100 text-green-800' 
+                          bank.isActive
+                            ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
                         }`}>
                           {bank.isActive ? 'Active' : 'Inactive'}
@@ -1055,7 +1268,7 @@ function Transactions() {
         page: currentPage.toString(),
         limit: '20'
       })
-      
+
       if (companyFilter) params.append('companyId', companyFilter)
       if (bankFilter) params.append('bankId', bankFilter)
       if (typeFilter) params.append('type', typeFilter)
@@ -1087,7 +1300,7 @@ function Transactions() {
     try {
       const token = localStorage.getItem('sa_token')
       const params = new URLSearchParams()
-      
+
       if (companyFilter) params.append('companyId', companyFilter)
       if (bankFilter) params.append('bankId', bankFilter)
       if (typeFilter) params.append('type', typeFilter)
@@ -1269,8 +1482,8 @@ function Transactions() {
                         <div>
                           <div className="text-sm font-medium text-gray-900">{purchase.bankId?.title || 'N/A'}</div>
                           <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                            purchase.bankId?.type === 'one_time' 
-                              ? 'bg-blue-100 text-blue-800' 
+                            purchase.bankId?.type === 'one_time'
+                              ? 'bg-blue-100 text-blue-800'
                               : 'bg-purple-100 text-purple-800'
                           }`}>
                             {purchase.bankId?.type === 'one_time' ? 'One Time' : 'Subscription'}
@@ -1279,8 +1492,8 @@ function Transactions() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                          purchase.type === 'one_time' 
-                            ? 'bg-blue-100 text-blue-800' 
+                          purchase.type === 'one_time'
+                            ? 'bg-blue-100 text-blue-800'
                             : 'bg-purple-100 text-purple-800'
                         }`}>
                           {purchase.type === 'one_time' ? 'One Time' : 'Subscription'}
@@ -1293,7 +1506,7 @@ function Transactions() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                          purchase.status === 'completed' 
+                          purchase.status === 'completed'
                             ? 'bg-green-100 text-green-800'
                             : purchase.status === 'pending'
                             ? 'bg-yellow-100 text-yellow-800'
@@ -1401,7 +1614,7 @@ function AuditLogs() {
         page: currentPage.toString(),
         limit: '20'
       })
-      
+
       if (actionFilter) params.append('action', actionFilter)
       if (companyFilter) params.append('companyId', companyFilter)
       if (userFilter) params.append('userId', userFilter)
@@ -1729,7 +1942,7 @@ function Dashboard() {
   const checkAuth = async () => {
     const token = localStorage.getItem('sa_token')
     const userData = localStorage.getItem('sa_user')
-    
+
     if (token && userData) {
       try {
         const parsedUser = JSON.parse(userData)
@@ -1748,7 +1961,7 @@ function Dashboard() {
       navigate('/login')
       return
     }
-    
+
     setLoading(false)
   }
 
@@ -1825,6 +2038,7 @@ function Dashboard() {
           <Routes>
             <Route path="/overview" element={<Overview stats={stats} onRefresh={loadStats} />} />
             <Route path="/companies" element={<Companies />} />
+            <Route path="/companies/:id" element={<CompanyDetails />} />
             <Route path="/public-banks" element={<PublicBanks />} />
             <Route path="/transactions" element={<Transactions />} />
             <Route path="/audit" element={<AuditLogs />} />

@@ -1,6 +1,6 @@
 // Types for Public Banks feature
 
-export type QuestionType = 'single_choice' | 'multiple_choice' | 'true_false' | 'text' | 'number';
+export type QuestionType = 'single_choice' | 'multiple_choice' | 'short_text' | 'true_false' | 'text' | 'number';
 export type QuestionDifficulty = 'easy' | 'medium' | 'hard';
 export type BankType = 'free' | 'paid';
 
@@ -13,6 +13,7 @@ export interface PublicBank {
   tags: string[];
   locales: string[];
   isActive: boolean;
+  questions?: Question[];
   questionCount?: number;
   usageCount?: number;
   createdAt: string;
@@ -23,9 +24,10 @@ export interface Question {
   _id?: string;
   text: string;
   description?: string;
+  descriptionImage?: string;
   type: QuestionType;
-  options?: string[];
-  correctAnswer?: any;
+  options?: (string | { text?: string; imageUrl?: string })[];
+  correctAnswer?: number | number[] | string;
   explanation?: string;
   points: number;
   tags: string[];
@@ -48,16 +50,30 @@ export interface BankUsageData {
   }>;
 }
 
+export interface QuestionForm {
+  text: string;
+  description?: string;
+  descriptionImage?: string;
+  type: QuestionType;
+  options?: (string | { text?: string; imageUrl?: string })[];
+  correctAnswer?: number | number[] | string;
+  explanation?: string;
+  points: number;
+  tags: string[];
+  difficulty?: string;
+}
+
 export interface QuestionFormData {
   text: string;
   description: string;
+  descriptionImage?: string;
   type: QuestionType;
-  options: string[];
+  options: (string | { text?: string; imageUrl?: string })[];
   correctAnswer: any;
   explanation: string;
   points: number;
   tags: string[];
-  difficulty: QuestionDifficulty;
+  difficulty: string;
 }
 
 export interface PublicBankFormData {

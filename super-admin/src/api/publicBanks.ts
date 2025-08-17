@@ -5,7 +5,7 @@ export class PublicBanksAPI {
   private baseURL = '/api';
   
   private getHeaders(): HeadersInit {
-    const token = localStorage.getItem('sa_token');
+    const token = localStorage.getItem('superAdminToken') || localStorage.getItem('sa_token');
     return {
       'Content-Type': 'application/json',
       'Authorization': token ? `Bearer ${token}` : ''

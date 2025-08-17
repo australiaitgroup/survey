@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react'
-
-interface PublicBank {
-  _id: string
-  title: string
-  description: string
-  type: string
-  isActive: boolean
-  questionCount: number
-  createdAt: string
-}
+import PublicBankDetailView from '../publicBanks/PublicBankDetailView'
+import PublicBankModal from '../publicBanks/PublicBankModal'
+import { PublicBank, PublicBankFormData } from '../../types/publicBanks'
+import { PublicBanksAPI } from '../../api/publicBanks'
 
 const PublicBanks: React.FC = () => {
+  const api = new PublicBanksAPI()
   const [banks, setBanks] = useState<PublicBank[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedBank, setSelectedBank] = useState<PublicBank | null>(null)
+  const [showModal, setShowModal] = useState(false)
+  const [editingBank, setEditingBank] = useState<PublicBank | null>(null)
+  const [modalLoading, setModalLoading] = useState(false)
 
   useEffect(() => {
     loadBanks()
@@ -22,16 +21,24 @@ const PublicBanks: React.FC = () => {
   const loadBanks = async () => {
     setLoading(true)
     try {
-      // Try to load from API - will return empty if no API
-      const response = await fetch('/api/sa/public-banks')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success && data.data) {
-          setBanks(data.data)
-        }
+      const response = await api.getPublicBanks({ page: 1, limit: 100 })
+      if (response.success && response.data) {
+        setBanks(response.data.banks || [])
       }
     } catch (error) {
-      console.log('API not available, showing empty state')
+      console.log('Error loading banks:', error)
+      // Fallback to direct API call if needed
+      try {
+        const response = await fetch('/api/sa/public-banks')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.data) {
+            setBanks(data.data)
+          }
+        }
+      } catch (fallbackError) {
+        console.log('API not available, showing empty state')
+      }
     } finally {
       setLoading(false)
     }
@@ -41,6 +48,78 @@ const PublicBanks: React.FC = () => {
     bank.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     bank.description.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const handleViewBank = (bank: PublicBank) => {
+    setSelectedBank(bank)
+  }
+
+  const handleBackToList = () => {
+    setSelectedBank(null)
+    loadBanks() // Refresh the list when coming back
+  }
+
+  const handleCreateBank = () => {
+    setEditingBank(null)
+    setShowModal(true)
+  }
+
+  const handleEditBank = (bank: PublicBank) => {
+    setEditingBank(bank)
+    setShowModal(true)
+  }
+
+  const handleDeleteBank = async (bank: PublicBank) => {
+    if (!confirm(`Are you sure you want to delete "${bank.title}"?`)) {
+      return
+    }
+
+    try {
+      const response = await api.deletePublicBank(bank._id)
+      if (response.success) {
+        await loadBanks()
+      } else {
+        alert('Failed to delete bank')
+      }
+    } catch (error) {
+      console.error('Error deleting bank:', error)
+      alert('Failed to delete bank')
+    }
+  }
+
+  const handleSaveBank = async (data: PublicBankFormData) => {
+    setModalLoading(true)
+    try {
+      let response
+      if (editingBank) {
+        response = await api.updatePublicBank(editingBank._id, data)
+      } else {
+        response = await api.createPublicBank(data)
+      }
+
+      if (response.success) {
+        await loadBanks()
+        setShowModal(false)
+        setEditingBank(null)
+      } else {
+        alert(response.error || 'Failed to save bank')
+      }
+    } catch (error) {
+      console.error('Error saving bank:', error)
+      alert('Failed to save bank')
+    } finally {
+      setModalLoading(false)
+    }
+  }
+
+  // If a bank is selected, show the detail view
+  if (selectedBank) {
+    return (
+      <PublicBankDetailView 
+        bank={selectedBank} 
+        onBack={handleBackToList}
+      />
+    )
+  }
 
   if (loading) {
     return (
@@ -75,7 +154,10 @@ const PublicBanks: React.FC = () => {
               </svg>
             </div>
             
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <button 
+              onClick={handleCreateBank}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
               Create Bank
             </button>
             
@@ -134,7 +216,7 @@ const PublicBanks: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Questions</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {banks.reduce((sum, b) => sum + b.questionCount, 0)}
+                {banks.reduce((sum, b) => sum + (b.questionCount || 0), 0)}
               </p>
             </div>
           </div>
@@ -171,7 +253,10 @@ const PublicBanks: React.FC = () => {
               {searchTerm ? 'No banks match your search.' : 'Create your first public question bank to get started.'}
             </p>
             {!searchTerm && (
-              <button className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+              <button 
+                onClick={handleCreateBank}
+                className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
                 Create Question Bank
               </button>
             )}
@@ -219,9 +304,24 @@ const PublicBanks: React.FC = () => {
                       {new Date(bank.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button className="text-blue-600 hover:text-blue-900 mr-3">View</button>
-                      <button className="text-green-600 hover:text-green-900 mr-3">Edit</button>
-                      <button className="text-red-600 hover:text-red-900">Delete</button>
+                      <button 
+                        onClick={() => handleViewBank(bank)}
+                        className="text-blue-600 hover:text-blue-900 mr-3"
+                      >
+                        View
+                      </button>
+                      <button 
+                        onClick={() => handleEditBank(bank)}
+                        className="text-green-600 hover:text-green-900 mr-3"
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteBank(bank)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -230,6 +330,18 @@ const PublicBanks: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Create/Edit Modal */}
+      <PublicBankModal
+        isOpen={showModal}
+        onClose={() => {
+          setShowModal(false)
+          setEditingBank(null)
+        }}
+        onSubmit={handleSaveBank}
+        editingBank={editingBank}
+        loading={modalLoading}
+      />
     </div>
   )
 }
