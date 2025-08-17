@@ -163,18 +163,6 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
     }
   }
 
-  const generateMockUsers = () => {
-    return Array.from({ length: Math.min(company.userCount, 10) }, (_, i) => ({
-      _id: `user_${i + 1}`,
-      name: `User ${i + 1}`,
-      email: `user${i + 1}@${company.name.toLowerCase().replace(/\s+/g, '')}.com`,
-      role: i === 0 ? 'admin' : Math.random() > 0.7 ? 'manager' : 'user',
-      status: Math.random() > 0.2 ? 'active' : 'inactive',
-      lastLogin: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-      createdAt: new Date(Date.now() - Math.random() * 180 * 24 * 60 * 60 * 1000).toISOString()
-    }))
-  }
-
   const loadCompanyUsers = async () => {
     setUsersLoading(true)
     try {
@@ -187,86 +175,52 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
       
       console.log('Loading users for company:', company._id)
       
-      // Try different possible endpoints
-      const endpoints = [
-        `/api/sa/companies/${company._id}/users`,
-        `/api/admin/companies/${company._id}/users`,
-        `/api/companies/${company._id}/users`,
-        `/api/sa/users?companyId=${company._id}`,
-        `/api/admin/users?companyId=${company._id}`,
-        `/api/users?companyId=${company._id}`
-      ]
-      
-      for (const endpoint of endpoints) {
-        try {
-          console.log('Trying endpoint:', endpoint)
-          
-          const response = await fetch(endpoint, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          })
-          
-          console.log(`${endpoint} - Status:`, response.status, 'OK:', response.ok)
-          
-          if (response.ok) {
-            const contentType = response.headers.get('content-type')
-            console.log(`${endpoint} - Content-Type:`, contentType)
-            
-            // Check if it's actually JSON
-            if (contentType && contentType.includes('application/json')) {
-              const data = await response.json()
-              console.log(`${endpoint} - JSON data:`, data)
-              
-              // Handle the data
-              let userData = []
-              if (Array.isArray(data)) {
-                userData = data
-              } else if (data.data && Array.isArray(data.data)) {
-                userData = data.data
-              } else if (data.users && Array.isArray(data.users)) {
-                userData = data.users
-              } else if (data.success && Array.isArray(data.data)) {
-                userData = data.data
-              } else {
-                console.log('Unexpected users data structure:', data)
-                userData = []
-              }
-              
-              const normalizedUsers = userData.map((user: any) => ({
-                _id: user._id || user.id,
-                name: user.name || user.username || user.email?.split('@')[0] || 'Unknown User',
-                email: user.email,
-                role: user.role || user.userRole || 'user',
-                status: user.status || (user.isActive !== false ? 'active' : 'inactive'),
-                lastLogin: user.lastLogin || user.lastLoginAt || user.lastSeen,
-                createdAt: user.createdAt || user.joinedAt || user.registeredAt || new Date().toISOString()
-              }))
-              
-              console.log('Successfully loaded users from:', endpoint)
-              setUsers(normalizedUsers)
-              return
-            } else {
-              console.log(`${endpoint} - Not JSON, skipping`)
-            }
-          } else {
-            console.log(`${endpoint} - Failed with status:`, response.status)
-          }
-        } catch (error) {
-          console.log(`${endpoint} - Error:`, error)
+      const response = await fetch(`/api/sa/companies/${company._id}/users`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
+      })
+      
+      console.log('Response status:', response.status, 'OK:', response.ok)
+      
+      if (response.ok) {
+        const contentType = response.headers.get('content-type')
+        console.log('Content-Type:', contentType)
+        
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json()
+          console.log('Users API response:', data)
+          
+          if (data.success && Array.isArray(data.data)) {
+            const normalizedUsers = data.data.map((user: any) => ({
+              _id: user._id,
+              name: user.name || user.email?.split('@')[0] || 'Unknown User',
+              email: user.email,
+              role: user.role || 'user',
+              status: user.isActive !== false ? 'active' : 'inactive',
+              lastLogin: user.lastLogin || user.lastLoginAt || user.lastSeen,
+              createdAt: user.createdAt || new Date().toISOString()
+            }))
+            
+            console.log('Successfully loaded users:', normalizedUsers.length)
+            setUsers(normalizedUsers)
+          } else {
+            console.log('No users found in response')
+            setUsers([])
+          }
+        } else {
+          console.log('Response is not JSON')
+          setUsers([])
+        }
+      } else {
+        console.log('API request failed with status:', response.status)
+        setUsers([])
       }
       
-      // Fallback to mock data
-      console.log('Using mock users data')
-      const mockUsers = generateMockUsers()
-      setUsers(mockUsers)
-      
     } catch (error) {
-      console.error('Error in loadCompanyUsers:', error)
-      const mockUsers = generateMockUsers()
-      setUsers(mockUsers)
+      console.error('Error loading company users:', error)
+      setUsers([])
     } finally {
       setUsersLoading(false)
     }

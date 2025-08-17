@@ -293,10 +293,14 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
 
         {/* Bank Info Card */}
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
             <div>
               <p className="text-sm text-gray-600">Type</p>
               <p className="font-medium capitalize">{bank.type || 'free'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Price</p>
+              <p className="font-medium">{bank.type === 'paid' ? (bank.priceOneTime || 0).toLocaleString(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }) : 'Free'}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Status</p>

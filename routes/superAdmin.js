@@ -208,6 +208,210 @@ router.get('/companies/:id', asyncHandler(async (req, res) => {
 }));
 
 /**
+ * @route   GET /sa/companies/:id/users
+ * @desc    Get users for a specific company
+ * @access  SuperAdmin only
+ */
+router.get('/companies/:id/users', asyncHandler(async (req, res) => {
+	const companyId = req.params.id;
+	const {
+		page = 1,
+		limit = 50,
+		search,
+		role,
+		isActive,
+		sortBy = 'createdAt',
+		sortOrder = 'desc'
+	} = req.query;
+
+	// Validate company exists
+	const company = await Company.findById(companyId).lean();
+	if (!company) {
+		return res.status(404).json({
+			success: false,
+			error: 'Company not found',
+		});
+	}
+
+	// Build query - ensure companyId is ObjectId
+	const query = { companyId: mongoose.Types.ObjectId(companyId) };
+
+	if (search) {
+		query.$or = [
+			{ name: { $regex: search, $options: 'i' } },
+			{ email: { $regex: search, $options: 'i' } },
+		];
+	}
+
+	if (role) {
+		query.role = role;
+	}
+
+	if (isActive !== undefined) {
+		query.isActive = isActive === 'true';
+	}
+
+	// Debug logging
+	console.log(`[DEBUG] Searching for users with query:`, JSON.stringify(query));
+
+	// Execute query
+	const skip = (page - 1) * limit;
+	const users = await User.find(query)
+		.sort({ [sortBy]: sortOrder === 'desc' ? -1 : 1 })
+		.limit(parseInt(limit))
+		.skip(skip)
+		.select('-password')
+		.lean();
+
+	const total = await User.countDocuments(query);
+
+	console.log(`[DEBUG] Found ${total} users for company ${companyId}:`, users.map(u => ({
+		_id: u._id,
+		name: u.name,
+		email: u.email,
+		role: u.role,
+		companyId: u.companyId
+	})));
+
+	res.json({
+		success: true,
+		data: users,
+		pagination: {
+			page: parseInt(page),
+			limit: parseInt(limit),
+			total,
+			pages: Math.ceil(total / limit),
+		},
+		company: {
+			_id: company._id,
+			name: company.name,
+			slug: company.slug,
+		},
+	});
+}));
+
+/**
+ * @route   PUT /sa/companies/:id
+ * @desc    Update company information
+ * @access  SuperAdmin only
+ */
+router.put('/companies/:id', asyncHandler(async (req, res) => {
+	const companyId = req.params.id;
+	const updateData = req.body;
+
+	// Find the company
+	const company = await Company.findById(companyId);
+	if (!company) {
+		return res.status(404).json({
+			success: false,
+			error: 'Company not found',
+		});
+	}
+
+	// Store old values for audit
+	const oldValues = { ...company.toObject() };
+
+	// Update allowed fields
+	const allowedFields = [
+		'name', 'slug', 'phone', 'website', 'address', 'description',
+		'maxUsers', 'planType'
+	];
+
+	allowedFields.forEach(field => {
+		if (updateData[field] !== undefined) {
+			company[field] = updateData[field];
+		}
+	});
+
+	// Save the company
+	await company.save();
+
+	// Audit log
+	await audit(
+		req.auditContext.actor,
+		'company_update',
+		'company',
+		company._id.toString(),
+		{
+			targetName: company.name,
+			oldValues,
+			newValues: company.toObject(),
+		},
+		req
+	);
+
+	res.json({
+		success: true,
+		message: 'Company updated successfully',
+		data: company,
+	});
+}));
+
+/**
+ * @route   PUT /sa/companies/:id/status
+ * @desc    Update company status
+ * @access  SuperAdmin only
+ */
+router.put('/companies/:id/status', asyncHandler(async (req, res) => {
+	const companyId = req.params.id;
+	const { status } = req.body;
+
+	// Validate status
+	const validStatuses = ['active', 'suspended', 'pending', 'inactive'];
+	if (!validStatuses.includes(status)) {
+		return res.status(400).json({
+			success: false,
+			error: 'Invalid status. Must be one of: ' + validStatuses.join(', '),
+		});
+	}
+
+	// Find the company
+	const company = await Company.findById(companyId);
+	if (!company) {
+		return res.status(404).json({
+			success: false,
+			error: 'Company not found',
+		});
+	}
+
+	const oldStatus = company.isActive ? 'active' : 'inactive';
+	
+	// Update status
+	company.isActive = status === 'active';
+	if (status === 'suspended') {
+		company.suspendedAt = new Date();
+		company.suspendedBy = req.user.id;
+		company.suspensionReason = req.body.reason || 'Status changed by super admin';
+	} else if (status === 'active') {
+		company.suspendedAt = undefined;
+		company.suspendedBy = undefined;
+		company.suspensionReason = undefined;
+	}
+
+	await company.save();
+
+	// Audit log
+	await audit(
+		req.auditContext.actor,
+		'company_status_change',
+		'company',
+		company._id.toString(),
+		{
+			targetName: company.name,
+			oldStatus,
+			newStatus: status,
+		},
+		req
+	);
+
+	res.json({
+		success: true,
+		message: `Company status updated to ${status}`,
+		data: company,
+	});
+}));
+
+/**
  * @route   PUT /sa/companies/:id/suspend
  * @desc    Suspend a company
  * @access  SuperAdmin only
