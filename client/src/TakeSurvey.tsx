@@ -46,6 +46,8 @@ const TakeSurvey: React.FC = () => {
 	const [scoringResult, setScoringResult] = useState<ScoringResult | null>(null);
 	// For one-question-per-page: gate questions behind an initial personal info step
 	const [infoStepDone, setInfoStepDone] = useState(false);
+	// Time tracking
+	const [startTime, setStartTime] = useState<Date | null>(null);
 	// No longer need assessment-specific state since assessments use TakeAssessment component
 
 	// Enable anti-cheating measures for assessments and quizzes
@@ -95,6 +97,11 @@ const TakeSurvey: React.FC = () => {
 		}
 		// Questions loaded
 		setQuestionsLoaded(true);
+
+		// Start time tracking for All in One mode when questions are ready
+		if (!startTime && survey.navigationMode !== 'one_question_per_page') {
+			setStartTime(new Date());
+		}
 	};
 
 	useEffect(() => {
@@ -139,7 +146,11 @@ const TakeSurvey: React.FC = () => {
 	// Assessment types should use the TakeAssessment component via routing
 	// No redirect needed as routing handles this directly
 
-	const handleAnswerChange = (qid: string, value: string) => {
+	const handleAnswerChange = (qid: string, value: string | string[]) => {
+		// Start time tracking on first answer if not already started
+		if (!startTime) {
+			setStartTime(new Date());
+		}
 		setForm({ ...form, answers: { ...form.answers, [qid]: value } });
 	};
 
@@ -165,6 +176,10 @@ const TakeSurvey: React.FC = () => {
 		if (isBankBasedSource(survey.sourceType) && form.email && !questionsLoaded) {
 			await loadQuestions(survey, form.email);
 		}
+		// Start time tracking when user begins
+		if (!startTime) {
+			setStartTime(new Date());
+		}
 		setInfoStepDone(true);
 	};
 
@@ -174,11 +189,15 @@ const TakeSurvey: React.FC = () => {
 
 		setLoading(true);
 		try {
+			// Calculate time spent
+			const timeSpent = startTime ? Math.floor((Date.now() - startTime.getTime()) / 1000) : 0;
+
 			const payload: SurveyResponse = {
 				name: form.name,
 				email: form.email,
 				surveyId: survey._id,
 				answers: questions.map(q => form.answers[q._id]),
+				timeSpent,
 			};
 			await axios.post(getApiPath(`/surveys/${survey._id}/responses`), payload);
 

@@ -120,7 +120,7 @@ const LeftPane: React.FC<{ survey: Survey; onFocusQuestion: (q: Question) => voi
 const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number; forceSingleColumn?: boolean }> = ({
 	survey,
 	externalPageIndex,
-    forceSingleColumn = false,
+	forceSingleColumn = false,
 }) => {
 	const { answers, setAnswer } = usePreview();
 	const { t } = useTranslation();
@@ -330,9 +330,9 @@ const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number; forceSin
 			: (survey.navigationMode as any);
 
 	// Display modes
-    if (effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
+	if (effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
 		return (
-            <OneQuestionPerPageView
+			<OneQuestionPerPageView
 				questions={questions as any}
 				answers={answers as any}
 				onAnswerChange={handleAnswerChange}
@@ -341,9 +341,9 @@ const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number; forceSin
 				antiCheatEnabled={false}
 				getInputProps={() => ({})}
 				externalPageIndex={externalPageIndex}
-                ignoreRequiredForNavigation={false}
-                autoAdvanceOnSelect={false}
-                forceSingleColumn={forceSingleColumn}
+				ignoreRequiredForNavigation={false}
+				autoAdvanceOnSelect={false}
+				forceSingleColumn={forceSingleColumn}
 			/>
 		);
 	}
@@ -354,7 +354,7 @@ const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number; forceSin
 			{questions.map((q, idx) => (
 				<div key={q._id} data-question-id={q._id} className='bg-white rounded-xl p-6'>
 					<label className='block mb-5 font-medium text-[#484848] text-lg leading-relaxed'>
-						<span className='inline-flex items-center justify-center w-7 h-7 rounded-full mr-3 bg-[#FF5A5F] text-white text-xs font-bold shadow-sm'>
+						<span className='inline-flex items-center justify-center min-w-[24px] h-6 rounded mr-3 bg-blue-50 text-blue-600 text-sm font-medium shadow-sm px-2'>
 							{idx + 1}
 						</span>
 						{q.text}
@@ -374,19 +374,58 @@ const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number; forceSin
 						<div className='space-y-3'>
 							{(q.options || []).map((opt: any, optIndex: number) => {
 								const optionValue = typeof opt === 'string' ? opt : opt?.text;
-								const isSelected = (answers as any)[q._id] === optionValue;
+
+								// Handle both single and multiple choice selection
+								const isMultipleChoice = q.type === QUESTION_TYPE.MULTIPLE_CHOICE;
+								const currentAnswer = (answers as any)[q._id];
+								const isSelected = isMultipleChoice
+									? Array.isArray(currentAnswer) && currentAnswer.includes(optionValue)
+									: currentAnswer === optionValue;
+
+								const handleOptionChange = () => {
+									if (isMultipleChoice) {
+										const currentAnswers = Array.isArray(currentAnswer) ? currentAnswer : [];
+										if (isSelected) {
+											// Remove from selection
+											const newAnswers = currentAnswers.filter((val: any) => val !== optionValue);
+											handleAnswerChange(q._id, newAnswers);
+										} else {
+											// Add to selection
+											handleAnswerChange(q._id, [...currentAnswers, optionValue]);
+										}
+									} else {
+										// Single choice
+										handleAnswerChange(q._id, optionValue);
+									}
+								};
+
 								return (
 									<label
 										key={`${q._id}-${optIndex}`}
-										className={`group flex items-start p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${isSelected ? 'border-[#FF5A5F] bg-[#FFF5F5]' : 'border-[#EBEBEB] bg-white hover:border-[#FF5A5F] hover:border-opacity-20'}`}
+										className={`group flex items-start p-3 rounded-xl cursor-pointer transition-all duration-200 ${isSelected ? 'bg-[#FFF5F5]' : 'bg-gray-50 hover:bg-gray-100'}`}
 									>
-										<input
-											type='radio'
-											name={q._id}
-											checked={isSelected}
-											onChange={() => handleAnswerChange(q._id, optionValue)}
-											className='mr-3 mt-1 accent-[#FF5A5F]'
-										/>
+										<div className='flex items-center justify-center relative mr-3 mt-1'>
+											<input
+												type={isMultipleChoice ? 'checkbox' : 'radio'}
+												name={isMultipleChoice ? undefined : q._id}
+												checked={isSelected}
+												onChange={handleOptionChange}
+												className='sr-only'
+											/>
+											<div
+												className={`w-4 h-4 ${isMultipleChoice ? 'rounded' : 'rounded-full'} border-2 flex items-center justify-center transition-all ${isSelected ? 'border-[#FF5A5F] bg-[#FF5A5F]' : 'border-[#DDDDDD] group-hover:border-[#FF5A5F]'}`}
+											>
+												{isSelected && (
+													isMultipleChoice ? (
+														<svg className='w-2.5 h-2.5 text-white' fill='currentColor' viewBox='0 0 20 20'>
+															<path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
+														</svg>
+													) : (
+														<div className='w-1.5 h-1.5 rounded-full bg-white'></div>
+													)
+												)}
+											</div>
+										</div>
 										<span>{optionValue}</span>
 									</label>
 								);
@@ -409,9 +448,9 @@ const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPan
 	// No device control; rely on responsive layout
 	const { clear, scrollToQuestion } = usePreview();
 	const [pageIndex, setPageIndex] = useState<number>(0);
-    const [device, setDevice] = useState<PreviewDevice>(
-        survey.type === SURVEY_TYPE.ASSESSMENT ? 'mobile' : 'desktop'
-    );
+	const [device, setDevice] = useState<PreviewDevice>(
+		survey.type === SURVEY_TYPE.ASSESSMENT ? 'mobile' : 'desktop'
+	);
 	// Use effective navigation mode for label and behaviors in preview
 	// Assessment types now use step-by-step mode (handled by TakeAssessment component)
 	const effectiveNavigationMode = React.useMemo(
@@ -446,10 +485,10 @@ const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPan
 		}
 	}, [effectiveNavigationMode, survey.type, t]);
 
-  // Preview no longer toggles global flags
-  React.useEffect(() => {
-    return () => {};
-  }, []);
+	// Preview no longer toggles global flags
+	React.useEffect(() => {
+		return () => {};
+	}, []);
 
 	const onFocusQuestion = (q: Question) => {
 		if (effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE) {
@@ -541,13 +580,13 @@ const SurveyPreviewTab: React.FC<SurveyPreviewTabProps> = ({ survey, hideLeftPan
 								</div>
 							</div>
 						</div>
-                        <div>
-                            <RightPane
-                                survey={survey}
-                                externalPageIndex={pageIndex}
-                                forceSingleColumn={device === 'mobile'}
-                            />
-                        </div>
+						<div>
+							<RightPane
+								survey={survey}
+								externalPageIndex={pageIndex}
+								forceSingleColumn={device === 'mobile'}
+							/>
+						</div>
 						<div className='mt-6 pb-2 text-center text-xs text-[#767676]'>
 							Powered by{' '}
 							<a

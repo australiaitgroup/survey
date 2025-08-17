@@ -19,7 +19,7 @@ interface Question {
 interface OneQuestionPerPageViewProps {
 	questions: Question[];
 	answers: Record<string, string | string[]>;
-	onAnswerChange: (questionId: string, answer: string) => void;
+	onAnswerChange: (questionId: string, answer: string | string[]) => void;
 	onSubmit: () => void;
 	loading?: boolean;
 	antiCheatEnabled?: boolean;
@@ -43,8 +43,8 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 	getInputProps = () => ({}),
 	externalPageIndex,
 	ignoreRequiredForNavigation = false,
-    autoAdvanceOnSelect = true,
-    forceSingleColumn = false,
+	autoAdvanceOnSelect = true,
+	forceSingleColumn = false,
 }) => {
 	const { t } = useTranslation('survey');
 	const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -70,7 +70,8 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 	const currentAnswer = answers[currentQuestion?._id] || '';
 
 	// Check if current question is answered (required for proceeding)
-	const canProceed = ignoreRequiredForNavigation || currentAnswer.trim() !== '';
+	const canProceed = ignoreRequiredForNavigation ||
+		(Array.isArray(currentAnswer) ? currentAnswer.length > 0 : currentAnswer.trim() !== '');
 
 	const handleNext = () => {
 		if (currentQuestionIndex < (questions?.length || 0) - 1 && canProceed) {
@@ -181,7 +182,7 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 				{showHint && (
 					<div className='mb-3 flex justify-center md:hidden'>
 						<div className='text-xs text-[#767676] bg-[#F7F7F7] border border-[#EBEBEB] px-3 py-1.5 rounded-full animate-slide-down animate-fade-out'>
-						{t('oneQuestionPerPage.hintEnter', '按 Enter 继续')}
+							{t('oneQuestionPerPage.hintEnter', '按 Enter 继续')}
 						</div>
 					</div>
 				)}
@@ -193,7 +194,7 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 						{/* Question Text */}
 						<div className='mb-6'>
 							<h3 className='text-xl md:text-2xl font-medium text-[#484848] leading-relaxed flex items-start'>
-								<span className='inline-flex items-center justify-center w-7 h-7 rounded-full mr-3 bg-[#FF5A5F] text-white text-xs font-bold shadow-sm flex-shrink-0'>
+								<span className='inline-flex items-center justify-center min-w-[28px] h-7 rounded mr-3 bg-blue-50 text-blue-600 text-sm font-medium shadow-sm flex-shrink-0 px-2'>
 									{currentQuestionIndex + 1}
 								</span>
 								<span className='min-w-0 break-words'>{currentQuestion.text}</span>
@@ -250,7 +251,7 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 							<div className='mb-6'>
 								<img
 									src={currentQuestion.descriptionImage}
-								alt={t('oneQuestionPerPage.descriptionImage', 'Question illustration')}
+									alt={t('oneQuestionPerPage.descriptionImage', 'Question illustration')}
 									className='max-w-full h-auto rounded-lg border border-gray-300 mx-auto md:mx-0'
 									onLoad={() => {
 										console.log(
@@ -293,88 +294,115 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 									const optionValue = typeof opt === 'string' ? opt : opt.text || '';
 									const optionText = typeof opt === 'string' ? opt : opt.text || '';
 									const optionImage = typeof opt === 'object' ? opt.imageUrl : null;
-									const isSelected = currentAnswer === optionValue;
+
+									// Handle both single and multiple choice selection
+									const isMultipleChoice = currentQuestion.type === QUESTION_TYPE.MULTIPLE_CHOICE;
+									const isSelected = isMultipleChoice
+										? Array.isArray(currentAnswer) && currentAnswer.includes(optionValue)
+										: currentAnswer === optionValue;
+
+									const handleOptionChange = () => {
+										if (isMultipleChoice) {
+											const currentAnswers = Array.isArray(currentAnswer) ? currentAnswer : [];
+											if (isSelected) {
+												// Remove from selection
+												const newAnswers = currentAnswers.filter(val => val !== optionValue);
+												onAnswerChange(currentQuestion._id, newAnswers);
+											} else {
+												// Add to selection
+												onAnswerChange(currentQuestion._id, [...currentAnswers, optionValue]);
+											}
+										} else {
+											// Single choice
+											onAnswerChange(currentQuestion._id, optionValue);
+											// Auto advance for single choice only
+											setTimeout(() => {
+												if (
+													currentQuestionIndex ===
+													(questions?.length || 0) - 1
+												) {
+													handleSubmitWrapper();
+												} else {
+													handleNext();
+												}
+											}, 150);
+										}
+									};
 
 									return (
 										<label
 											key={`${currentQuestion._id}-${optIndex}-${optionText}`}
-											className={`group flex items-start p-4 md:p-5 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+											className={`group flex items-start p-4 md:p-5 rounded-xl cursor-pointer transition-all duration-200 ${
 												isSelected
-													? 'border-[#FF5A5F] bg-[#FFF5F5]'
-													: 'border-[#EBEBEB] bg-white hover:border-[#FF5A5F] hover:border-opacity-20'
+													? 'bg-[#FFF5F5]'
+													: 'bg-gray-50 hover:bg-gray-100'
 											}`}
 										>
-									<div className='flex items-center justify-center relative'>
-										<input
-											type='radio'
-											name={currentQuestion._id}
-											className='sr-only'
-											value={optionValue}
-											checked={isSelected}
-											onChange={() => {
-												onAnswerChange(currentQuestion._id, optionValue);
-												setTimeout(() => {
-													if (
-														currentQuestionIndex ===
-														(questions?.length || 0) - 1
-													) {
-														handleSubmitWrapper();
-													} else {
-														handleNext();
-													}
-												}, 150);
-											}}
-										/>
-										<div
-											className={`w-5 h-5 rounded-full border-2 mr-3 md:mr-4 flex items-center justify-center transition-all ${
-												isSelected
-													? 'border-[#FF5A5F] bg-[#FF5A5F]'
-													: 'border-[#DDDDDD] group-hover:border-[#FF5A5F]'
-											}`}
-										>
-											{isSelected && (
-												<div className='w-2 h-2 rounded-full bg-white animate-pop'></div>
-											)}
-										</div>
-									</div>
-									<div className='flex-1'>
-										{optionText && (
-											<span
-												className={`block text-base md:text-lg leading-relaxed font-medium transition-colors ${
-													isSelected
-														? 'text-[#484848] font-semibold'
-														: 'text-[#484848] group-hover:text-[#FF5A5F]'
-												}`}
-											>
-												{optionText}
-											</span>
-										)}
-										{optionImage && (
-											<div className='mt-4'>
-												<img
-													src={optionImage}
-								alt={t('oneQuestionPerPage.optionImage', 'Option {{number}}', { number: optIndex + 1 })}
-													className='max-w-full h-auto rounded-lg border border-[#EBEBEB] shadow-sm'
-													style={{ maxHeight: '200px' }}
-													onLoad={() => {
-														console.log(
-															'Option image loaded successfully:',
-															optionImage
-														);
-													}}
-													onError={e => {
-														console.error(
-															'Option image failed to load:',
-															optionImage
-														);
-														e.currentTarget.style.display = 'none';
-													}}
+											<div className='flex items-center justify-center relative'>
+												<input
+													type={isMultipleChoice ? 'checkbox' : 'radio'}
+													name={isMultipleChoice ? undefined : currentQuestion._id}
+													className='sr-only'
+													value={optionValue}
+													checked={isSelected}
+													onChange={handleOptionChange}
 												/>
+												<div
+													className={`w-5 h-5 ${isMultipleChoice ? 'rounded' : 'rounded-full'} border-2 mr-3 md:mr-4 flex items-center justify-center transition-all ${
+														isSelected
+															? 'border-[#FF5A5F] bg-[#FF5A5F]'
+															: 'border-[#DDDDDD] group-hover:border-[#FF5A5F]'
+													}`}
+												>
+													{isSelected && (
+														isMultipleChoice ? (
+															<svg className='w-3 h-3 text-white' fill='currentColor' viewBox='0 0 20 20'>
+																<path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
+															</svg>
+														) : (
+															<div className='w-2 h-2 rounded-full bg-white animate-pop'></div>
+														)
+													)}
+												</div>
 											</div>
-										)}
-									</div>
-								</label>
-								);
+											<div className='flex-1'>
+												{optionText && (
+													<span
+														className={`block text-base md:text-lg leading-relaxed font-medium transition-colors ${
+															isSelected
+																? 'text-[#484848] font-semibold'
+																: 'text-[#484848] group-hover:text-[#FF5A5F]'
+														}`}
+													>
+														{optionText}
+													</span>
+												)}
+												{optionImage && (
+													<div className='mt-4'>
+														<img
+															src={optionImage}
+															alt={t('oneQuestionPerPage.optionImage', 'Option {{number}}', { number: optIndex + 1 })}
+															className='max-w-full h-auto rounded-lg border border-[#EBEBEB] shadow-sm'
+															style={{ maxHeight: '200px' }}
+															onLoad={() => {
+																console.log(
+																	'Option image loaded successfully:',
+																	optionImage
+																);
+															}}
+															onError={e => {
+																console.error(
+																	'Option image failed to load:',
+																	optionImage
+																);
+																e.currentTarget.style.display = 'none';
+															}}
+														/>
+													</div>
+												)}
+											</div>
+										</label>
+									);
 								})}
 							</div>
 						)}
@@ -395,7 +423,7 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 										/>
 									</svg>
 									<span className='text-sm font-medium'>
-									{t('oneQuestionPerPage.answerRequired', 'Please provide an answer to continue.')}
+										{t('oneQuestionPerPage.answerRequired', 'Please provide an answer to continue.')}
 									</span>
 								</div>
 							</div>
@@ -418,7 +446,7 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 			{/* Keyboard Hint */}
 			<div className='text-center text-sm text-[#767676]'>
 				{t(
-						'oneQuestionPerPage.keyboardHint',
+					'oneQuestionPerPage.keyboardHint',
 					'Tip: Press Enter to proceed to the next question'
 				)}
 			</div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { QUESTION_TYPE, SOURCE_TYPE, TYPES_REQUIRING_ANSWERS } from '../../constants';
+import { QUESTION_TYPE, SOURCE_TYPE } from '../../constants';
 import SafeMarkdown from './SafeMarkdown';
 import type { Question } from './takeSurveyTypes';
 
@@ -36,10 +36,10 @@ const QuestionList: React.FC<QuestionListProps> = ({
 				questions.map((q, index) => (
 					<div
 						key={q._id}
-						className={`bg-white rounded-xl p-6 border border-[#EBEBEB] ${antiCheatEnabled && isAssessmentType ? 'anti-cheat-container' : ''}`}
+						className={`bg-white rounded-xl p-6 ${antiCheatEnabled && isAssessmentType ? 'anti-cheat-container' : ''}`}
 					>
 						<label className='block mb-5 font-medium text-[#484848] text-lg leading-relaxed break-words'>
-							<span className='inline-flex items-center justify-center w-7 h-7 bg-[#FF5A5F] bg-opacity-10 text-[#FF5A5F] rounded-full text-sm font-bold mr-3'>
+							<span className='inline-flex items-center justify-center min-w-[24px] h-6 bg-blue-50 text-blue-600 rounded text-sm font-medium mr-3 px-2'>
 								{index + 1}
 							</span>
 							{q.text}
@@ -99,29 +99,57 @@ const QuestionList: React.FC<QuestionListProps> = ({
 										const optionText = typeof opt === 'string' ? opt : opt.text;
 										const optionImage =
 											typeof opt === 'object' ? (opt as any).imageUrl : null;
-										const isSelected = answers[q._id] === optionValue;
+
+										// Handle both single and multiple choice selection
+										const isMultipleChoice = q.type === QUESTION_TYPE.MULTIPLE_CHOICE;
+										const currentAnswer = answers[q._id];
+										const isSelected = isMultipleChoice
+											? Array.isArray(currentAnswer) && currentAnswer.includes(optionValue)
+											: currentAnswer === optionValue;
+
+										const handleOptionChange = () => {
+											if (isMultipleChoice) {
+												const currentAnswers = Array.isArray(currentAnswer) ? currentAnswer : [];
+												if (isSelected) {
+													// Remove from selection
+													const newAnswers = currentAnswers.filter(val => val !== optionValue);
+													onAnswerChange(q._id, newAnswers);
+												} else {
+													// Add to selection
+													onAnswerChange(q._id, [...currentAnswers, optionValue]);
+												}
+											} else {
+												// Single choice
+												onAnswerChange(q._id, optionValue);
+											}
+										};
+
 										return (
 											<label
 												key={`${q._id}-${optIndex}-${optionText}`}
-												className={`group flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${isSelected ? 'border-[#FF5A5F] bg-[#FFF5F5]' : 'border-[#EBEBEB] bg-white hover:border-[#FF5A5F] hover:border-opacity-20'}`}
+												className={`group flex items-start p-4 rounded-xl cursor-pointer transition-all duration-200 ${isSelected ? 'bg-[#FFF5F5]' : 'bg-gray-50 hover:bg-gray-100'}`}
 											>
 												<div className='flex items-center justify-center relative'>
 													<input
-														type='radio'
-														name={q._id}
+														type={isMultipleChoice ? 'checkbox' : 'radio'}
+														name={isMultipleChoice ? undefined : q._id}
 														className='sr-only'
 														value={optionValue}
 														checked={isSelected}
-														onChange={() =>
-															onAnswerChange(q._id, optionValue)
-														}
-														required
+														onChange={handleOptionChange}
+														required={!isMultipleChoice}
 													/>
 													<div
-														className={`w-4 h-4 rounded-full border-2 mr-3 flex items-center justify-center transition-all ${isSelected ? 'border-[#FF5A5F] bg-[#FF5A5F]' : 'border-[#DDDDDD] group-hover:border-[#FF5A5F]'}`}
+														className={`w-4 h-4 ${isMultipleChoice ? 'rounded' : 'rounded-full'} border-2 mr-3 flex items-center justify-center transition-all ${isSelected ? 'border-[#FF5A5F] bg-[#FF5A5F]' : 'border-[#DDDDDD] group-hover:border-[#FF5A5F]'}`}
 													>
 														{isSelected && (
-															<div className='w-1.5 h-1.5 rounded-full bg-white'></div>
+															isMultipleChoice ? (
+																<svg className='w-2.5 h-2.5 text-white' fill='currentColor' viewBox='0 0 20 20'>
+																	<path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
+																</svg>
+															) : (
+																<div className='w-1.5 h-1.5 rounded-full bg-white'></div>
+															)
 														)}
 													</div>
 												</div>
