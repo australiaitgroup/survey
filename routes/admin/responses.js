@@ -153,7 +153,7 @@ router.get(
 		};
 
 		// Add scoring information if applicable
-		if (response.score && ['quiz', 'assessment', 'iq'].includes(survey.type)) {
+		if (response.score && ['assessment', 'live_quiz'].includes(survey.type)) {
 			responseData.score = {
 				totalPoints: response.score.totalPoints || 0,
 				maxPossiblePoints: response.score.maxPossiblePoints || 0,
@@ -614,8 +614,8 @@ router.get(
 				isAutoSubmit: response.isAutoSubmit || false,
 			};
 
-			// Add score information for quiz/assessment/iq types
-			if (response.score && ['quiz', 'assessment', 'iq'].includes(survey.type)) {
+			// Add score information for assessment/live_quiz types
+			if (response.score && ['assessment', 'live_quiz'].includes(survey.type)) {
 				responseData.score = {
 					totalPoints: response.score.totalPoints || 0,
 					correctAnswers: response.score.correctAnswers || 0,

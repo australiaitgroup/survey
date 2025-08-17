@@ -67,17 +67,9 @@ export type StatsView = (typeof STATS_VIEW)[keyof typeof STATS_VIEW];
 export type SourceType = (typeof SOURCE_TYPE)[keyof typeof SOURCE_TYPE];
 
 // Types requiring answers
-// Include legacy types for backward compatibility
-export const LEGACY_SURVEY_TYPE = {
-  QUIZ: 'quiz',
-  IQ: 'iq',
-} as const;
-
-export const TYPES_REQUIRING_ANSWERS: (SurveyType | typeof LEGACY_SURVEY_TYPE[keyof typeof LEGACY_SURVEY_TYPE])[] = [
+export const TYPES_REQUIRING_ANSWERS: SurveyType[] = [
   SURVEY_TYPE.ASSESSMENT,
   SURVEY_TYPE.LIVE_QUIZ,
-  LEGACY_SURVEY_TYPE.QUIZ,
-  LEGACY_SURVEY_TYPE.IQ,
 ];
 
 // All valid types and statuses

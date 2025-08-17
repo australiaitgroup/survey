@@ -129,7 +129,7 @@ router.get(
 			survey.company = companyInfo;
 		}
 
-        // For non-survey types (assessment/quiz/iq), never include questions in initial response
+        // For non-survey types (assessment/live_quiz), never include questions in initial response
         // This prevents leaking correct answers or content prior to start
         if (survey.type && survey.type !== 'survey') {
             survey.questions = [];

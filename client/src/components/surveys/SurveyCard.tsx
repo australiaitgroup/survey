@@ -47,18 +47,22 @@ const SurveyCard: React.FC<SurveyCardProps> = ({ survey }) => {
 									? 'bg-blue-100 text-blue-800'
 									: survey.type === 'assessment'
 										? 'bg-green-100 text-green-800'
-										: survey.type === 'quiz'
+										: survey.type === 'live_quiz'
 											? 'bg-purple-100 text-purple-800'
-											: 'bg-orange-100 text-orange-800'
+											: survey.type === 'onboarding'
+												? 'bg-orange-100 text-orange-800'
+												: 'bg-gray-100 text-gray-800'
 							}`}
 						>
 						{survey.type === 'survey'
 							? t('questions.type.survey', 'Survey')
 							: survey.type === 'assessment'
-							? t('questions.type.assessment', 'Assessment')
-							: survey.type === 'quiz'
-							? t('questions.type.quiz', 'Quiz')
-							: t('questions.type.unknown', 'Unknown')}
+								? t('questions.type.assessment', 'Assessment')
+								: survey.type === 'live_quiz'
+									? t('questions.type.live_quiz', 'Kahoot (Live Quiz)')
+									: survey.type === 'onboarding'
+										? t('questions.type.onboarding', 'Onboarding')
+										: t('questions.type.unknown', 'Unknown')}
 						</span>
 						{survey.sourceType === 'question_bank' && (
 							<span className='px-2 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800'>

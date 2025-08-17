@@ -67,19 +67,19 @@ const SurveyDetailTab: React.FC<Props> = ({
 									className={`px-2 py-1 text-xs font-medium rounded-full ${
 										s.type === SURVEY_TYPE.ASSESSMENT
 											? 'bg-blue-100 text-blue-800'
-											: s.type === SURVEY_TYPE.QUIZ
+											: s.type === SURVEY_TYPE.LIVE_QUIZ
 												? 'bg-green-100 text-green-800'
-												: s.type === SURVEY_TYPE.IQ
+												: s.type === SURVEY_TYPE.ONBOARDING
 													? 'bg-purple-100 text-purple-800'
 													: 'bg-gray-100 text-gray-800'
 									}`}
 								>
 									{s.type === SURVEY_TYPE.ASSESSMENT
 										? 'Assessment'
-										: s.type === SURVEY_TYPE.QUIZ
-											? 'Quiz'
-											: s.type === SURVEY_TYPE.IQ
-												? 'IQ Test'
+										: s.type === SURVEY_TYPE.LIVE_QUIZ
+											? 'Kahoot (Live Quiz)'
+											: s.type === SURVEY_TYPE.ONBOARDING
+												? 'Onboarding'
 												: 'Survey'}
 								</span>
 								<span

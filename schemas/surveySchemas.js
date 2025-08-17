@@ -91,8 +91,8 @@ const surveyCreateSchema = z
 		type: z.enum([
 			SURVEY_TYPE.SURVEY,
 			SURVEY_TYPE.ASSESSMENT,
-			SURVEY_TYPE.QUIZ,
-			SURVEY_TYPE.IQ,
+			SURVEY_TYPE.ONBOARDING,
+			SURVEY_TYPE.LIVE_QUIZ,
 		]),
 		timeLimit: z.number().positive().optional(), // in minutes
 		maxAttempts: z.number().positive().default(1),
@@ -251,7 +251,12 @@ const surveyUpdateSchema = z.object({
 	title: z.string().min(1, 'Title is required').optional(),
 	description: z.string().optional(),
 	type: z
-		.enum([SURVEY_TYPE.SURVEY, SURVEY_TYPE.ASSESSMENT, SURVEY_TYPE.QUIZ, SURVEY_TYPE.IQ])
+		.enum([
+			SURVEY_TYPE.SURVEY,
+			SURVEY_TYPE.ASSESSMENT,
+			SURVEY_TYPE.ONBOARDING,
+			SURVEY_TYPE.LIVE_QUIZ,
+		])
 		.optional(),
 	timeLimit: z.number().positive().optional(),
 	maxAttempts: z.number().positive().optional(),

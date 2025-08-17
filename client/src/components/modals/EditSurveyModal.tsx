@@ -76,7 +76,7 @@ const EditSurveyModal: React.FC = () => {
 				timeLimit: editForm.timeLimit ? Number(editForm.timeLimit) : undefined,
 				maxAttempts: editForm.maxAttempts || 1,
 				// Include scoring settings if it's an assessment type
-				...(['quiz', 'assessment', 'iq'].includes(editForm.type) &&
+				...(['assessment', 'live_quiz', 'quiz', 'iq'].includes(editForm.type) &&
 					editForm.scoringSettings && {
 					scoringSettings: editForm.scoringSettings,
 				}),
@@ -609,7 +609,7 @@ const EditSurveyModal: React.FC = () => {
 						</div>
 
 						{/* Assessment Configuration */}
-						{['quiz', 'assessment', 'iq'].includes(editForm.type) && (
+						{['assessment', 'live_quiz', 'quiz', 'iq'].includes(editForm.type) && (
 							<div>
 								<h3 className='text-lg font-medium text-gray-900 mb-4'>
 									Assessment Configuration
@@ -679,7 +679,7 @@ const EditSurveyModal: React.FC = () => {
 						)}
 
 						{/* Scoring Settings */}
-						{['quiz', 'assessment', 'iq'].includes(editForm.type) && (
+						{['assessment', 'live_quiz', 'quiz', 'iq'].includes(editForm.type) && (
 							<div>
 								<h3 className='text-lg font-medium text-gray-900 mb-4'>
 									Scoring Settings

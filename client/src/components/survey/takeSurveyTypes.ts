@@ -15,7 +15,7 @@ export interface AssessmentResult {
 	questionId: string;
 	questionText: string;
 	questionDescription?: string;
-	userAnswer: string;
+	userAnswer: string | string[];
 	correctAnswer: string;
 	isCorrect: boolean;
 	pointsAwarded: number;

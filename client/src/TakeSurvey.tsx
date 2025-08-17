@@ -182,7 +182,7 @@ const TakeSurvey: React.FC = () => {
 			};
 			await axios.post(getApiPath(`/surveys/${survey._id}/responses`), payload);
 
-			// Calculate assessment results if this is an assessment, quiz, or iq test
+			// Calculate assessment results if this is an assessment or live quiz
 			if ((survey.type as SurveyType) !== 'survey') {
 				let totalPoints = 0;
 				let maxPossiblePoints = 0;

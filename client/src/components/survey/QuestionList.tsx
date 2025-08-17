@@ -6,7 +6,7 @@ import type { Question } from './takeSurveyTypes';
 interface QuestionListProps {
 	questions: Question[];
 	answers: Record<string, any>;
-	onAnswerChange: (qid: string, value: string) => void;
+	onAnswerChange: (qid: string, value: string | string[]) => void;
 	antiCheatEnabled: boolean;
 	isAssessmentType: boolean | undefined;
 	getInputProps: () => Record<string, any>;

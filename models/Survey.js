@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const {
 	SURVEY_STATUS,
 	SURVEY_TYPE,
-	LEGACY_SURVEY_TYPE,
 	QUESTION_TYPE,
 	SOURCE_TYPE,
 	TYPES_REQUIRING_ANSWERS,
@@ -25,8 +24,6 @@ const surveySchema = new mongoose.Schema({
 			SURVEY_TYPE.ASSESSMENT,
 			SURVEY_TYPE.ONBOARDING,
 			SURVEY_TYPE.LIVE_QUIZ,
-			LEGACY_SURVEY_TYPE.QUIZ,
-			LEGACY_SURVEY_TYPE.IQ,
 		],
 		default: SURVEY_TYPE.SURVEY,
 	},

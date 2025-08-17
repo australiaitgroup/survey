@@ -18,7 +18,7 @@ interface Question {
 
 interface OneQuestionPerPageViewProps {
 	questions: Question[];
-	answers: Record<string, string>;
+	answers: Record<string, string | string[]>;
 	onAnswerChange: (questionId: string, answer: string) => void;
 	onSubmit: () => void;
 	loading?: boolean;

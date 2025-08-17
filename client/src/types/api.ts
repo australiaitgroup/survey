@@ -1,6 +1,6 @@
 // ===== 基础类型定义 =====
 
-export type SurveyType = 'survey' | 'assessment' | 'onboarding' | 'live_quiz' | 'quiz' | 'iq';
+export type SurveyType = 'survey' | 'assessment' | 'onboarding' | 'live_quiz';
 export type SurveyStatus = 'draft' | 'active' | 'closed';
 export type QuestionType = 'single_choice' | 'multiple_choice' | 'short_text';
 export type NavigationMode = 'step-by-step' | 'one-question-per-page';

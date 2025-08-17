@@ -33,19 +33,19 @@ const SurveyList: React.FC<SurveyListProps> = ({ surveys }) => {
 								className={`px-3 py-1 text-xs font-medium rounded-full ml-3 flex-shrink-0 ${
 									s.type === 'assessment'
 										? 'bg-[#00A699] bg-opacity-10 text-[#00A699]'
-										: s.type === 'quiz'
+										: s.type === 'live_quiz'
 											? 'bg-[#FC642D] bg-opacity-10 text-[#FC642D]'
-											: s.type === 'iq'
+											: s.type === 'onboarding'
 												? 'bg-[#FF5A5F] bg-opacity-10 text-[#FF5A5F]'
 												: 'bg-[#EBEBEB] text-[#767676]'
 								}`}
 							>
 								{s.type === 'assessment'
 									? '📊 Assessment'
-									: s.type === 'quiz'
-										? '🧠 Quiz'
-										: s.type === 'iq'
-											? '🎯 IQ Test'
+									: s.type === 'live_quiz'
+										? '🧠 Live Quiz'
+										: s.type === 'onboarding'
+											? '🎓 Onboarding'
 											: '📋 Survey'}
 							</span>
 						</div>
@@ -66,10 +66,10 @@ const SurveyList: React.FC<SurveyListProps> = ({ surveys }) => {
 						>
 							{s.type === 'assessment'
 								? '📊 Classic Assessment'
-								: s.type === 'quiz'
-									? '🧠 Classic Quiz'
-									: s.type === 'iq'
-										? '🎯 Classic IQ Test'
+								: s.type === 'live_quiz'
+									? '🧠 Classic Live Quiz'
+									: s.type === 'onboarding'
+										? '🎓 Start Onboarding'
 										: '📋 Start Survey'}
 						</button>
 					</div>
