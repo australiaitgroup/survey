@@ -139,7 +139,8 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 	// Handle "Use now" - navigate to survey creation with pre-selected bank
 	const handleUseNow = () => {
 		// Navigate to survey creation with this bank pre-selected
-		navigate(`/admin?preselectedBank=${bank._id}`);
+		// Add timestamp to force navigation even if already on admin page
+		navigate(`/admin?preselectedBank=${bank._id}&t=${Date.now()}`);
 	};
 
 	// Handle preview button click

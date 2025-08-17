@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAdmin } from '../../contexts/AdminContext';
 import { useSurveys } from '../../hooks/useSurveys';
 import { useQuestionBanks } from '../../hooks/useQuestionBanks';
+import { usePublicBanksForSurvey } from '../../hooks/usePublicBanksForSurvey';
 import Drawer from '../Drawer';
 import MultiQuestionBankModal from './MultiQuestionBankModal';
 import ManualQuestionSelectionModal from './ManualQuestionSelectionModal';
@@ -23,6 +24,7 @@ const CreateSurveyModal: React.FC = () => {
 
 	const { createSurvey } = useSurveys();
 	const { questionBanks } = useQuestionBanks();
+	const { authorized: authorizedPublicBanks } = usePublicBanksForSurvey();
 	const { t } = useTranslation('admin');
 
 	// Survey type options with icons and descriptions
@@ -64,6 +66,17 @@ const CreateSurveyModal: React.FC = () => {
 	// Modal states for multi-question selection
 	const [showMultiBankModal, setShowMultiBankModal] = useState(false);
 	const [showManualSelectionModal, setShowManualSelectionModal] = useState(false);
+
+	// Combine local question banks with authorized public banks for the dropdown
+	const allAvailableBanks = [
+		...questionBanks,
+		...authorizedPublicBanks.map(publicBank => ({
+			_id: publicBank._id,
+			name: publicBank.title,
+			questions: Array(publicBank.questionCount).fill(null), // Create array with correct length
+			isPublic: true,
+		}))
+	];
 
 	if (!showCreateModal) return null;
 
@@ -295,23 +308,29 @@ const CreateSurveyModal: React.FC = () => {
 										defaultValue: 'Manual (Create questions manually)',
 									})}
 								</option>
-								<option value={SOURCE_TYPE.QUESTION_BANK}>
-									{t('createModal.questionSource.singleBank', {
-										defaultValue: 'Single Question Bank (Random selection)',
-									})}
-								</option>
-								<option value={SOURCE_TYPE.MULTI_QUESTION_BANK}>
-									{t('createModal.questionSource.multiBank', {
-										defaultValue:
-											'Multiple Question Banks (Configured selection)',
-									})}
-								</option>
-								<option value={SOURCE_TYPE.MANUAL_SELECTION}>
-									{t('createModal.questionSource.manualSelection', {
-										defaultValue:
-											'Manual Selection (Choose specific questions)',
-									})}
-								</option>
+								{newSurvey.type !== SURVEY_TYPE.SURVEY && (
+									<option value={SOURCE_TYPE.QUESTION_BANK}>
+										{t('createModal.questionSource.singleBank', {
+											defaultValue: 'Single Question Bank (Random selection)',
+										})}
+									</option>
+								)}
+								{newSurvey.type !== SURVEY_TYPE.SURVEY && (
+									<option value={SOURCE_TYPE.MULTI_QUESTION_BANK}>
+										{t('createModal.questionSource.multiBank', {
+											defaultValue:
+												'Multiple Question Banks (Configured selection)',
+										})}
+									</option>
+								)}
+								{newSurvey.type !== SURVEY_TYPE.SURVEY && (
+									<option value={SOURCE_TYPE.MANUAL_SELECTION}>
+										{t('createModal.questionSource.manualSelection', {
+											defaultValue:
+												'Manual Selection (Choose specific questions)',
+										})}
+									</option>
+								)}
 							</select>
 							{newSurvey.type === SURVEY_TYPE.SURVEY && (
 								<p className='text-sm text-gray-500 mt-1'>
@@ -344,13 +363,13 @@ const CreateSurveyModal: React.FC = () => {
 												defaultValue: 'Select a question bank',
 											})}
 										</option>
-										{questionBanks.map(bank => (
+										{allAvailableBanks.map(bank => (
 											<option key={bank._id} value={bank._id}>
 												{bank.name} ({bank.questions.length}{' '}
 												{t('createModal.questionSource.questions', {
 													defaultValue: 'questions',
 												})}
-												)
+												){bank.isPublic ? ' (Marketplace)' : ''}
 											</option>
 										))}
 									</select>
@@ -367,7 +386,7 @@ const CreateSurveyModal: React.FC = () => {
 											type='number'
 											min='1'
 											max={
-												questionBanks.find(
+												allAvailableBanks.find(
 													b => b._id === newSurvey.questionBankId
 												)?.questions.length || 100
 											}
@@ -399,7 +418,7 @@ const CreateSurveyModal: React.FC = () => {
 											<div className='space-y-2'>
 												{newSurvey.multiQuestionBankConfig.map(
 													(config, index: number) => {
-														const bank = questionBanks.find(
+														const bank = allAvailableBanks.find(
 															b => b._id === config.questionBankId
 														);
 														return (

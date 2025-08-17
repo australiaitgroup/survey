@@ -22,12 +22,35 @@ import QuestionBankModal from './modals/QuestionBankModal';
 import EditQuestionBankModal from './modals/EditQuestionBankModal';
 
 const AdminDashboard: React.FC = () => {
-	const { tab, selectedSurvey, selectedQuestionBankDetail, setSelectedSurvey, setTab, surveys } = useAdmin();
+	const { tab, selectedSurvey, selectedQuestionBankDetail, setSelectedSurvey, setTab, surveys, setShowCreateModal, setNewSurvey } = useAdmin();
 	const { loadSurveys } = useSurveys();
 	const location = useLocation();
 	const params = useParams();
 
 	const [isLoadingSurvey, setIsLoadingSurvey] = useState(false);
+
+	// Handle preselected question bank from URL
+	useEffect(() => {
+		const searchParams = new URLSearchParams(location.search);
+		const preselectedBankId = searchParams.get('preselectedBank');
+
+		if (preselectedBankId) {
+			// Open create survey modal with preselected question bank (Assessment type only)
+			setNewSurvey(prev => ({
+				...prev,
+				type: 'assessment', // Question banks are only for assessments
+				sourceType: 'question_bank',
+				questionBankId: preselectedBankId,
+			}));
+			setShowCreateModal(true);
+
+			// Clear the URL parameter immediately to avoid reopening modal
+			const newUrl = new URL(window.location.href);
+			newUrl.searchParams.delete('preselectedBank');
+			newUrl.searchParams.delete('t'); // Remove timestamp parameter too
+			window.history.replaceState({}, document.title, newUrl.pathname + newUrl.search);
+		}
+	}, [location.search, setNewSurvey, setShowCreateModal]); // Listen for URL parameter changes
 
 	// Load survey based on URL params when component mounts or params change
 	useEffect(() => {
