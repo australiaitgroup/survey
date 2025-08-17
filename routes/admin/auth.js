@@ -8,75 +8,9 @@ const { HTTP_STATUS, ADMIN_USERNAME, ADMIN_PASSWORD } = require('./shared/consta
 
 const router = express.Router();
 
-/**
- * @route   GET /admin/check-auth
- * @desc    Check authentication status
- * @access  Public
- */
-router.get('/check-auth', (req, res) => {
-	// For backward compatibility, check if JWT token is provided
-	const authHeader = req.headers.authorization;
-	if (!authHeader || !authHeader.startsWith('Bearer ')) {
-		return res.status(HTTP_STATUS.UNAUTHORIZED).json({
-			success: false,
-			authenticated: false,
-		});
-	}
+// Removed duplicate check-auth endpoint - using the one below that returns full user data including role
 
-	const token = authHeader.substring(7);
-	try {
-		const decoded = jwt.verify(token, JWT_SECRET);
-		res.json({
-			success: true,
-			authenticated: true,
-			user: {
-				id: decoded.id,
-				username: decoded.username,
-			},
-		});
-	} catch (error) {
-		res.status(HTTP_STATUS.UNAUTHORIZED).json({
-			success: false,
-			authenticated: false,
-			error: 'Invalid or expired token',
-		});
-	}
-});
-
-/**
- * @route   POST /admin/check-auth
- * @desc    Check authentication status (POST version)
- * @access  Public
- */
-router.post('/check-auth', (req, res) => {
-	// Same logic as GET version
-	const authHeader = req.headers.authorization;
-	if (!authHeader || !authHeader.startsWith('Bearer ')) {
-		return res.status(HTTP_STATUS.UNAUTHORIZED).json({
-			success: false,
-			authenticated: false,
-		});
-	}
-
-	const token = authHeader.substring(7);
-	try {
-		const decoded = jwt.verify(token, JWT_SECRET);
-		res.json({
-			success: true,
-			authenticated: true,
-			user: {
-				id: decoded.id,
-				username: decoded.username,
-			},
-		});
-	} catch (error) {
-		res.status(HTTP_STATUS.UNAUTHORIZED).json({
-			success: false,
-			authenticated: false,
-			error: 'Invalid or expired token',
-		});
-	}
-});
+// POST version removed - using GET version below that returns full user payload including role
 
 /**
  * @route   GET /admin/check-auth
@@ -148,7 +82,7 @@ router.post(
 		try {
 			const user = await User.findOne({
 				email: username.toLowerCase(),
-				role: 'admin',
+				$or: [{ role: 'admin' }, { role: 'superAdmin' }],
 			}).select('+password');
 
 			if (!user) {
