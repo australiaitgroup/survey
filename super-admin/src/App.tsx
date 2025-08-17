@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import PublicBanks from './components/pages/PublicBanks'
+import PublicBankDetailPage from './components/pages/PublicBankDetailPage'
 import Overview from './components/pages/Overview'
 import Companies from './components/pages/Companies'
 import Transactions from './components/pages/Transactions'
 import Audit from './components/pages/Audit'
+import ProtectedRoute from './components/ProtectedRoute'
 
 // Simple Login Component
 function Login() {
@@ -59,7 +61,7 @@ function Login() {
           <h1 className="text-3xl font-bold text-gray-900">Super Admin</h1>
           <p className="text-gray-600 mt-2">System Management Portal</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -74,7 +76,7 @@ function Login() {
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-          
+
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
@@ -88,11 +90,11 @@ function Login() {
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-          
+
           {error && (
             <div className="text-red-600 text-sm">{error}</div>
           )}
-          
+
           <button
             type="submit"
             disabled={loading}
@@ -113,28 +115,17 @@ function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation()
 
   useEffect(() => {
-    // Check authentication
-    const token = localStorage.getItem('sa_token')
+    // Get user data (authentication is already checked by ProtectedRoute)
     const userData = localStorage.getItem('sa_user')
-    
-    if (token && userData) {
+    if (userData) {
       try {
         const parsedUser = JSON.parse(userData)
-        if (parsedUser.role === 'superAdmin' || parsedUser.role === 'admin') {
-          setUser(parsedUser)
-        } else {
-          navigate('/login')
-          return
-        }
+        setUser(parsedUser)
       } catch (e) {
-        navigate('/login')
-        return
+        console.error('Failed to parse user data')
       }
-    } else {
-      navigate('/login')
-      return
     }
-  }, [navigate])
+  }, [])
 
   const handleLogout = () => {
     localStorage.removeItem('sa_token')
@@ -152,8 +143,8 @@ function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
+      {/* Fixed Header */}
+      <header className="fixed top-0 left-0 right-0 bg-white shadow z-50">
         <div className="px-6 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Super Admin Dashboard</h1>
           <div className="flex items-center space-x-4">
@@ -168,9 +159,10 @@ function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <div className="flex">
-        {/* Sidebar */}
-        <nav className="w-64 bg-white shadow-sm min-h-screen">
+      {/* Content with top padding to account for fixed header */}
+      <div className="pt-16">
+        {/* Fixed Sidebar */}
+        <nav className="fixed left-0 top-16 w-64 bg-white shadow-sm h-[calc(100vh-4rem)] overflow-y-auto z-40">
           <div className="p-4">
             <ul className="space-y-2">
               {navigation.map((item) => {
@@ -194,8 +186,8 @@ function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </nav>
 
-        {/* Main Content */}
-        <main className="flex-1 p-6">
+        {/* Main Content with left margin for sidebar */}
+        <main className="ml-64 p-6">
           {children}
         </main>
       </div>
@@ -209,11 +201,41 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/overview" element={<Layout><Overview /></Layout>} />
-        <Route path="/companies" element={<Layout><Companies /></Layout>} />
-        <Route path="/public-banks" element={<Layout><PublicBanks /></Layout>} />
-        <Route path="/transactions" element={<Layout><Transactions /></Layout>} />
-        <Route path="/audit" element={<Layout><Audit /></Layout>} />
+        <Route path="/overview" element={
+          <ProtectedRoute>
+            <Layout><Overview /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/companies" element={
+          <ProtectedRoute>
+            <Layout><Companies /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/companies/:companyId" element={
+          <ProtectedRoute>
+            <Layout><Companies /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/public-banks" element={
+          <ProtectedRoute>
+            <Layout><PublicBanks /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/public-banks/:id" element={
+          <ProtectedRoute>
+            <Layout><PublicBankDetailPage /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/transactions" element={
+          <ProtectedRoute>
+            <Layout><Transactions /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/audit" element={
+          <ProtectedRoute>
+            <Layout><Audit /></Layout>
+          </ProtectedRoute>
+        } />
         <Route path="/" element={<Navigate to="/overview" replace />} />
       </Routes>
     </Router>

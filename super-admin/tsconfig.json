@@ -14,8 +14,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "types": ["vite/client", "node"]
   },
-  "include": ["src"],
+  "include": ["src", "../client/src/components/modals/ImportCSVModal.tsx"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

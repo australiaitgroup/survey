@@ -27,6 +27,63 @@ router.use(allowCrossTenantAccess);
 router.use(attachAuditContext);
 
 /**
+ * @route   GET /sa/stats
+ * @desc    Super admin dashboard statistics with recent growth
+ * @access  SuperAdmin only
+ */
+router.get('/stats', asyncHandler(async (req, res) => {
+    const now = new Date();
+    const since7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const [
+        totalCompanies,
+        activeCompanies,
+        totalSurveys,
+        totalResponses,
+        companiesLast7d,
+        surveysLast7d,
+        responsesLast7d
+    ] = await Promise.all([
+        Company.countDocuments({}),
+        Company.countDocuments({ isActive: true }),
+        Survey.countDocuments({}),
+        Response.countDocuments({}),
+        Company.countDocuments({ createdAt: { $gte: since7Days } }),
+        Survey.countDocuments({ createdAt: { $gte: since7Days } }),
+        Response.countDocuments({ createdAt: { $gte: since7Days } })
+    ]);
+
+    // Recent items lists
+    const [recentCompanies, recentSurveys, recentResponses] = await Promise.all([
+        Company.find({}).sort({ createdAt: -1 }).limit(10).select('name slug createdAt').lean(),
+        Survey.find({}).sort({ createdAt: -1 }).limit(10).select('title companyId createdAt').lean(),
+        Response.find({}).sort({ createdAt: -1 }).limit(10).select('surveyId createdAt').lean()
+    ]);
+
+    res.json({
+        success: true,
+        data: {
+            overview: {
+                totalCompanies,
+                activeCompanies,
+                totalSurveys,
+                totalResponses,
+                growth7d: {
+                    companies: companiesLast7d,
+                    surveys: surveysLast7d,
+                    responses: responsesLast7d
+                }
+            },
+            recent: {
+                companies: recentCompanies,
+                surveys: recentSurveys,
+                responses: recentResponses
+            }
+        }
+    });
+}));
+
+/**
  * @route   GET /sa/companies
  * @desc    Get all companies (cross-tenant)
  * @access  SuperAdmin only
@@ -598,6 +655,23 @@ router.get('/public-banks', asyncHandler(async (req, res) => {
 }));
 
 /**
+ * @route   GET /sa/public-banks/:id
+ * @desc    Get a single public bank
+ * @access  SuperAdmin only
+ */
+router.get('/public-banks/:id', asyncHandler(async (req, res) => {
+    const bankId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(bankId)) {
+        return res.status(400).json({ success: false, error: 'Invalid public bank id' });
+    }
+    const bank = await PublicBank.findById(bankId).lean();
+    if (!bank) {
+        return res.status(404).json({ success: false, error: 'Public bank not found' });
+    }
+    res.json({ success: true, data: bank });
+}));
+
+/**
  * @route   POST /sa/public-banks
  * @desc    Create a new public bank
  * @access  SuperAdmin only
@@ -732,6 +806,16 @@ router.put('/public-banks/:id', asyncHandler(async (req, res) => {
  * @desc    Get usage statistics for a public bank
  * @access  SuperAdmin only
  */
+// Get single public bank by id
+router.get('/public-banks/:id', asyncHandler(async (req, res) => {
+    const bankId = req.params.id;
+    const bank = await PublicBank.findById(bankId);
+    if (!bank) {
+        return res.status(404).json({ success: false, error: 'Public bank not found' });
+    }
+    res.json({ success: true, data: bank });
+}));
+
 router.get('/public-banks/:id/usage', asyncHandler(async (req, res) => {
 	const bankId = req.params.id;
 
@@ -1393,7 +1477,6 @@ router.post('/public-banks/:id/import-csv', asyncHandler(async (req, res) => {
 	const multer = require('multer');
 	const csv = require('csv-parser');
 	const fs = require('fs');
-	const path = require('path');
 
 	// Set up multer for file upload
 	const upload = multer({ dest: 'uploads/' });
@@ -1423,132 +1506,169 @@ router.post('/public-banks/:id/import-csv', asyncHandler(async (req, res) => {
 			});
 		}
 
-		const results = [];
 		const errors = [];
 		const warnings = [];
-		let imported = 0;
+		const questions = [];
+		let lineNumber = 1; // header line
 
 		try {
 			await new Promise((resolve, reject) => {
 				fs.createReadStream(req.file.path)
-					.pipe(csv())
-					.on('data', (data) => {
-						results.push(data);
+					.pipe(csv({
+						headers: [
+							'questionText',
+							'description',
+							'type',
+							'options',
+							'correctAnswers',
+							'tags',
+							'explanation',
+							'points',
+							'difficulty',
+							'descriptionImage',
+						],
+						skipEmptyLines: true,
+					}))
+					.on('data', (row) => {
+						lineNumber++;
+						try {
+							// Normalize BOM and trim
+							const normalize = (v) => (typeof v === 'string' ? v.replace(/^\ufeff/, '').trim() : v);
+							row.questionText = normalize(row.questionText);
+							row.type = normalize(row.type);
+							row.options = normalize(row.options);
+							row.correctAnswers = normalize(row.correctAnswers);
+							row.tags = normalize(row.tags);
+							row.description = normalize(row.description);
+							row.explanation = normalize(row.explanation);
+							row.difficulty = normalize(row.difficulty);
+							row.descriptionImage = normalize(row.descriptionImage);
+
+							// Skip empty
+							if (!row.questionText || !row.questionText.trim()) {
+								return;
+							}
+
+							// Skip header row if present in file
+							if (row.questionText.trim().toLowerCase() === 'questiontext') {
+								return;
+							}
+
+							const questionText = (row.questionText || row.question || '').trim();
+							if (!questionText) {
+								errors.push(`Line ${lineNumber}: questionText is required`);
+								return;
+							}
+							const typeRaw = (row.type || '').toLowerCase() || 'single';
+							let questionType;
+							switch (typeRaw) {
+							case 'single':
+								questionType = 'single_choice';
+								break;
+							case 'multiple':
+								questionType = 'multiple_choice';
+								break;
+							case 'text':
+								questionType = 'short_text';
+								break;
+							default:
+								questionType = 'single_choice';
+							}
+
+							const newQuestion = {
+								text: questionText,
+								type: questionType,
+								points: parseInt(row.points) || 1,
+								tags: [],
+								difficulty:
+									row.difficulty && ['easy', 'medium', 'hard'].includes(row.difficulty.toLowerCase())
+										? row.difficulty.toLowerCase()
+										: 'medium',
+							};
+
+							if (row.description && row.description.trim()) {
+								newQuestion.description = row.description.trim();
+							}
+							if (row.explanation && row.explanation.trim()) {
+								newQuestion.explanation = row.explanation.trim();
+							}
+							if (row.descriptionImage && row.descriptionImage.trim()) {
+								newQuestion.descriptionImage = row.descriptionImage.trim();
+							}
+
+							if (row.tags && row.tags.trim()) {
+								newQuestion.tags = row.tags
+									.split(',')
+									.map(tag => tag.trim())
+									.filter(tag => tag.length > 0);
+							}
+
+							if (questionType !== 'short_text') {
+								const rawOptions = row.options || '';
+								if (!rawOptions.trim()) {
+									errors.push(`Line ${lineNumber}: Options are required for choice questions`);
+									return;
+								}
+								// Strictly follow Question Bank format: semicolon-separated options
+								const options = rawOptions
+									.split(';')
+									.map(opt => opt.trim())
+									.filter(opt => opt.length > 0);
+								if (options.length < 2) {
+									errors.push(`Line ${lineNumber}: At least 2 options are required`);
+									return;
+								}
+								newQuestion.options = options;
+
+								const rawCorrect = (row.correctAnswers || row.correct_answer || '').trim();
+								if (!rawCorrect) {
+									errors.push(`Line ${lineNumber}: Correct answers are required for choice questions`);
+									return;
+								}
+								// Strictly follow Question Bank format: semicolon-separated, 0-based indices
+								const correctAnswerIndices = rawCorrect
+									.split(';')
+									.map(idx => parseInt(idx.trim(), 10))
+									.filter(idx => !isNaN(idx) && idx >= 0 && idx < options.length);
+								if (correctAnswerIndices.length === 0) {
+									errors.push(`Line ${lineNumber}: Invalid correct answer indices`);
+									return;
+								}
+
+								if (questionType === 'single_choice') {
+									if (correctAnswerIndices.length > 1) {
+										errors.push(`Line ${lineNumber}: Single choice questions can only have one correct answer`);
+										return;
+									}
+									newQuestion.correctAnswer = correctAnswerIndices[0];
+								} else {
+									newQuestion.correctAnswer = correctAnswerIndices;
+								}
+							} else {
+								if (row.correctAnswers && row.correctAnswers.trim()) {
+									newQuestion.correctAnswer = row.correctAnswers.trim();
+								}
+							}
+
+							questions.push(newQuestion);
+						} catch (e) {
+							errors.push(`Line ${lineNumber}: ${e.message}`);
+						}
 					})
 					.on('end', resolve)
 					.on('error', reject);
 			});
 
-			// Process each row
-			for (const [index, row] of results.entries()) {
-				try {
-					const lineNum = index + 2; // +2 because CSV is 1-indexed and has header
-
-					// Validate required fields
-					if (!row.question || !row.question.trim()) {
-						errors.push(`Line ${lineNum}: Question text is required`);
-						continue;
-					}
-
-					// Parse question type
-					const type = row.type?.toLowerCase() || 'single_choice';
-					if (!['single_choice', 'multiple_choice', 'short_text'].includes(type)) {
-						errors.push(`Line ${lineNum}: Invalid question type "${row.type}"`);
-						continue;
-					}
-
-					// Parse options
-					let options = [];
-					if (type !== 'short_text') {
-						const optionsStr = row.options || '';
-						if (optionsStr.trim()) {
-							// Handle quoted comma-separated values
-							if (optionsStr.startsWith('"') && optionsStr.endsWith('"')) {
-								options = optionsStr.slice(1, -1).split('","').map(opt => opt.trim());
-							} else {
-								options = optionsStr.split(',').map(opt => opt.trim());
-							}
-						}
-
-						if (options.length < 2) {
-							errors.push(`Line ${lineNum}: At least 2 options required for choice questions`);
-							continue;
-						}
-					}
-
-					// Parse correct answer
-					let correctAnswer = null;
-					if (row.correct_answer && row.correct_answer.trim()) {
-						if (type === 'short_text') {
-							correctAnswer = row.correct_answer.trim();
-						} else if (type === 'single_choice') {
-							const answerIndex = parseInt(row.correct_answer) - 1;
-							if (answerIndex >= 0 && answerIndex < options.length) {
-								correctAnswer = answerIndex;
-							} else {
-								warnings.push(`Line ${lineNum}: Invalid correct answer index for single choice`);
-							}
-						} else if (type === 'multiple_choice') {
-							const answerIndices = row.correct_answer.split(',').map(a => parseInt(a.trim()) - 1);
-							if (answerIndices.every(idx => idx >= 0 && idx < options.length)) {
-								correctAnswer = answerIndices;
-							} else {
-								warnings.push(`Line ${lineNum}: Invalid correct answer indices for multiple choice`);
-							}
-						}
-					}
-
-					// Parse tags
-					let tags = [];
-					if (row.tags && row.tags.trim()) {
-						// Handle quoted comma-separated tags
-						if (row.tags.startsWith('"') && row.tags.endsWith('"')) {
-							tags = row.tags.slice(1, -1).split(',').map(tag => tag.trim());
-						} else {
-							tags = row.tags.split(',').map(tag => tag.trim());
-						}
-					}
-
-					// Parse points
-					const points = row.points ? parseInt(row.points) : 1;
-					if (isNaN(points) || points < 0) {
-						warnings.push(`Line ${lineNum}: Invalid points value, using default (1)`);
-					}
-
-					// Parse difficulty
-					const difficulty = row.difficulty?.toLowerCase() || 'medium';
-					if (!['easy', 'medium', 'hard'].includes(difficulty)) {
-						warnings.push(`Line ${lineNum}: Invalid difficulty "${row.difficulty}", using default (medium)`);
-					}
-
-					// Create question object
-					const question = {
-						text: row.question.trim(),
-						description: row.description?.trim() || '',
-						type,
-						options,
-						correctAnswer,
-						explanation: row.explanation?.trim() || null,
-						points: isNaN(points) ? 1 : points,
-						tags,
-						difficulty: ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'medium',
-					};
-
-					bank.questions.push(question);
-					imported++;
-
-				} catch (error) {
-					errors.push(`Line ${index + 2}: ${error.message}`);
-				}
+			if (questions.length > 0) {
+				bank.questions.push(...questions);
+				await bank.save();
 			}
 
-			// Save the bank with new questions
-			await bank.save();
-
 			// Clean up uploaded file
-			fs.unlinkSync(req.file.path);
+			if (req.file && fs.existsSync(req.file.path)) {
+				fs.unlinkSync(req.file.path);
+			}
 
-			// Audit log
 			await audit(
 				'public_bank_csv_import',
 				'PublicBank',
@@ -1556,7 +1676,7 @@ router.post('/public-banks/:id/import-csv', asyncHandler(async (req, res) => {
 				{
 					targetName: `${bank.title} - CSV Import`,
 					newValues: {
-						imported,
+						imported: questions.length,
 						totalQuestions: bank.questions.length,
 						warnings: warnings.length,
 						errors: errors.length,
@@ -1567,8 +1687,8 @@ router.post('/public-banks/:id/import-csv', asyncHandler(async (req, res) => {
 
 			res.json({
 				success: true,
-				message: `Successfully imported ${imported} questions`,
-				imported,
+				message: `Successfully imported ${questions.length} questions`,
+				imported: questions.length,
 				warnings,
 				errors,
 				questionBank: bank,
@@ -1588,6 +1708,30 @@ router.post('/public-banks/:id/import-csv', asyncHandler(async (req, res) => {
 			});
 		}
 	});
+}));
+
+// Download CSV template aligned with Question Bank format
+router.get('/public-banks/csv-template/download', asyncHandler(async (req, res) => {
+	try {
+		const csvTemplate = `questionText,description,type,options,correctAnswers,tags,explanation,points,difficulty,descriptionImage
+你喜欢哪个颜色？,"**场景**：请选择你最喜欢的颜色。",single,红色;绿色;蓝色,1,"颜色,兴趣",这是一个关于颜色偏好的问题,1,easy,
+哪些是编程语言？,"提示：选择所有符合条件的选项。",multiple,JavaScript;Python;HTML,0;1,"技术,测试",选择所有编程语言选项,2,medium,
+请简要说明你的人生目标,"可以使用Markdown，例如：**清晰简洁地描述**",text,,,"思辨,职业规划",请用简洁的语言描述,1,medium,
+以下哪个是正确的数学公式？,"You can add Markdown like **bold** or _italic_.",single,2+2=4;2+2=5;2+2=6,0,"数学,基础",基础数学运算题,1,easy,
+选择所有偶数,"请选择所有偶数。",multiple,1;2;3;4;5;6,1;3;5,"数学,数字",,1,medium,
+描述一下你最喜欢的编程语言,"可使用 Markdown 描述你喜欢它的原因。",text,,,编程,,1,medium,
+中国的首都是哪里？,"基础常识题。",single,北京;上海;广州;深圳,0,"地理,常识",,1,easy,`;
+
+		res.setHeader('Content-Type', 'text/csv');
+		res.setHeader('Content-Disposition', 'attachment; filename="question_bank_template.csv"');
+		res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+		res.setHeader('Pragma', 'no-cache');
+		res.setHeader('Expires', '0');
+		res.send(csvTemplate);
+	} catch (e) {
+		console.error('Error generating CSV template:', e);
+		res.status(500).json({ error: 'Failed to generate CSV template' });
+	}
 }));
 
 /**

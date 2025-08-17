@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PublicBank, Question, QuestionForm } from '../../types/publicBanks';
-import { PublicBanksAPI } from '../../api/publicBanks';
 import QuestionDrawer from './QuestionDrawer';
-import ImportCSVModal from './ImportCSVModal';
+import ImportCSVModal from '../../../../client/src/components/modals/ImportCSVModal';
 import ImportResultModal from './ImportResultModal';
 
 interface PublicBankDetailViewProps {
@@ -11,19 +10,18 @@ interface PublicBankDetailViewProps {
 }
 
 const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBack }) => {
-  const api = new PublicBanksAPI();
-  
+
   // State
   const [activeTab, setActiveTab] = useState<'overview' | 'questions'>('overview');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Question management
   const [showQuestionDrawer, setShowQuestionDrawer] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
-  
+
   // CSV Import
   const [showImportCSVModal, setShowImportCSVModal] = useState(false);
   const [showImportResultModal, setShowImportResultModal] = useState(false);
@@ -34,33 +32,42 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
     warnings?: string[];
     errors?: string[];
   } | null>(null);
-  
+
   // Filters and pagination
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('');
   const [filterDifficulty, setFilterDifficulty] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const questionsPerPage = 20;
-  
+
   useEffect(() => {
     // Load questions when component mounts or when switching to questions tab
     if (activeTab === 'questions' || !questions.length) {
       loadQuestions();
     }
   }, [activeTab, bank._id]);
-  
+
   const loadQuestions = async () => {
     setLoading(true);
     try {
-      const response = await api.getPublicBankQuestions(bank._id, {
-        page: currentPage,
-        limit: questionsPerPage,
-        search: searchTerm,
-        difficulty: filterDifficulty
+      const token = localStorage.getItem('sa_token')
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: questionsPerPage.toString()
+      })
+
+      if (searchTerm) params.append('search', searchTerm)
+      if (filterDifficulty) params.append('difficulty', filterDifficulty)
+
+      const response = await fetch(`/api/sa/public-banks/${bank._id}/questions?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
-      
-      if (response.success && response.data) {
-        setQuestions(response.data.questions || bank.questions || []);
+
+      if (response.ok) {
+        const data = await response.json()
+        setQuestions(data.data?.questions || bank.questions || []);
       } else {
         // Fallback to bank's questions if API fails
         setQuestions(bank.questions || []);
@@ -73,45 +80,61 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
       setLoading(false);
     }
   };
-  
+
   const handleAddQuestion = () => {
     setEditingQuestion(null);
     setEditingQuestionIndex(null);
     setShowQuestionDrawer(true);
   };
-  
+
   const handleEditQuestion = (question: Question, index: number) => {
     setEditingQuestion(question);
     setEditingQuestionIndex(index);
     setShowQuestionDrawer(true);
   };
-  
+
   const handleSaveQuestion = async (form: QuestionForm) => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('sa_token')
+
+      const questionData = {
+        ...form,
+        difficulty: (form.difficulty || 'medium') as 'easy' | 'medium' | 'hard',
+        points: form.points || 1,
+        tags: form.tags || []
+      };
+
       let response;
-      
+
       if (editingQuestionIndex !== null) {
-        response = await api.updatePublicBankQuestion(bank._id, editingQuestionIndex, {
-          ...form,
-          difficulty: (form.difficulty || 'medium') as 'easy' | 'medium' | 'hard'
-        } as Question);
+        response = await fetch(`/api/sa/public-banks/${bank._id}/questions/${editingQuestionIndex}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(questionData)
+        });
       } else {
-        response = await api.addPublicBankQuestion(bank._id, {
-          ...form,
-          difficulty: (form.difficulty || 'medium') as 'easy' | 'medium' | 'hard',
-          points: form.points || 1,
-          tags: form.tags || []
-        } as Question);
+        response = await fetch(`/api/sa/public-banks/${bank._id}/questions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(questionData)
+        });
       }
-      
-      if (response.success) {
+
+      if (response.ok) {
         await loadQuestions();
         setShowQuestionDrawer(false);
         setEditingQuestion(null);
         setEditingQuestionIndex(null);
       } else {
-        setError(response.error || 'Failed to save question');
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to save question');
       }
     } catch (error) {
       console.error('Failed to save question:', error);
@@ -120,16 +143,23 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
       setLoading(false);
     }
   };
-  
+
   const handleDuplicateQuestion = async (index: number) => {
     try {
       setLoading(true);
-      const response = await api.duplicatePublicBankQuestion(bank._id, index);
-      
-      if (response.success) {
+      const token = localStorage.getItem('sa_token')
+      const response = await fetch(`/api/sa/public-banks/${bank._id}/questions/${index}/duplicate`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
         await loadQuestions();
       } else {
-        setError(response.error || 'Failed to duplicate question');
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to duplicate question');
       }
     } catch (error) {
       console.error('Failed to duplicate question:', error);
@@ -138,20 +168,27 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
       setLoading(false);
     }
   };
-  
+
   const handleDeleteQuestion = async (index: number) => {
     if (!confirm('Are you sure you want to delete this question?')) {
       return;
     }
-    
+
     try {
       setLoading(true);
-      const response = await api.deletePublicBankQuestion(bank._id, index);
-      
-      if (response.success) {
+      const token = localStorage.getItem('sa_token')
+      const response = await fetch(`/api/sa/public-banks/${bank._id}/questions/${index}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
         await loadQuestions();
       } else {
-        setError(response.error || 'Failed to delete question');
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to delete question');
       }
     } catch (error) {
       console.error('Failed to delete question:', error);
@@ -160,23 +197,23 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
       setLoading(false);
     }
   };
-  
+
   const handleCSVImport = async (file: File) => {
     try {
       setLoading(true);
       const formData = new FormData();
       formData.append('csvFile', file);
-      
+
       const response = await fetch(`/api/sa/public-banks/${bank._id}/import-csv`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('superAdminToken')}`,
+          Authorization: `Bearer ${localStorage.getItem('sa_token')}`,
         },
         body: formData,
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok) {
         setImportResult({
           success: true,
@@ -193,7 +230,7 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
           errors: data.errors,
         });
       }
-      
+
       setShowImportResultModal(true);
     } catch (error) {
       console.error('CSV import error:', error);
@@ -207,34 +244,34 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
       setLoading(false);
     }
   };
-  
+
   // Filter questions
   const filteredQuestions = questions.filter(q => {
     let matches = true;
-    
+
     if (searchTerm) {
       matches = q.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 (q.description ? q.description.toLowerCase().includes(searchTerm.toLowerCase()) : false);
     }
-    
+
     if (filterType && q.type !== filterType) {
       matches = false;
     }
-    
+
     if (filterDifficulty && q.difficulty !== filterDifficulty) {
       matches = false;
     }
-    
+
     return matches;
   });
-  
+
   // Pagination
   const totalPages = Math.ceil(filteredQuestions.length / questionsPerPage);
   const paginatedQuestions = filteredQuestions.slice(
     (currentPage - 1) * questionsPerPage,
     currentPage * questionsPerPage
   );
-  
+
   return (
     <>
       <div className="space-y-6">
@@ -253,7 +290,7 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
             <h2 className="text-2xl font-semibold text-gray-900">{bank.title}</h2>
           </div>
         </div>
-        
+
         {/* Bank Info Card */}
         <div className="bg-white rounded-lg shadow p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -278,14 +315,14 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
               <p className="font-medium">{new Date(bank.createdAt).toLocaleDateString()}</p>
             </div>
           </div>
-          
+
           {bank.description && (
             <div className="border-t pt-4">
               <p className="text-gray-600">{bank.description}</p>
             </div>
           )}
         </div>
-        
+
         {/* Tabs */}
         <div className="bg-white rounded-lg shadow">
           <div className="border-b border-gray-200">
@@ -312,7 +349,7 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
               </button>
             </nav>
           </div>
-          
+
           {/* Tab Content */}
           <div className="p-6">
             {activeTab === 'overview' ? (
@@ -337,7 +374,7 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
                       </div>
                     </dl>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-lg font-medium mb-2">Usage Statistics</h3>
                     <dl className="space-y-2">
@@ -386,7 +423,7 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
                       <option value="hard">Hard</option>
                     </select>
                   </div>
-                  
+
                   <div className="flex gap-2">
                     <button
                       onClick={() => setShowImportCSVModal(true)}
@@ -402,14 +439,14 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
                     </button>
                   </div>
                 </div>
-                
+
                 {/* Error Display */}
                 {error && (
                   <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                     {error}
                   </div>
                 )}
-                
+
                 {/* Questions List */}
                 {loading ? (
                   <div className="flex items-center justify-center py-8">
@@ -434,10 +471,10 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
                               </span>
                               {question.difficulty && (
                                 <span className={`text-xs px-2 py-1 rounded ${
-                                  question.difficulty === 'easy' 
+                                  question.difficulty === 'easy'
                                     ? 'bg-green-100 text-green-800'
                                     : question.difficulty === 'medium'
-                                      ? 'bg-yellow-100 text-yellow-800' 
+                                      ? 'bg-yellow-100 text-yellow-800'
                                       : 'bg-red-100 text-red-800'
                                 }`}>
                                   {question.difficulty}
@@ -475,11 +512,11 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
                             </button>
                           </div>
                         </div>
-                        
+
                         {question.description && (
                           <p className="text-sm text-gray-600 mb-2">{question.description}</p>
                         )}
-                        
+
                         {question.type !== 'short_text' && question.options && (
                           <div className="text-sm text-gray-600 space-y-1">
                             <div className="font-medium">Options:</div>
@@ -509,7 +546,7 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
                             })}
                           </div>
                         )}
-                        
+
                         {question.explanation && (
                           <div className="mt-3 p-3 bg-blue-50 border-l-4 border-blue-200 rounded">
                             <div className="font-medium text-blue-800 text-sm">Explanation:</div>
@@ -518,7 +555,7 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
                         )}
                       </div>
                     ))}
-                    
+
                     {/* Pagination */}
                     {totalPages > 1 && (
                       <div className="flex justify-center gap-2 mt-6">
@@ -563,7 +600,7 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
           </div>
         </div>
       </div>
-      
+
       {/* Question Drawer */}
       <QuestionDrawer
         isOpen={showQuestionDrawer}
@@ -576,15 +613,34 @@ const PublicBankDetailView: React.FC<PublicBankDetailViewProps> = ({ bank, onBac
         editingQuestion={editingQuestion}
         loading={loading}
       />
-      
+
       {/* CSV Import Modal */}
       <ImportCSVModal
         isOpen={showImportCSVModal}
         onClose={() => setShowImportCSVModal(false)}
         onImport={handleCSVImport}
         loading={loading}
+        onDownloadTemplate={async () => {
+          const token = localStorage.getItem('sa_token');
+          const res = await fetch(`/api/sa/public-banks/csv-template/download?ts=${Date.now()}`, {
+            headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+          });
+          if (!res.ok) {
+            alert('Failed to download template');
+            return;
+          }
+          const blob = await res.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'question_bank_template.csv';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }}
       />
-      
+
       {/* Import Result Modal */}
       <ImportResultModal
         isOpen={showImportResultModal}

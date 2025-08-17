@@ -6,9 +6,11 @@ interface ImportCSVModalProps {
 	onClose: () => void;
 	onImport: (file: File) => Promise<void>;
 	loading: boolean;
+	/** 可选：外部传入模板下载逻辑，以便在不同应用（如 Super Admin）复用该组件 */
+	onDownloadTemplate?: () => Promise<void> | void;
 }
 
-const ImportCSVModal: React.FC<ImportCSVModalProps> = ({ isOpen, onClose, onImport, loading }) => {
+const ImportCSVModal: React.FC<ImportCSVModalProps> = ({ isOpen, onClose, onImport, loading, onDownloadTemplate }) => {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [dragActive, setDragActive] = useState(false);
 
@@ -57,9 +59,13 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = ({ isOpen, onClose, onImpo
 		onClose();
 	};
 
-	// 新增更兼容的下载模板方法
+	// 新增更兼容的下载模板方法（可通过 onDownloadTemplate 覆盖，便于跨应用复用）
 	const handleDownloadTemplate = async () => {
 		try {
+			if (onDownloadTemplate) {
+				await onDownloadTemplate();
+				return;
+			}
 			const response = await api.get(`/admin/question-banks/csv-template/download?ts=${Date.now()}` , {
 				responseType: 'blob',
 			});

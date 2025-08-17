@@ -1,29 +1,76 @@
 import React, { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import CompanyDetailView from '../companies/CompanyDetailView'
 
 interface Company {
   _id: string
   name: string
   email: string
+  slug: string
   status: string
   planType: string
   userCount: number
   createdAt: string
+  phone?: string
+  website?: string
+  address?: string | {
+    street?: string
+    city?: string
+    state?: string
+    country?: string
+    postalCode?: string
+  }
+  description?: string
+  maxUsers?: number
+  features?: string[]
+  subscription?: {
+    startDate: string
+    endDate: string
+    renewalDate: string
+    billingCycle: string
+  }
 }
 
 const Companies: React.FC = () => {
+  const { companyId } = useParams<{ companyId?: string }>()
+  const navigate = useNavigate()
   const [companies, setCompanies] = useState<Company[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
 
   useEffect(() => {
     loadCompanies()
   }, [])
 
+  useEffect(() => {
+    // If URL has companyId, load that company
+    if (companyId && companies.length > 0) {
+      const company = companies.find(c => c._id === companyId)
+      if (company) {
+        setSelectedCompany(company)
+      } else {
+        // If company not found in current list, fetch it specifically
+        loadCompanyById(companyId)
+      }
+    }
+  }, [companyId, companies])
+
   const loadCompanies = async () => {
     setLoading(true)
     try {
-      // Try to load from API - will return empty if no API
-      const response = await fetch('/api/sa/companies')
+      const token = localStorage.getItem('sa_token')
+      if (!token) {
+        setLoading(false)
+        return
+      }
+      
+      const response = await fetch('/api/sa/companies', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
       if (response.ok) {
         const data = await response.json()
         if (data.success && data.data) {
@@ -37,10 +84,59 @@ const Companies: React.FC = () => {
     }
   }
 
+  const loadCompanyById = async (id: string) => {
+    try {
+      const token = localStorage.getItem('sa_token')
+      if (!token) return
+      
+      const response = await fetch(`/api/sa/companies/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (response.ok) {
+        const contentType = response.headers.get('content-type')
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json()
+          if (data.success && data.data) {
+            setSelectedCompany(data.data)
+          }
+        } else {
+          console.log('Company API endpoint not available')
+          // If company not found, redirect back to list
+          navigate('/companies')
+        }
+      } else {
+        console.log('Company not found, redirecting to list')
+        navigate('/companies')
+      }
+    } catch (error) {
+      console.log('Error loading company, redirecting to list')
+      navigate('/companies')
+    }
+  }
+
   const filteredCompanies = companies.filter(company =>
     company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     company.email.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const handleViewCompany = (company: Company) => {
+    navigate(`/companies/${company._id}`)
+  }
+
+  const handleBackToList = () => {
+    setSelectedCompany(null)
+    navigate('/companies')
+  }
+
+  const handleUpdateCompany = (updatedCompany: Company) => {
+    setCompanies(prev => prev.map(company => 
+      company._id === updatedCompany._id ? updatedCompany : company
+    ))
+    setSelectedCompany(updatedCompany)
+  }
 
   if (loading) {
     return (
@@ -48,6 +144,17 @@ const Companies: React.FC = () => {
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         <span className="ml-2">Loading companies...</span>
       </div>
+    )
+  }
+
+  // Show detail view if URL has companyId and company is loaded
+  if (companyId && selectedCompany) {
+    return (
+      <CompanyDetailView
+        company={selectedCompany}
+        onBack={handleBackToList}
+        onUpdate={handleUpdateCompany}
+      />
     )
   }
 
@@ -88,6 +195,7 @@ const Companies: React.FC = () => {
         </div>
       </div>
 
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg shadow p-6">
@@ -114,7 +222,7 @@ const Companies: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Active Companies</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {companies.filter(c => c.status === 'active').length}
+                {companies.filter(c => c.status === 'active' || c.status === 'Active').length}
               </p>
             </div>
           </div>
@@ -173,6 +281,7 @@ const Companies: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Users</th>
@@ -193,10 +302,18 @@ const Companies: React.FC = () => {
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{company.name}</div>
+                          <button
+                            onClick={() => handleViewCompany(company)}
+                            className="text-sm font-medium text-gray-900 hover:text-blue-600 text-left"
+                          >
+                            {company.name}
+                          </button>
                           <div className="text-sm text-gray-500">{company.email}</div>
                         </div>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 font-mono">{company.slug || 'N/A'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -217,8 +334,33 @@ const Companies: React.FC = () => {
                       {new Date(company.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button className="text-blue-600 hover:text-blue-900 mr-3">View</button>
-                      <button className="text-red-600 hover:text-red-900">Suspend</button>
+                      <button 
+                        onClick={() => handleViewCompany(company)}
+                        className="text-blue-600 hover:text-blue-900 mr-3"
+                      >
+                        View
+                      </button>
+                      <button 
+                        onClick={() => {
+                          // Handle suspend/activate directly from list
+                          const newStatus = company.status === 'active' ? 'suspended' : 'active'
+                          fetch(`/api/sa/companies/${company._id}/status`, {
+                            method: 'PUT',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${localStorage.getItem('sa_token')}`
+                            },
+                            body: JSON.stringify({ status: newStatus })
+                          }).then(() => {
+                            setCompanies(prev => prev.map(c => 
+                              c._id === company._id ? {...c, status: newStatus} : c
+                            ))
+                          })
+                        }}
+                        className={company.status === 'active' ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}
+                      >
+                        {company.status === 'active' ? 'Suspend' : 'Activate'}
+                      </button>
                     </td>
                   </tr>
                 ))}

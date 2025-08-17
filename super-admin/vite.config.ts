@@ -6,6 +6,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
+    fs: {
+      // 允许从 monorepo 上层导入共享组件
+      allow: ['..']
+    },
     proxy: {
       // Proxy API requests to the main server
       '/api': {

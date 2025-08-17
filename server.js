@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const session = require('express-session');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -37,6 +38,8 @@ mongoose
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// Allow dev cross-origin for Super Admin on localhost:3000
+app.use(cors({ origin: ['http://localhost:3000'], credentials: true }));
 app.use(
 	session({
 		secret: 'change-me',
