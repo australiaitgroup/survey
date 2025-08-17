@@ -173,11 +173,11 @@ A modern, full-stack survey application built with Node.js, Express, MongoDB, Re
     - After successful login, you'll access the dashboard at `/super-admin/dashboard`
 
 2. **Super Admin Features**
-    - **Overview**: System-wide statistics and health monitoring
-    - **Companies**: View and manage all companies across the system
-    - **Public Banks**: Manage shared question banks
-    - **Transactions**: Monitor all financial transactions
-    - **Audit Logs**: View comprehensive audit trail of all system activities
+    - **Overview**: System-wide statistics and health monitoring with real-time charts
+    - **Companies**: Complete company management with user lists, status modification, and plan details
+    - **Public Banks**: Full question bank management with bottom-sliding drawer interface
+    - **Transactions**: Financial transaction monitoring and analysis
+    - **Audit Logs**: Comprehensive system activity audit trail
     
 3. **Default Super Admin Account**
     
@@ -211,11 +211,19 @@ A modern, full-stack survey application built with Node.js, Express, MongoDB, Re
     )
     ```
 
-5. **Security Notes**
-    - Super Admin dashboard requires authentication
+5. **Technology Stack**
+    - **Frontend**: React 18 with TypeScript, Vite build tool
+    - **Routing**: React Router v6 with protected routes
+    - **Styling**: Tailwind CSS with responsive design
+    - **Charts**: Recharts for data visualization
+    - **Authentication**: JWT-based with automatic session management
+
+6. **Security Notes**
+    - Super Admin dashboard requires authentication with JWT tokens
     - Session is stored in localStorage with `sa_token` and `sa_user` keys
     - Automatic redirect to login if not authenticated or not superAdmin
     - All Super Admin API calls require the superAdmin role
+    - Cross-tenant data access controls for system-wide management
 
 ## API Endpoints
 
@@ -260,12 +268,20 @@ survey_ai/
 │   │   └── styles.css      # Tailwind CSS styles
 │   ├── package.json
 │   └── tailwind.config.js  # Tailwind configuration
-├── super-admin/           # Super Admin dashboard (static HTML/JS)
-│   ├── index.html         # Super Admin UI
-│   ├── js/
-│   │   ├── app.js         # Main application logic
-│   │   ├── api.js         # API client
-│   │   └── components/    # UI components
+├── super-admin/           # Super Admin dashboard (React + TypeScript)
+│   ├── src/
+│   │   ├── index.tsx          # Entry point (React app root)
+│   │   ├── App.tsx            # Main app component with routing
+│   │   ├── components/        # React components
+│   │   │   ├── pages/         # Page components (Overview, Companies, etc.)
+│   │   │   ├── companies/     # Company management components
+│   │   │   ├── publicBanks/   # Public banks feature modules
+│   │   │   └── ProtectedRoute.tsx # Authentication guard
+│   │   ├── types/             # TypeScript type definitions
+│   │   └── api/               # API client modules
+│   ├── index.html             # HTML entry point
+│   ├── vite.config.ts         # Vite configuration
+│   └── package.json           # Dependencies and scripts
 ├── models/                 # MongoDB models
 │   ├── Survey.js          # Survey schema
 │   └── Response.js        # Response schema
