@@ -15,7 +15,10 @@ const TermsPage: React.FC = () => {
 			<SEO
 				title={'Terms of Service — SigmaQ'}
 				description={t('landing.terms.intro')}
-				openGraph={{ url: 'https://sigmaq.example.com/terms', image: '/favicon-512x512.png' }}
+				openGraph={{
+					url: 'https://sigmaq.example.com/terms',
+					image: '/favicon-512x512.png',
+				}}
 			/>
 			<LandingNavbar />
 			<main className='py-16'>

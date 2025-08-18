@@ -19,7 +19,10 @@ const FeaturesPage: React.FC = () => {
 			<SEO
 				title={'Features — SigmaQ Survey Platform'}
 				description={t('landing.featuresPage.intro')}
-				openGraph={{ url: 'https://sigmaq.example.com/features', image: '/favicon-512x512.png' }}
+				openGraph={{
+					url: 'https://sigmaq.example.com/features',
+					image: '/favicon-512x512.png',
+				}}
 			/>
 			<LandingNavbar />
 			<main>
@@ -45,8 +48,6 @@ const FeaturesPage: React.FC = () => {
 
 				{/* AI */}
 				<AIFeatures />
-
-
 			</main>
 			<Footer />
 		</div>

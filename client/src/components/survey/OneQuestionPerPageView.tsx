@@ -27,10 +27,10 @@ interface OneQuestionPerPageViewProps {
 	// Preview support
 	externalPageIndex?: number;
 	ignoreRequiredForNavigation?: boolean;
-  // Control whether selecting an option automatically advances to next question
-  autoAdvanceOnSelect?: boolean;
-  // Force single-column layout regardless of viewport (useful for admin preview "mobile" mode)
-  forceSingleColumn?: boolean;
+	// Control whether selecting an option automatically advances to next question
+	autoAdvanceOnSelect?: boolean;
+	// Force single-column layout regardless of viewport (useful for admin preview "mobile" mode)
+	forceSingleColumn?: boolean;
 }
 
 const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
@@ -51,7 +51,6 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 	const [transitionDirection, setTransitionDirection] = useState<'up' | 'down'>('up');
 	const [showHint, setShowHint] = useState(false);
 
-
 	// Reset to first question when questions change
 	useEffect(() => {
 		setCurrentQuestionIndex(0);
@@ -70,7 +69,8 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 	const currentAnswer = answers[currentQuestion?._id] || '';
 
 	// Check if current question is answered (required for proceeding)
-	const canProceed = ignoreRequiredForNavigation ||
+	const canProceed =
+		ignoreRequiredForNavigation ||
 		(Array.isArray(currentAnswer) ? currentAnswer.length > 0 : currentAnswer.trim() !== '');
 
 	const handleNext = () => {
@@ -118,10 +118,7 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 					{t('oneQuestionPerPage.noQuestions', 'No questions available')}
 				</h3>
 				<p className='text-gray-500'>
-					{t(
-						'oneQuestionPerPage.noQuestionsDescription',
-						'Please check back later.'
-					)}
+					{t('oneQuestionPerPage.noQuestionsDescription', 'Please check back later.')}
 				</p>
 			</div>
 		);
@@ -140,7 +137,6 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 
 	return (
 		<div className='space-y-8'>
-
 			{/* Question Header */}
 			<div className='text-center mb-4'>
 				{/* Steps indicator */}
@@ -188,7 +184,9 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 				)}
 
 				{/* Layout: two-columns on md+ by default; force single-column when requested (admin preview mobile) */}
-				<div className={`${forceSingleColumn ? 'flex flex-col gap-6' : 'md:flex md:gap-8'}`}>
+				<div
+					className={`${forceSingleColumn ? 'flex flex-col gap-6' : 'md:flex md:gap-8'}`}
+				>
 					{/* Left Column - Question Content */}
 					<div className={`${forceSingleColumn ? '' : 'md:flex-1 md:pr-4'}`}>
 						{/* Question Text */}
@@ -251,7 +249,10 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 							<div className='mb-6'>
 								<img
 									src={currentQuestion.descriptionImage}
-									alt={t('oneQuestionPerPage.descriptionImage', 'Question illustration')}
+									alt={t(
+										'oneQuestionPerPage.descriptionImage',
+										'Question illustration'
+									)}
 									className='max-w-full h-auto rounded-lg border border-gray-300 mx-auto md:mx-0'
 									onLoad={() => {
 										console.log(
@@ -272,7 +273,9 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 					</div>
 
 					{/* Right Column - Answer Input */}
-					<div className={`${forceSingleColumn ? '' : 'md:flex-1 md:pl-4 md:border-l md:border-gray-200'}`}>
+					<div
+						className={`${forceSingleColumn ? '' : 'md:flex-1 md:pl-4 md:border-l md:border-gray-200'}`}
+					>
 						{currentQuestion.type === QUESTION_TYPE.SHORT_TEXT ? (
 							<div className='space-y-4'>
 								<textarea
@@ -283,7 +286,9 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 									)}
 									rows={6}
 									value={currentAnswer}
-									onChange={e => onAnswerChange(currentQuestion._id, e.target.value)}
+									onChange={e =>
+										onAnswerChange(currentQuestion._id, e.target.value)
+									}
 									{...getInputProps()}
 									autoFocus
 								/>
@@ -291,26 +296,38 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 						) : (
 							<div className='space-y-4'>
 								{currentQuestion.options?.map((opt, optIndex) => {
-									const optionValue = typeof opt === 'string' ? opt : opt.text || '';
-									const optionText = typeof opt === 'string' ? opt : opt.text || '';
-									const optionImage = typeof opt === 'object' ? opt.imageUrl : null;
+									const optionValue =
+										typeof opt === 'string' ? opt : opt.text || '';
+									const optionText =
+										typeof opt === 'string' ? opt : opt.text || '';
+									const optionImage =
+										typeof opt === 'object' ? opt.imageUrl : null;
 
 									// Handle both single and multiple choice selection
-									const isMultipleChoice = currentQuestion.type === QUESTION_TYPE.MULTIPLE_CHOICE;
+									const isMultipleChoice =
+										currentQuestion.type === QUESTION_TYPE.MULTIPLE_CHOICE;
 									const isSelected = isMultipleChoice
-										? Array.isArray(currentAnswer) && currentAnswer.includes(optionValue)
+										? Array.isArray(currentAnswer) &&
+											currentAnswer.includes(optionValue)
 										: currentAnswer === optionValue;
 
 									const handleOptionChange = () => {
 										if (isMultipleChoice) {
-											const currentAnswers = Array.isArray(currentAnswer) ? currentAnswer : [];
+											const currentAnswers = Array.isArray(currentAnswer)
+												? currentAnswer
+												: [];
 											if (isSelected) {
 												// Remove from selection
-												const newAnswers = currentAnswers.filter(val => val !== optionValue);
+												const newAnswers = currentAnswers.filter(
+													val => val !== optionValue
+												);
 												onAnswerChange(currentQuestion._id, newAnswers);
 											} else {
 												// Add to selection
-												onAnswerChange(currentQuestion._id, [...currentAnswers, optionValue]);
+												onAnswerChange(currentQuestion._id, [
+													...currentAnswers,
+													optionValue,
+												]);
 											}
 										} else {
 											// Single choice
@@ -341,7 +358,11 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 											<div className='flex items-center justify-center relative'>
 												<input
 													type={isMultipleChoice ? 'checkbox' : 'radio'}
-													name={isMultipleChoice ? undefined : currentQuestion._id}
+													name={
+														isMultipleChoice
+															? undefined
+															: currentQuestion._id
+													}
 													className='sr-only'
 													value={optionValue}
 													checked={isSelected}
@@ -354,15 +375,22 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 															: 'border-[#DDDDDD] group-hover:border-[#FF5A5F]'
 													}`}
 												>
-													{isSelected && (
-														isMultipleChoice ? (
-															<svg className='w-3 h-3 text-white' fill='currentColor' viewBox='0 0 20 20'>
-																<path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
+													{isSelected &&
+														(isMultipleChoice ? (
+															<svg
+																className='w-3 h-3 text-white'
+																fill='currentColor'
+																viewBox='0 0 20 20'
+															>
+																<path
+																	fillRule='evenodd'
+																	d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
+																	clipRule='evenodd'
+																/>
 															</svg>
 														) : (
 															<div className='w-2 h-2 rounded-full bg-white animate-pop'></div>
-														)
-													)}
+														))}
 												</div>
 											</div>
 											<div className='flex-1'>
@@ -381,7 +409,11 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 													<div className='mt-4'>
 														<img
 															src={optionImage}
-															alt={t('oneQuestionPerPage.optionImage', 'Option {{number}}', { number: optIndex + 1 })}
+															alt={t(
+																'oneQuestionPerPage.optionImage',
+																'Option {{number}}',
+																{ number: optIndex + 1 }
+															)}
 															className='max-w-full h-auto rounded-lg border border-[#EBEBEB] shadow-sm'
 															style={{ maxHeight: '200px' }}
 															onLoad={() => {
@@ -395,7 +427,8 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 																	'Option image failed to load:',
 																	optionImage
 																);
-																e.currentTarget.style.display = 'none';
+																e.currentTarget.style.display =
+																	'none';
 															}}
 														/>
 													</div>
@@ -423,7 +456,10 @@ const OneQuestionPerPageView: React.FC<OneQuestionPerPageViewProps> = ({
 										/>
 									</svg>
 									<span className='text-sm font-medium'>
-										{t('oneQuestionPerPage.answerRequired', 'Please provide an answer to continue.')}
+										{t(
+											'oneQuestionPerPage.answerRequired',
+											'Please provide an answer to continue.'
+										)}
 									</span>
 								</div>
 							</div>

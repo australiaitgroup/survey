@@ -474,20 +474,20 @@ export interface InvitationEmailResult {
 
 // ===== Collections =====
 export interface Collection {
-  _id: string;
-  name: string;
-  description?: string;
-  surveyIds: string[];
-  tags?: string[];
-  createdAt: string;
-  updatedAt: string;
+	_id: string;
+	name: string;
+	description?: string;
+	surveyIds: string[];
+	tags?: string[];
+	createdAt: string;
+	updatedAt: string;
 }
 
 export interface CollectionCreateRequest {
-  name: string;
-  description?: string;
-  surveyIds?: string[];
-  tags?: string[];
+	name: string;
+	description?: string;
+	surveyIds?: string[];
+	tags?: string[];
 }
 
 export interface CollectionUpdateRequest extends Partial<CollectionCreateRequest> {}

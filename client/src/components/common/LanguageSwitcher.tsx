@@ -48,16 +48,18 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = 
 				className='flex items-center gap-2 px-3 py-2 text-gray-700 hover:text-[#FF5A5F] transition-colors duration-200 cursor-pointer'
 			>
 				<LanguageIcon className='w-5 h-5' />
-				<ChevronDownIcon className={`w-4 h-4 transition-transform ${
-					isOpen ? 'rotate-180' : ''
-				}`} />
+				<ChevronDownIcon
+					className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+				/>
 			</button>
 			{isOpen && (
 				<div className='absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-10'>
 					<button
 						onClick={() => handleLanguageChange('en')}
 						className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors duration-200 ${
-							i18n.language === 'en' ? 'text-[#FF5A5F] font-semibold' : 'text-gray-700'
+							i18n.language === 'en'
+								? 'text-[#FF5A5F] font-semibold'
+								: 'text-gray-700'
 						}`}
 					>
 						English
@@ -65,7 +67,9 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = 
 					<button
 						onClick={() => handleLanguageChange('zh')}
 						className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors duration-200 ${
-							i18n.language === 'zh' ? 'text-[#FF5A5F] font-semibold' : 'text-gray-700'
+							i18n.language === 'zh'
+								? 'text-[#FF5A5F] font-semibold'
+								: 'text-gray-700'
 						}`}
 					>
 						中文

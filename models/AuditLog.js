@@ -148,42 +148,42 @@ auditLogSchema.set('toJSON', {
 // Static method to find logs by company
 auditLogSchema.statics.findByCompany = function (companyId, options = {}) {
 	const query = this.find({ companyId });
-	
+
 	if (options.limit) {
 		query.limit(options.limit);
 	}
-	
+
 	if (options.skip) {
 		query.skip(options.skip);
 	}
-	
+
 	if (options.action) {
 		query.where('action', options.action);
 	}
-	
+
 	if (options.startDate) {
 		query.where('createdAt').gte(options.startDate);
 	}
-	
+
 	if (options.endDate) {
 		query.where('createdAt').lte(options.endDate);
 	}
-	
+
 	return query.sort({ createdAt: -1 }).populate('actor.userId', 'name email role');
 };
 
 // Static method to find logs by user
 auditLogSchema.statics.findByUser = function (userId, options = {}) {
 	const query = this.find({ 'actor.userId': userId });
-	
+
 	if (options.limit) {
 		query.limit(options.limit);
 	}
-	
+
 	if (options.skip) {
 		query.skip(options.skip);
 	}
-	
+
 	return query.sort({ createdAt: -1 });
 };
 

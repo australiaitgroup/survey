@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useAdmin } from '../contexts/AdminContext';
 import { useSurveys } from '../hooks/useSurveys';
 import api from '../utils/axiosConfig';
@@ -22,10 +22,20 @@ import QuestionBankModal from './modals/QuestionBankModal';
 import EditQuestionBankModal from './modals/EditQuestionBankModal';
 
 const AdminDashboard: React.FC = () => {
-	const { tab, selectedSurvey, selectedQuestionBankDetail, setSelectedSurvey, setTab, surveys, setShowCreateModal, setNewSurvey } = useAdmin();
+	const {
+		tab,
+		selectedSurvey,
+		selectedQuestionBankDetail,
+		setSelectedSurvey,
+		setTab,
+		surveys,
+		setShowCreateModal,
+		setNewSurvey,
+	} = useAdmin();
 	const { loadSurveys } = useSurveys();
 	const location = useLocation();
 	const params = useParams();
+	const navigate = useNavigate();
 
 	const [isLoadingSurvey, setIsLoadingSurvey] = useState(false);
 
@@ -102,9 +112,27 @@ const AdminDashboard: React.FC = () => {
 			return (
 				<CandidateDetailView
 					responseId={params.responseId}
-					onBack={() => {
-						// Navigate back to survey statistics tab
-						window.location.href = `/admin/survey/${params.surveyId}#statistics`;
+					onBack={async () => {
+						// Navigate back to survey statistics tab without page refresh
+						navigate(`/admin/survey/${params.surveyId}/statistics`, { replace: true });
+
+						// Ensure the survey is loaded and selected
+						let survey = surveys.find(s => s._id === params.surveyId);
+						if (!survey) {
+							// If survey not found in current list, fetch it
+							try {
+								const response = await api.get(`/admin/surveys/${params.surveyId}`);
+								survey = response.data;
+							} catch (error) {
+								console.error('Error loading survey:', error);
+								return;
+							}
+						}
+
+						if (survey) {
+							setSelectedSurvey(survey);
+							setTab('detail');
+						}
 					}}
 				/>
 			);

@@ -16,11 +16,11 @@ async function audit(actor, action, targetType, targetId, payload = {}, req = nu
 		if (!actor || !actor.id) {
 			throw new Error('Actor information is required for audit logging');
 		}
-		
+
 		if (!action) {
 			throw new Error('Action is required for audit logging');
 		}
-		
+
 		if (!targetType || !targetId) {
 			throw new Error('Target type and ID are required for audit logging');
 		}
@@ -88,7 +88,7 @@ async function audit(actor, action, targetType, targetId, payload = {}, req = nu
 			targetId,
 			hasPayload: !!payload,
 		});
-		
+
 		// Don't throw error to prevent disrupting the main operation
 		// But we should still log the failure
 		try {
@@ -117,12 +117,12 @@ async function audit(actor, action, targetType, targetId, payload = {}, req = nu
 					code: 'AUDIT_LOG_CREATION_FAILED',
 				},
 			});
-			
+
 			await errorAuditEntry.save();
 		} catch (secondaryError) {
 			console.error('[AUDIT ERROR] Failed to log audit failure:', secondaryError.message);
 		}
-		
+
 		return null;
 	}
 }
@@ -206,28 +206,28 @@ async function auditImpersonate(actor, targetUserId, targetUserEmail, targetUser
 async function getAuditLogs(filters = {}, options = {}) {
 	try {
 		const query = AuditLog.find(filters);
-		
+
 		// Apply options
 		if (options.limit) {
 			query.limit(parseInt(options.limit));
 		}
-		
+
 		if (options.skip) {
 			query.skip(parseInt(options.skip));
 		}
-		
+
 		if (options.sort) {
 			query.sort(options.sort);
 		} else {
 			query.sort({ createdAt: -1 }); // Default: newest first
 		}
-		
+
 		// Populate actor information
 		query.populate('actor.userId', 'name email role');
-		
+
 		const logs = await query.exec();
 		const total = await AuditLog.countDocuments(filters);
-		
+
 		return {
 			logs,
 			total,

@@ -170,7 +170,8 @@ const EditSurveyModal: React.FC = () => {
 													// Set navigationMode based on survey type
 													navigationMode:
 														e.target.value === 'survey'
-															? ((editForm.navigationMode as string) || 'step-by-step')
+															? (editForm.navigationMode as string) ||
+																'step-by-step'
 															: 'step-by-step', // Non-survey types default to step-by-step
 												})
 											}
@@ -599,7 +600,8 @@ const EditSurveyModal: React.FC = () => {
 													Step by Step
 												</div>
 												<div className='text-xs text-gray-500 mt-1'>
-													Default for assessment types - all questions on one page
+													Default for assessment types - all questions on
+													one page
 												</div>
 											</div>
 										</div>

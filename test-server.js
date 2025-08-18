@@ -9,19 +9,19 @@ app.use(express.json());
 
 // Test route
 app.get('/api/test', (req, res) => {
-  res.json({ message: 'Server is running', timestamp: new Date() });
+	res.json({ message: 'Server is running', timestamp: new Date() });
 });
 
 // Super Admin routes for development
 if (process.env.NODE_ENV === 'production') {
-  // Production routes here
+	// Production routes here
 } else {
-  // In development, redirect to the dev server
-  app.get('/super-admin*', (req, res) => {
-    res.redirect('http://localhost:3000');
-  });
+	// In development, redirect to the dev server
+	app.get('/super-admin*', (req, res) => {
+		res.redirect('http://localhost:3000');
+	});
 }
 
 app.listen(PORT, () => {
-  console.log(`Test server running on http://localhost:${PORT}`);
+	console.log(`Test server running on http://localhost:${PORT}`);
 });

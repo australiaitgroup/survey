@@ -54,6 +54,11 @@ interface ScoringSettings {
 		useCustomPoints: boolean;
 		defaultQuestionPoints: number;
 	};
+	multipleChoiceScoring: {
+		enablePartialScoring: boolean;
+		partialScoringMode: 'proportional' | 'all_or_nothing';
+	};
+	includeShortTextInScore: boolean;
 }
 
 const ScoringModal: React.FC = () => {
@@ -71,6 +76,11 @@ const ScoringModal: React.FC = () => {
 			useCustomPoints: false,
 			defaultQuestionPoints: 1,
 		},
+		multipleChoiceScoring: {
+			enablePartialScoring: false,
+			partialScoringMode: 'proportional',
+		},
+		includeShortTextInScore: false,
 	});
 
 	// Initialize local scoring state when survey changes
@@ -98,6 +108,18 @@ const ScoringModal: React.FC = () => {
 						selectedSurvey.scoringSettings.customScoringRules?.defaultQuestionPoints ||
 						1,
 				},
+				multipleChoiceScoring: {
+					enablePartialScoring:
+						selectedSurvey.scoringSettings.multipleChoiceScoring
+							?.enablePartialScoring || false,
+					partialScoringMode:
+						selectedSurvey.scoringSettings.multipleChoiceScoring?.partialScoringMode ||
+						'proportional',
+				},
+				includeShortTextInScore:
+					selectedSurvey.scoringSettings.includeShortTextInScore !== undefined
+						? selectedSurvey.scoringSettings.includeShortTextInScore
+						: false,
 			});
 		}
 	}, [selectedSurvey]);
@@ -108,8 +130,8 @@ const ScoringModal: React.FC = () => {
 		if (!selectedSurvey) return;
 
 		setLoading(true);
-    try {
-            await api.put(`/admin/surveys/${selectedSurvey._id}/scoring`, localScoring);
+		try {
+			await api.put(`/admin/surveys/${selectedSurvey._id}/scoring`, localScoring);
 
 			// Update the survey in context - this would need to be handled by the parent component
 			// For now, we'll just close the modal
@@ -223,6 +245,101 @@ const ScoringModal: React.FC = () => {
 							/>
 						</div>
 					)}
+				</div>
+
+				{/* Multiple Choice Scoring Options */}
+				<div className='space-y-4 p-4 bg-gray-50 rounded-lg'>
+					<h4 className='text-sm font-medium text-gray-700'>
+						Multiple Choice Question Settings
+					</h4>
+					<div className='space-y-3'>
+						<label className='flex items-center'>
+							<input
+								type='checkbox'
+								className='mr-2'
+								checked={localScoring.multipleChoiceScoring.enablePartialScoring}
+								onChange={e =>
+									setLocalScoring({
+										...localScoring,
+										multipleChoiceScoring: {
+											...localScoring.multipleChoiceScoring,
+											enablePartialScoring: e.target.checked,
+										},
+									})
+								}
+							/>
+							<span className='text-sm text-gray-700'>
+								Enable Partial Scoring for Multiple Choice
+							</span>
+						</label>
+						<p className='text-xs text-gray-500 ml-6'>
+							When enabled, students can get partial points for selecting some correct
+							answers in multiple choice questions, instead of all-or-nothing scoring.
+						</p>
+
+						{localScoring.multipleChoiceScoring.enablePartialScoring && (
+							<div className='ml-6'>
+								<label className='block text-sm font-medium text-gray-700 mb-2'>
+									Partial Scoring Mode
+								</label>
+								<select
+									className='input-field'
+									value={localScoring.multipleChoiceScoring.partialScoringMode}
+									onChange={e =>
+										setLocalScoring({
+											...localScoring,
+											multipleChoiceScoring: {
+												...localScoring.multipleChoiceScoring,
+												partialScoringMode: e.target.value as
+													| 'proportional'
+													| 'all_or_nothing',
+											},
+										})
+									}
+								>
+									<option value='proportional'>
+										Proportional (percentage of correct selections)
+									</option>
+									<option value='all_or_nothing'>
+										All or Nothing (traditional)
+									</option>
+								</select>
+								<div className='text-xs text-gray-500 mt-1'>
+									{localScoring.multipleChoiceScoring.partialScoringMode ===
+									'proportional'
+										? 'Example: If correct answers are A,B,C,D (4 points) and student selects A,B (2 correct), they get 2 points.'
+										: 'Traditional scoring: must select exactly all correct answers to get points.'}
+								</div>
+							</div>
+						)}
+					</div>
+				</div>
+
+				{/* Short Text Question Settings */}
+				<div className='space-y-4 p-4 bg-gray-50 rounded-lg'>
+					<h4 className='text-sm font-medium text-gray-700'>
+						Short Text Question Settings
+					</h4>
+					<label className='flex items-center'>
+						<input
+							type='checkbox'
+							className='mr-2'
+							checked={localScoring.includeShortTextInScore}
+							onChange={e =>
+								setLocalScoring({
+									...localScoring,
+									includeShortTextInScore: e.target.checked,
+								})
+							}
+						/>
+						<span className='text-sm text-gray-700'>
+							Include Short Text Questions in Score Calculation
+						</span>
+					</label>
+					<p className='text-xs text-gray-500 ml-6'>
+						When disabled, short text questions will not contribute to the final score.
+						They will be included for informational purposes only.
+					</p>
 				</div>
 
 				<div className='space-y-2'>

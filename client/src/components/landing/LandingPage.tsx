@@ -18,7 +18,9 @@ const LandingPage: React.FC = () => {
 		<div className='min-h-screen bg-white'>
 			<SEO
 				title={'SigmaQ — Create Smarter Surveys & Assessments'}
-				description={'Build modern surveys and assessments with analytics, collaboration, and custom branding.'}
+				description={
+					'Build modern surveys and assessments with analytics, collaboration, and custom branding.'
+				}
 				openGraph={{ url: 'https://sigmaq.example.com/', image: '/favicon-512x512.png' }}
 			/>
 			<LandingNavbar />

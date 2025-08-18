@@ -232,9 +232,7 @@ const surveyResponseSchema = z.object({
 			])
 		),
 	]),
-  answerDurations: z
-    .record(z.string(), z.number().int().min(0))
-    .optional(),
+	answerDurations: z.record(z.string(), z.number().int().min(0)).optional(),
 	timeSpent: z.number().min(0).optional(),
 	isAutoSubmit: z.boolean().optional(),
 	metadata: z

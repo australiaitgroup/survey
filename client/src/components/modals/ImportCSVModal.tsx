@@ -10,7 +10,13 @@ interface ImportCSVModalProps {
 	onDownloadTemplate?: () => Promise<void> | void;
 }
 
-const ImportCSVModal: React.FC<ImportCSVModalProps> = ({ isOpen, onClose, onImport, loading, onDownloadTemplate }) => {
+const ImportCSVModal: React.FC<ImportCSVModalProps> = ({
+	isOpen,
+	onClose,
+	onImport,
+	loading,
+	onDownloadTemplate,
+}) => {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [dragActive, setDragActive] = useState(false);
 
@@ -66,9 +72,12 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = ({ isOpen, onClose, onImpo
 				await onDownloadTemplate();
 				return;
 			}
-			const response = await api.get(`/admin/question-banks/csv-template/download?ts=${Date.now()}` , {
-				responseType: 'blob',
-			});
+			const response = await api.get(
+				`/admin/question-banks/csv-template/download?ts=${Date.now()}`,
+				{
+					responseType: 'blob',
+				}
+			);
 			const blob = response.data;
 			const url = window.URL.createObjectURL(blob);
 			const a = document.createElement('a');
@@ -106,13 +115,15 @@ const ImportCSVModal: React.FC<ImportCSVModalProps> = ({ isOpen, onClose, onImpo
 					<div className='bg-blue-50 p-3 rounded-lg text-sm'>
 						<h4 className='font-medium text-blue-800 mb-2'>CSV 文件格式说明：</h4>
 						<div className='text-blue-700 space-y-1'>
-						<p>
-							<strong>列名：</strong> questionText, description, type, options, correctAnswers,
-							tags, explanation, points, difficulty, descriptionImage
-						</p>
-						<p>
-							<strong>描述（description）：</strong> 可选，支持 Markdown 格式，用于题干的详细说明/场景描述。
-						</p>
+							<p>
+								<strong>列名：</strong> questionText, description, type, options,
+								correctAnswers, tags, explanation, points, difficulty,
+								descriptionImage
+							</p>
+							<p>
+								<strong>描述（description）：</strong> 可选，支持 Markdown
+								格式，用于题干的详细说明/场景描述。
+							</p>
 							<p>
 								<strong>类型：</strong> single (单选), multiple (多选), text (文本)
 							</p>

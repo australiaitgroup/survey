@@ -1,6 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { FolderIcon, ClipboardDocumentCheckIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline';
+import {
+	FolderIcon,
+	ClipboardDocumentCheckIcon,
+	ArrowTrendingUpIcon,
+} from '@heroicons/react/24/outline';
 
 const QuestionBanksHighlight: React.FC = () => {
 	const { t, i18n } = useTranslation('translation');
@@ -32,8 +36,12 @@ const QuestionBanksHighlight: React.FC = () => {
 								<div className='mb-4 inline-flex p-4 rounded-2xl bg-gradient-to-br from-[#00A699] to-[#00A699]/80 text-white shadow-lg'>
 									<Icon className='h-7 w-7' />
 								</div>
-								<h3 className='heading-sm mb-2'>{t(`landing.questionBanks.${item.key}.title`)}</h3>
-								<p className='text-[#767676]'>{t(`landing.questionBanks.${item.key}.description`)}</p>
+								<h3 className='heading-sm mb-2'>
+									{t(`landing.questionBanks.${item.key}.title`)}
+								</h3>
+								<p className='text-[#767676]'>
+									{t(`landing.questionBanks.${item.key}.description`)}
+								</p>
 							</div>
 						);
 					})}

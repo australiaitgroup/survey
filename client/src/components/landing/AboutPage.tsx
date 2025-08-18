@@ -15,7 +15,10 @@ const AboutPage: React.FC = () => {
 			<SEO
 				title={'About — SigmaQ Survey Platform'}
 				description={t('landing.about.intro')}
-				openGraph={{ url: 'https://sigmaq.example.com/about', image: '/favicon-512x512.png' }}
+				openGraph={{
+					url: 'https://sigmaq.example.com/about',
+					image: '/favicon-512x512.png',
+				}}
 			/>
 			<LandingNavbar />
 			<main>
@@ -39,9 +42,13 @@ const AboutPage: React.FC = () => {
 						<div className='order-2 lg:order-1'>
 							<h2 className='heading-md mb-3'>{t('landing.about.storyTitle')}</h2>
 							<p className='body-md text-[#484848]'>{t('landing.about.story')}</p>
-							<h3 className='heading-sm mt-8 mb-3'>{t('landing.about.missionTitle')}</h3>
+							<h3 className='heading-sm mt-8 mb-3'>
+								{t('landing.about.missionTitle')}
+							</h3>
 							<p className='text-[#484848]'>{t('landing.about.mission')}</p>
-							<h3 className='heading-sm mt-8 mb-3'>{t('landing.about.valuesTitle')}</h3>
+							<h3 className='heading-sm mt-8 mb-3'>
+								{t('landing.about.valuesTitle')}
+							</h3>
 							<ul className='list-disc pl-6 space-y-2 text-[#484848]'>
 								<li>{t('landing.about.values.0')}</li>
 								<li>{t('landing.about.values.1')}</li>
@@ -67,15 +74,21 @@ const AboutPage: React.FC = () => {
 						<div className='grid grid-cols-2 md:grid-cols-4 gap-6'>
 							<div className='text-center p-6 bg-white rounded-2xl shadow-sm'>
 								<p className='text-3xl font-bold text-[#484848]'>500+</p>
-								<p className='text-[#767676]'>{t('landing.about.stats.companies')}</p>
+								<p className='text-[#767676]'>
+									{t('landing.about.stats.companies')}
+								</p>
 							</div>
 							<div className='text-center p-6 bg-white rounded-2xl shadow-sm'>
 								<p className='text-3xl font-bold text-[#484848]'>30+</p>
-								<p className='text-[#767676]'>{t('landing.about.stats.countries')}</p>
+								<p className='text-[#767676]'>
+									{t('landing.about.stats.countries')}
+								</p>
 							</div>
 							<div className='text-center p-6 bg-white rounded-2xl shadow-sm'>
 								<p className='text-3xl font-bold text-[#484848]'>1M+</p>
-								<p className='text-[#767676]'>{t('landing.about.stats.responses')}</p>
+								<p className='text-[#767676]'>
+									{t('landing.about.stats.responses')}
+								</p>
 							</div>
 							<div className='text-center p-6 bg-white rounded-2xl shadow-sm'>
 								<p className='text-3xl font-bold text-[#484848]'>99.9%</p>
@@ -90,19 +103,27 @@ const AboutPage: React.FC = () => {
 					<h2 className='heading-md mb-8'>{t('landing.about.timelineTitle')}</h2>
 					<div className='relative border-l-2 border-[#EBEBEB] pl-6 space-y-8'>
 						<div>
-							<p className='text-sm text-[#767676]'>{t('landing.about.timeline.0.year')}</p>
+							<p className='text-sm text-[#767676]'>
+								{t('landing.about.timeline.0.year')}
+							</p>
 							<p className='text-[#484848]'>{t('landing.about.timeline.0.text')}</p>
 						</div>
 						<div>
-							<p className='text-sm text-[#767676]'>{t('landing.about.timeline.1.year')}</p>
+							<p className='text-sm text-[#767676]'>
+								{t('landing.about.timeline.1.year')}
+							</p>
 							<p className='text-[#484848]'>{t('landing.about.timeline.1.text')}</p>
 						</div>
 						<div>
-							<p className='text-sm text-[#767676]'>{t('landing.about.timeline.2.year')}</p>
+							<p className='text-sm text-[#767676]'>
+								{t('landing.about.timeline.2.year')}
+							</p>
 							<p className='text-[#484848]'>{t('landing.about.timeline.2.text')}</p>
 						</div>
 						<div>
-							<p className='text-sm text-[#767676]'>{t('landing.about.timeline.3.year')}</p>
+							<p className='text-sm text-[#767676]'>
+								{t('landing.about.timeline.3.year')}
+							</p>
 							<p className='text-[#484848]'>{t('landing.about.timeline.3.text')}</p>
 						</div>
 					</div>
@@ -114,24 +135,48 @@ const AboutPage: React.FC = () => {
 						<h2 className='heading-md mb-8'>{t('landing.about.teamTitle')}</h2>
 						<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6'>
 							<div className='card-hover p-6 text-center'>
-								<img className='w-20 h-20 rounded-full mx-auto mb-3 object-cover' src='https://randomuser.me/api/portraits/men/10.jpg' alt='Team' />
+								<img
+									className='w-20 h-20 rounded-full mx-auto mb-3 object-cover'
+									src='https://randomuser.me/api/portraits/men/10.jpg'
+									alt='Team'
+								/>
 								<p className='font-semibold text-[#484848]'>Alex Chen</p>
-								<p className='text-sm text-[#767676]'>{t('landing.about.roles.ceo')}</p>
+								<p className='text-sm text-[#767676]'>
+									{t('landing.about.roles.ceo')}
+								</p>
 							</div>
 							<div className='card-hover p-6 text-center'>
-								<img className='w-20 h-20 rounded-full mx-auto mb-3 object-cover' src='https://randomuser.me/api/portraits/women/12.jpg' alt='Team' />
+								<img
+									className='w-20 h-20 rounded-full mx-auto mb-3 object-cover'
+									src='https://randomuser.me/api/portraits/women/12.jpg'
+									alt='Team'
+								/>
 								<p className='font-semibold text-[#484848]'>Mina Li</p>
-								<p className='text-sm text-[#767676]'>{t('landing.about.roles.cto')}</p>
+								<p className='text-sm text-[#767676]'>
+									{t('landing.about.roles.cto')}
+								</p>
 							</div>
 							<div className='card-hover p-6 text-center'>
-								<img className='w-20 h-20 rounded-full mx-auto mb-3 object-cover' src='https://randomuser.me/api/portraits/women/22.jpg' alt='Team' />
+								<img
+									className='w-20 h-20 rounded-full mx-auto mb-3 object-cover'
+									src='https://randomuser.me/api/portraits/women/22.jpg'
+									alt='Team'
+								/>
 								<p className='font-semibold text-[#484848]'>Sara Kim</p>
-								<p className='text-sm text-[#767676]'>{t('landing.about.roles.headOfAI')}</p>
+								<p className='text-sm text-[#767676]'>
+									{t('landing.about.roles.headOfAI')}
+								</p>
 							</div>
 							<div className='card-hover p-6 text-center'>
-								<img className='w-20 h-20 rounded-full mx-auto mb-3 object-cover' src='https://randomuser.me/api/portraits/men/32.jpg' alt='Team' />
+								<img
+									className='w-20 h-20 rounded-full mx-auto mb-3 object-cover'
+									src='https://randomuser.me/api/portraits/men/32.jpg'
+									alt='Team'
+								/>
 								<p className='font-semibold text-[#484848]'>Daniel Wong</p>
-								<p className='text-sm text-[#767676]'>{t('landing.about.roles.headOfDesign')}</p>
+								<p className='text-sm text-[#767676]'>
+									{t('landing.about.roles.headOfDesign')}
+								</p>
 							</div>
 						</div>
 					</div>
@@ -141,12 +186,36 @@ const AboutPage: React.FC = () => {
 				<section className='container mx-auto px-6 lg:px-8 py-16'>
 					<h2 className='heading-md mb-8'>{t('landing.about.customersTitle')}</h2>
 					<div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 items-center'>
-						<img className='h-10 opacity-80' src='https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg' alt='Slack' />
-						<img className='h-10 opacity-80' src='https://cdn.worldvectorlogo.com/logos/notion-logo-1.svg' alt='Notion' />
-						<img className='h-10 opacity-80' src='https://cdn.worldvectorlogo.com/logos/airtable-1.svg' alt='Airtable' />
-						<img className='h-10 opacity-80' src='https://cdn.worldvectorlogo.com/logos/zapier-1.svg' alt='Zapier' />
-						<img className='h-10 opacity-80' src='https://cdn.worldvectorlogo.com/logos/google-sheets-4.svg' alt='Google Sheets' />
-						<img className='h-10 opacity-80' src='https://cdn.worldvectorlogo.com/logos/intercom-1.svg' alt='Intercom' />
+						<img
+							className='h-10 opacity-80'
+							src='https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg'
+							alt='Slack'
+						/>
+						<img
+							className='h-10 opacity-80'
+							src='https://cdn.worldvectorlogo.com/logos/notion-logo-1.svg'
+							alt='Notion'
+						/>
+						<img
+							className='h-10 opacity-80'
+							src='https://cdn.worldvectorlogo.com/logos/airtable-1.svg'
+							alt='Airtable'
+						/>
+						<img
+							className='h-10 opacity-80'
+							src='https://cdn.worldvectorlogo.com/logos/zapier-1.svg'
+							alt='Zapier'
+						/>
+						<img
+							className='h-10 opacity-80'
+							src='https://cdn.worldvectorlogo.com/logos/google-sheets-4.svg'
+							alt='Google Sheets'
+						/>
+						<img
+							className='h-10 opacity-80'
+							src='https://cdn.worldvectorlogo.com/logos/intercom-1.svg'
+							alt='Intercom'
+						/>
 					</div>
 				</section>
 
@@ -155,7 +224,10 @@ const AboutPage: React.FC = () => {
 					<div className='container mx-auto px-6 lg:px-8 text-center text-white'>
 						<h2 className='text-3xl font-bold mb-3'>{t('landing.about.ctaTitle')}</h2>
 						<p className='opacity-90 mb-6'>{t('landing.about.ctaSubtitle')}</p>
-						<a href='/contact' className='inline-block bg-white text-[#FF5A5F] px-6 py-3 rounded-xl font-medium shadow'>
+						<a
+							href='/contact'
+							className='inline-block bg-white text-[#FF5A5F] px-6 py-3 rounded-xl font-medium shadow'
+						>
 							{t('landing.about.ctaButton')}
 						</a>
 					</div>

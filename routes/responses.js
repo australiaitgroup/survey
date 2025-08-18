@@ -51,6 +51,17 @@ router.post(
 			});
 		}
 
+		// Get scoring settings
+		const scoringSettings = survey.scoringSettings || {};
+		const enablePartialScoring =
+			scoringSettings.multipleChoiceScoring?.enablePartialScoring || false;
+		const partialScoringMode =
+			scoringSettings.multipleChoiceScoring?.partialScoringMode || 'proportional';
+		const includeShortTextInScore =
+			scoringSettings.includeShortTextInScore !== undefined
+				? scoringSettings.includeShortTextInScore
+				: false;
+
 		// Create response with question snapshots including durations
 		const questionSnapshots = survey.questions.map((question, index) => {
 			// Ensure we use string keys when reading from plain objects
@@ -63,7 +74,10 @@ router.post(
 			let pointsAwarded = 0;
 			const maxPoints = question.points || 1;
 
-			if (question.correctAnswer !== undefined && userAnswer !== undefined) {
+			// Skip scoring for short_text if not included in score
+			const shouldScore = question.type !== 'short_text' || includeShortTextInScore;
+
+			if (shouldScore && question.correctAnswer !== undefined && userAnswer !== undefined) {
 				if (question.type === 'single_choice') {
 					const options = Array.isArray(question.options) ? question.options : [];
 					const userOptionIndex = options.findIndex(opt =>
@@ -84,15 +98,43 @@ router.post(
 						)
 						.filter(idx => idx !== -1);
 					const correctIndices = question.correctAnswer;
-					isCorrect =
-						userOptionIndices.length === correctIndices.length &&
-						userOptionIndices.every(idx => correctIndices.includes(idx));
+
+					if (enablePartialScoring && partialScoringMode === 'proportional') {
+						// Partial scoring: calculate proportional points
+						const correctSelections = userOptionIndices.filter(idx =>
+							correctIndices.includes(idx)
+						);
+						const incorrectSelections = userOptionIndices.filter(
+							idx => !correctIndices.includes(idx)
+						);
+
+						// Calculate score: (correct selections / total correct answers) * maxPoints
+						// But subtract penalty for incorrect selections
+						const correctRatio = correctSelections.length / correctIndices.length;
+						const incorrectPenalty =
+							incorrectSelections.length > 0 ? 0.1 * incorrectSelections.length : 0;
+
+						// Ensure score is not negative
+						const proportionalScore = Math.max(0, correctRatio - incorrectPenalty);
+						pointsAwarded = Math.round(proportionalScore * maxPoints * 100) / 100; // Round to 2 decimal places
+
+						// Consider it "correct" if they got more than 50% of the selections right with no wrong selections
+						isCorrect = correctRatio >= 0.5 && incorrectSelections.length === 0;
+					} else {
+						// Traditional all-or-nothing scoring
+						isCorrect =
+							userOptionIndices.length === correctIndices.length &&
+							userOptionIndices.every(idx => correctIndices.includes(idx));
+					}
 				} else if (question.type === 'short_text') {
 					isCorrect = String(userAnswer).trim() === String(question.correctAnswer).trim();
 				}
 
-				if (isCorrect) {
-					pointsAwarded = maxPoints;
+				// For non-partial scoring or when fully correct
+				if (!enablePartialScoring || question.type !== 'multiple_choice') {
+					if (isCorrect) {
+						pointsAwarded = maxPoints;
+					}
 				}
 			}
 
@@ -113,20 +155,21 @@ router.post(
 				scoring: {
 					isCorrect,
 					pointsAwarded,
-					maxPoints,
+					maxPoints: shouldScore ? maxPoints : 0, // Don't count towards total if not scoring
 				},
 				durationInSeconds: duration,
 			};
 		});
 
-		// Calculate total score
+		// Calculate total score (only include questions that should be scored)
+		const scorableQuestions = questionSnapshots.filter(q => q.scoring.maxPoints > 0);
 		const totalPoints = questionSnapshots.reduce((sum, q) => sum + q.scoring.pointsAwarded, 0);
 		const maxPossiblePoints = questionSnapshots.reduce(
 			(sum, q) => sum + q.scoring.maxPoints,
 			0
 		);
-		const correctAnswers = questionSnapshots.filter(q => q.scoring.isCorrect).length;
-		const wrongAnswers = questionSnapshots.length - correctAnswers;
+		const correctAnswers = scorableQuestions.filter(q => q.scoring.isCorrect).length;
+		const wrongAnswers = scorableQuestions.length - correctAnswers;
 		const percentage =
 			maxPossiblePoints > 0 ? Math.round((totalPoints / maxPossiblePoints) * 100) : 0;
 
@@ -158,6 +201,29 @@ router.post(
 			},
 			timeSpent,
 			isAutoSubmit,
+			metadata: {
+				userAgent: req.headers['user-agent'] || '',
+				ipAddress: req.ip || req.connection.remoteAddress || '',
+				deviceType: (() => {
+					const userAgent = (req.headers['user-agent'] || '').toLowerCase();
+					if (
+						userAgent.includes('mobile') ||
+						userAgent.includes('android') ||
+						userAgent.includes('iphone')
+					) {
+						return 'mobile';
+					} else if (userAgent.includes('tablet') || userAgent.includes('ipad')) {
+						return 'tablet';
+					} else if (
+						userAgent.includes('windows') ||
+						userAgent.includes('mac') ||
+						userAgent.includes('linux')
+					) {
+						return 'desktop';
+					}
+					return 'unknown';
+				})(),
+			},
 		});
 
 		await response.save();

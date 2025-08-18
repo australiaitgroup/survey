@@ -36,7 +36,7 @@ async function saveSurveyResponse(data) {
 	// Prepare user answers array for snapshot creation
 	const userAnswersArray = [];
 
-    if (Array.isArray(data.answers)) {
+	if (Array.isArray(data.answers)) {
 		// New format: array of answers (string values)
 		data.answers.forEach((answer, index) => {
 			userAnswersArray[index] = answer;
@@ -63,9 +63,9 @@ async function saveSurveyResponse(data) {
 									} catch (e) {
 										return opt === answer;
 									}
-    } else {
+								} else {
 									return opt === answer;
-    }
+								}
 							});
 						}
 
@@ -151,9 +151,13 @@ async function saveSurveyResponse(data) {
 		existingResponse.metadata = data.metadata || {};
 
 		// Create question snapshots for the updated response
-        if (questionsToProcess.length > 0) {
-            existingResponse.createQuestionSnapshots(questionsToProcess, userAnswersArray, data.answerDurations || {});
-        }
+		if (questionsToProcess.length > 0) {
+			existingResponse.createQuestionSnapshots(
+				questionsToProcess,
+				userAnswersArray,
+				data.answerDurations || {}
+			);
+		}
 
 		response = existingResponse;
 	} else {
@@ -164,9 +168,13 @@ async function saveSurveyResponse(data) {
 		});
 
 		// Create question snapshots for the new response
-        if (questionsToProcess.length > 0) {
-            response.createQuestionSnapshots(questionsToProcess, userAnswersArray, data.answerDurations || {});
-        }
+		if (questionsToProcess.length > 0) {
+			response.createQuestionSnapshots(
+				questionsToProcess,
+				userAnswersArray,
+				data.answerDurations || {}
+			);
+		}
 	}
 
 	// Calculate score if it's an assessment/live_quiz

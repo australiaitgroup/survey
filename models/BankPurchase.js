@@ -12,7 +12,7 @@ const bankPurchaseSchema = new mongoose.Schema({
 		ref: 'PublicBank',
 		required: true,
 	},
-	
+
 	// Transaction Details
 	type: {
 		type: String,
@@ -26,7 +26,7 @@ const bankPurchaseSchema = new mongoose.Schema({
 		default: 'pending',
 		required: true,
 	},
-	
+
 	// Pricing
 	amount: {
 		type: Number,
@@ -50,7 +50,7 @@ const bankPurchaseSchema = new mongoose.Schema({
 		type: Number,
 		min: 0,
 	},
-	
+
 	// Payment Information
 	paymentMethod: {
 		type: String,
@@ -69,7 +69,7 @@ const bankPurchaseSchema = new mongoose.Schema({
 		type: String,
 		trim: true,
 	},
-	
+
 	// Subscription Details (for subscription type)
 	subscriptionStatus: {
 		type: String,
@@ -85,7 +85,7 @@ const bankPurchaseSchema = new mongoose.Schema({
 		type: Boolean,
 		default: false,
 	},
-	
+
 	// Usage Tracking
 	usageCount: {
 		type: Number,
@@ -94,7 +94,7 @@ const bankPurchaseSchema = new mongoose.Schema({
 	lastUsedAt: {
 		type: Date,
 	},
-	
+
 	// Access Control
 	isActive: {
 		type: Boolean,
@@ -103,7 +103,7 @@ const bankPurchaseSchema = new mongoose.Schema({
 	expiresAt: {
 		type: Date,
 	},
-	
+
 	// Metadata
 	purchasedBy: {
 		type: mongoose.Schema.Types.ObjectId,
@@ -119,7 +119,7 @@ const bankPurchaseSchema = new mongoose.Schema({
 		trim: true,
 		maxlength: 500,
 	},
-	
+
 	// Audit Trail
 	createdAt: {
 		type: Date,
@@ -140,38 +140,40 @@ bankPurchaseSchema.index({ purchasedAt: -1 });
 bankPurchaseSchema.index({ stripeSubscriptionId: 1 });
 
 // Pre-save middleware
-bankPurchaseSchema.pre('save', function(next) {
+bankPurchaseSchema.pre('save', function (next) {
 	this.updatedAt = new Date();
 	next();
 });
 
 // Virtual for active subscription
-bankPurchaseSchema.virtual('isActiveSubscription').get(function() {
-	return this.type === 'subscription' && 
-		   this.subscriptionStatus === 'active' && 
-		   this.isActive &&
-		   (!this.expiresAt || this.expiresAt > new Date());
+bankPurchaseSchema.virtual('isActiveSubscription').get(function () {
+	return (
+		this.type === 'subscription' &&
+		this.subscriptionStatus === 'active' &&
+		this.isActive &&
+		(!this.expiresAt || this.expiresAt > new Date())
+	);
 });
 
 // Virtual for access granted
-bankPurchaseSchema.virtual('hasAccess').get(function() {
+bankPurchaseSchema.virtual('hasAccess').get(function () {
 	if (!this.isActive || this.status !== 'completed') {
 		return false;
 	}
-	
+
 	if (this.expiresAt && this.expiresAt <= new Date()) {
 		return false;
 	}
-	
+
 	if (this.type === 'subscription') {
 		return this.isActiveSubscription;
 	}
-	
+
 	return true;
 });
 
 // Static method to find active purchases for company
-bankPurchaseSchema.statics.findActiveForCompany = function(companyId) {
+bankPurchaseSchema.statics.findActiveForCompany = function (companyId) {
 	return this.find({
 		companyId,
 		status: 'completed',
@@ -179,13 +181,13 @@ bankPurchaseSchema.statics.findActiveForCompany = function(companyId) {
 		$or: [
 			{ expiresAt: { $exists: false } },
 			{ expiresAt: null },
-			{ expiresAt: { $gt: new Date() } }
-		]
+			{ expiresAt: { $gt: new Date() } },
+		],
 	}).populate('bankId');
 };
 
 // Static method to check if company has access to bank
-bankPurchaseSchema.statics.hasAccess = async function(companyId, bankId) {
+bankPurchaseSchema.statics.hasAccess = async function (companyId, bankId) {
 	const purchase = await this.findOne({
 		companyId,
 		bankId,
@@ -194,22 +196,22 @@ bankPurchaseSchema.statics.hasAccess = async function(companyId, bankId) {
 		$or: [
 			{ expiresAt: { $exists: false } },
 			{ expiresAt: null },
-			{ expiresAt: { $gt: new Date() } }
-		]
+			{ expiresAt: { $gt: new Date() } },
+		],
 	});
-	
+
 	return !!purchase;
 };
 
 // Instance method to increment usage
-bankPurchaseSchema.methods.incrementUsage = function() {
+bankPurchaseSchema.methods.incrementUsage = function () {
 	this.usageCount += 1;
 	this.lastUsedAt = new Date();
 	return this.save();
 };
 
 // Instance method to cancel subscription
-bankPurchaseSchema.methods.cancelSubscription = function() {
+bankPurchaseSchema.methods.cancelSubscription = function () {
 	if (this.type === 'subscription') {
 		this.cancelAtPeriodEnd = true;
 		this.subscriptionStatus = 'cancelled';

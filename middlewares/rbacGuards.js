@@ -187,10 +187,7 @@ const applyScopingToPipeline = (pipeline, req) => {
 
 	// Apply company scoping by adding $match stage at the beginning
 	if (req.user.companyId) {
-		return [
-			{ $match: { companyId: req.user.companyId } },
-			...pipeline,
-		];
+		return [{ $match: { companyId: req.user.companyId } }, ...pipeline];
 	}
 
 	return pipeline;
@@ -212,11 +209,11 @@ const canAccessResource = (req, resourceCompanyId) => {
 /**
  * Middleware to validate resource access
  */
-const validateResourceAccess = (getResourceCompanyId) => {
+const validateResourceAccess = getResourceCompanyId => {
 	return async (req, res, next) => {
 		try {
 			const resourceCompanyId = await getResourceCompanyId(req);
-			
+
 			if (!canAccessResource(req, resourceCompanyId)) {
 				return res.status(HTTP_STATUS.FORBIDDEN).json({
 					error: 'Access denied to this resource',

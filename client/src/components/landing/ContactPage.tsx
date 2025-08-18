@@ -40,7 +40,10 @@ const ContactPage: React.FC = () => {
 			<SEO
 				title={'Contact — SigmaQ Survey Platform'}
 				description={t('landing.contact.subtitle')}
-				openGraph={{ url: 'https://sigmaq.example.com/contact', image: '/favicon-512x512.png' }}
+				openGraph={{
+					url: 'https://sigmaq.example.com/contact',
+					image: '/favicon-512x512.png',
+				}}
 			/>
 			<LandingNavbar />
 			<main className='py-16'>
@@ -59,52 +62,82 @@ const ContactPage: React.FC = () => {
 					<h2 className='heading-md mb-6'>{t('landing.contact.channelsTitle')}</h2>
 					<div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
 						<div className='card-hover p-6'>
-							<p className='text-sm text-[#767676] mb-1'>{t('landing.contact.channels.sales')}</p>
-							<a href='mailto:sales@sigmaq.io' className='text-[#484848] font-medium'>sales@sigmaq.io</a>
+							<p className='text-sm text-[#767676] mb-1'>
+								{t('landing.contact.channels.sales')}
+							</p>
+							<a href='mailto:sales@sigmaq.io' className='text-[#484848] font-medium'>
+								sales@sigmaq.io
+							</a>
 						</div>
 						<div className='card-hover p-6'>
-							<p className='text-sm text-[#767676] mb-1'>{t('landing.contact.channels.support')}</p>
-							<a href='mailto:support@sigmaq.io' className='text-[#484848] font-medium'>support@sigmaq.io</a>
+							<p className='text-sm text-[#767676] mb-1'>
+								{t('landing.contact.channels.support')}
+							</p>
+							<a
+								href='mailto:support@sigmaq.io'
+								className='text-[#484848] font-medium'
+							>
+								support@sigmaq.io
+							</a>
 						</div>
 						<div className='card-hover p-6'>
-							<p className='text-sm text-[#767676] mb-1'>{t('landing.contact.channels.phone')}</p>
-							<a href='tel:+61451010217' className='text-[#484848] font-medium'>+61 451010217</a>
-							<p className='text-xs text-[#767676] mt-1'>{t('landing.contact.channels.hours')}</p>
+							<p className='text-sm text-[#767676] mb-1'>
+								{t('landing.contact.channels.phone')}
+							</p>
+							<a href='tel:+61451010217' className='text-[#484848] font-medium'>
+								+61 451010217
+							</a>
+							<p className='text-xs text-[#767676] mt-1'>
+								{t('landing.contact.channels.hours')}
+							</p>
 						</div>
 					</div>
 				</section>
 
 				{/* Form */}
 				<section className='container mx-auto px-6 lg:px-8'>
-					<form onSubmit={handleSubmit} className='grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 max-w-4xl'>
+					<form
+						onSubmit={handleSubmit}
+						className='grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 max-w-4xl'
+					>
 						<div className='md:col-span-1'>
 							<label className='block text-sm font-medium mb-1 text-[#484848]'>
 								{t('landing.contact.name')}
 							</label>
-							<input name='name' required className='w-full border border-[#EBEBEB] rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#FF5A5F]' />
+							<input
+								name='name'
+								required
+								className='w-full border border-[#EBEBEB] rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#FF5A5F]'
+							/>
 						</div>
 						<div className='md:col-span-1'>
 							<label className='block text-sm font-medium mb-1 text-[#484848]'>
 								{t('landing.contact.email')}
 							</label>
-							<input name='email' type='email' required className='w-full border border-[#EBEBEB] rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#FF5A5F]' />
+							<input
+								name='email'
+								type='email'
+								required
+								className='w-full border border-[#EBEBEB] rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#FF5A5F]'
+							/>
 						</div>
 						<div className='md:col-span-2'>
 							<label className='block text-sm font-medium mb-1 text-[#484848]'>
 								{t('landing.contact.message')}
 							</label>
-							<textarea name='message' required rows={5} className='w-full border border-[#EBEBEB] rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#FF5A5F]'></textarea>
+							<textarea
+								name='message'
+								required
+								rows={5}
+								className='w-full border border-[#EBEBEB] rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#FF5A5F]'
+							></textarea>
 						</div>
 						<div className='md:col-span-2'>
 							<button type='submit' disabled={submitting} className='btn-primary'>
 								{submitting ? 'Sending...' : t('landing.contact.send')}
 							</button>
-							{submitted && (
-								<span className='ml-3 text-[#00A699]'>Sent</span>
-							)}
-							{error && (
-								<span className='ml-3 text-red-600'>{error}</span>
-							)}
+							{submitted && <span className='ml-3 text-[#00A699]'>Sent</span>}
+							{error && <span className='ml-3 text-red-600'>{error}</span>}
 						</div>
 					</form>
 				</section>
@@ -114,12 +147,20 @@ const ContactPage: React.FC = () => {
 					<h2 className='heading-md mb-6'>{t('landing.contact.officesTitle')}</h2>
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
 						<div className='card-hover p-6'>
-							<p className='text-sm text-[#767676] mb-1'>{t('landing.contact.offices.hq.title')}</p>
-							<p className='text-[#484848]'>{t('landing.contact.offices.hq.address')}</p>
+							<p className='text-sm text-[#767676] mb-1'>
+								{t('landing.contact.offices.hq.title')}
+							</p>
+							<p className='text-[#484848]'>
+								{t('landing.contact.offices.hq.address')}
+							</p>
 						</div>
 						<div className='card-hover p-6'>
-							<p className='text-sm text-[#767676] mb-1'>{t('landing.contact.offices.apac.title')}</p>
-							<p className='text-[#484848]'>{t('landing.contact.offices.apac.address')}</p>
+							<p className='text-sm text-[#767676] mb-1'>
+								{t('landing.contact.offices.apac.title')}
+							</p>
+							<p className='text-[#484848]'>
+								{t('landing.contact.offices.apac.address')}
+							</p>
 						</div>
 					</div>
 				</section>

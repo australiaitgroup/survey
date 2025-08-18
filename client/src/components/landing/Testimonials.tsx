@@ -2,10 +2,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 const Testimonials: React.FC = () => {
-    const { t, i18n } = useTranslation('translation');
-    React.useEffect(() => {
-        i18n.loadNamespaces(['translation']).catch(() => {});
-    }, [i18n]);
+	const { t, i18n } = useTranslation('translation');
+	React.useEffect(() => {
+		i18n.loadNamespaces(['translation']).catch(() => {});
+	}, [i18n]);
 
 	const testimonials = [
 		{

@@ -46,19 +46,16 @@ const LandingNavbar: React.FC = () => {
 	];
 
 	return (
-		<motion.nav 
+		<motion.nav
 			className='bg-white shadow-sm sticky top-0 z-50 border-b border-[#EBEBEB]'
 			initial={{ y: -100 }}
 			animate={{ y: 0 }}
-			transition={{ duration: 0.6, ease: "easeOut" }}
+			transition={{ duration: 0.3, ease: 'easeOut' }}
 		>
 			<div className='container mx-auto px-6 lg:px-8'>
 				<div className='flex justify-between items-center h-20'>
 					<div className='flex items-center'>
-						<motion.div
-							whileHover={{ scale: 1.05 }}
-							transition={{ duration: 0.2 }}
-						>
+						<motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
 							<Link to='/' className='flex items-center'>
 								<img src='/SigmaQ-logo.svg' alt='SigmaQ' className='h-10' />
 							</Link>
@@ -72,7 +69,7 @@ const LandingNavbar: React.FC = () => {
 								key={link.key}
 								initial={{ opacity: 0, y: -20 }}
 								animate={{ opacity: 1, y: 0 }}
-								transition={{ duration: 0.4, delay: 0.1 * index }}
+								transition={{ duration: 0.2, delay: 0.05 * index }}
 								whileHover={{ scale: 1.05 }}
 							>
 								{link.href.startsWith('#') ? (
@@ -95,14 +92,14 @@ const LandingNavbar: React.FC = () => {
 						<motion.div
 							initial={{ opacity: 0, y: -20 }}
 							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.4, delay: 0.6 }}
+							transition={{ duration: 0.2, delay: 0.3 }}
 						>
 							<LanguageSwitcher />
 						</motion.div>
 						<motion.div
 							initial={{ opacity: 0, y: -20 }}
 							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.4, delay: 0.7 }}
+							transition={{ duration: 0.2, delay: 0.35 }}
 							whileHover={{ scale: 1.05 }}
 						>
 							<Link
@@ -115,7 +112,7 @@ const LandingNavbar: React.FC = () => {
 						<motion.div
 							initial={{ opacity: 0, y: -20 }}
 							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.4, delay: 0.8 }}
+							transition={{ duration: 0.2, delay: 0.4 }}
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
 						>
@@ -133,10 +130,10 @@ const LandingNavbar: React.FC = () => {
 							whileHover={{ scale: 1.1 }}
 							whileTap={{ scale: 0.9 }}
 						>
-							<AnimatePresence mode="wait">
+							<AnimatePresence mode='wait'>
 								{mobileMenuOpen ? (
 									<motion.div
-										key="close"
+										key='close'
 										initial={{ rotate: -90, opacity: 0 }}
 										animate={{ rotate: 0, opacity: 1 }}
 										exit={{ rotate: 90, opacity: 0 }}
@@ -146,7 +143,7 @@ const LandingNavbar: React.FC = () => {
 									</motion.div>
 								) : (
 									<motion.div
-										key="open"
+										key='open'
 										initial={{ rotate: 90, opacity: 0 }}
 										animate={{ rotate: 0, opacity: 1 }}
 										exit={{ rotate: -90, opacity: 0 }}
@@ -164,7 +161,7 @@ const LandingNavbar: React.FC = () => {
 			{/* Full-screen Mobile Navigation Overlay */}
 			<AnimatePresence>
 				{mobileMenuOpen && (
-					<motion.div 
+					<motion.div
 						className='fixed inset-0 z-50 md:hidden'
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
@@ -181,12 +178,12 @@ const LandingNavbar: React.FC = () => {
 						></motion.div>
 
 						{/* Menu content */}
-						<motion.div 
+						<motion.div
 							className='fixed inset-0 bg-white'
-							initial={{ y: "-100%" }}
+							initial={{ y: '-100%' }}
 							animate={{ y: 0 }}
-							exit={{ y: "-100%" }}
-							transition={{ duration: 0.4, ease: "easeInOut" }}
+							exit={{ y: '-100%' }}
+							transition={{ duration: 0.25, ease: 'easeInOut' }}
 						>
 							{/* Header */}
 							<div className='flex items-center justify-between p-6 border-b border-[#EBEBEB]'>
@@ -204,11 +201,11 @@ const LandingNavbar: React.FC = () => {
 							</div>
 
 							{/* Menu items */}
-							<motion.div 
+							<motion.div
 								className='flex flex-col h-full'
 								initial={{ opacity: 0 }}
 								animate={{ opacity: 1 }}
-								transition={{ delay: 0.2, duration: 0.4 }}
+								transition={{ delay: 0.1, duration: 0.2 }}
 							>
 								<div className='flex-1 px-4 py-8 space-y-8'>
 									{/* Navigation links */}
@@ -218,7 +215,10 @@ const LandingNavbar: React.FC = () => {
 												key={link.key}
 												initial={{ x: -50, opacity: 0 }}
 												animate={{ x: 0, opacity: 1 }}
-												transition={{ delay: 0.3 + index * 0.1, duration: 0.4 }}
+												transition={{
+													delay: 0.15 + index * 0.05,
+													duration: 0.2,
+												}}
 											>
 												{link.href.startsWith('#') ? (
 													<a
@@ -242,11 +242,11 @@ const LandingNavbar: React.FC = () => {
 									</div>
 
 									{/* Language switcher */}
-									<motion.div 
+									<motion.div
 										className='pt-6 border-t border-gray-200'
 										initial={{ y: 20, opacity: 0 }}
 										animate={{ y: 0, opacity: 1 }}
-										transition={{ delay: 0.8, duration: 0.4 }}
+										transition={{ delay: 0.4, duration: 0.2 }}
 									>
 										<p className='text-sm font-medium text-gray-500 mb-3'>
 											Language
@@ -255,11 +255,11 @@ const LandingNavbar: React.FC = () => {
 									</motion.div>
 
 									{/* Auth links */}
-									<motion.div 
+									<motion.div
 										className='space-y-4 pt-6 border-t border-[#EBEBEB]'
 										initial={{ y: 20, opacity: 0 }}
 										animate={{ y: 0, opacity: 1 }}
-										transition={{ delay: 1, duration: 0.4 }}
+										transition={{ delay: 0.5, duration: 0.2 }}
 									>
 										<Link
 											to='/admin/login'
@@ -284,11 +284,11 @@ const LandingNavbar: React.FC = () => {
 								</div>
 
 								{/* Footer */}
-								<motion.div 
+								<motion.div
 									className='px-4 py-6 border-t border-gray-200'
 									initial={{ opacity: 0 }}
 									animate={{ opacity: 1 }}
-									transition={{ delay: 1.2, duration: 0.4 }}
+									transition={{ delay: 0.6, duration: 0.2 }}
 								>
 									<p className='text-sm text-gray-500 text-center'>
 										© 2025 SigmaQ. All rights reserved.

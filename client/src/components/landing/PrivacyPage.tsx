@@ -15,7 +15,10 @@ const PrivacyPage: React.FC = () => {
 			<SEO
 				title={'Privacy Policy — SigmaQ'}
 				description={t('landing.privacy.intro')}
-				openGraph={{ url: 'https://sigmaq.example.com/privacy', image: '/favicon-512x512.png' }}
+				openGraph={{
+					url: 'https://sigmaq.example.com/privacy',
+					image: '/favicon-512x512.png',
+				}}
 			/>
 			<LandingNavbar />
 			<main className='py-16'>

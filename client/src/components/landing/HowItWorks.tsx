@@ -27,9 +27,9 @@ const HowItWorks: React.FC = () => {
 			opacity: 1,
 			transition: {
 				staggerChildren: 0.2,
-				delayChildren: 0.3
-			}
-		}
+				delayChildren: 0.3,
+			},
+		},
 	};
 
 	const cardVariants = {
@@ -40,22 +40,22 @@ const HowItWorks: React.FC = () => {
 			scale: 1,
 			transition: {
 				duration: 0.6,
-				ease: "easeOut"
-			}
-		}
+				ease: 'easeOut',
+			},
+		},
 	};
 
 	return (
 		<section id='how-it-works' className='py-24 bg-[#F7F7F7]'>
 			<div className='container mx-auto px-6 lg:px-8'>
-				<motion.div 
+				<motion.div
 					className='text-center mb-16'
 					initial={{ opacity: 0, y: 30 }}
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true }}
 					transition={{ duration: 0.6 }}
 				>
-					<motion.h2 
+					<motion.h2
 						className='heading-lg mb-4'
 						initial={{ opacity: 0, y: 20 }}
 						whileInView={{ opacity: 1, y: 0 }}
@@ -64,7 +64,7 @@ const HowItWorks: React.FC = () => {
 					>
 						{t('landing.howItWorks.title')}
 					</motion.h2>
-					<motion.p 
+					<motion.p
 						className='body-lg text-[#767676] max-w-3xl mx-auto'
 						initial={{ opacity: 0, y: 20 }}
 						whileInView={{ opacity: 1, y: 0 }}
@@ -75,38 +75,38 @@ const HowItWorks: React.FC = () => {
 					</motion.p>
 				</motion.div>
 
-				<motion.div 
+				<motion.div
 					className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'
 					variants={containerVariants}
-					initial="hidden"
-					whileInView="visible"
-					viewport={{ once: true, margin: "-50px" }}
+					initial='hidden'
+					whileInView='visible'
+					viewport={{ once: true, margin: '-50px' }}
 				>
 					{steps.map((step, index) => {
 						const Icon = step.icon;
 						return (
-							<motion.div 
-								key={step.key} 
+							<motion.div
+								key={step.key}
 								className='card-hover bg-white p-8 text-center'
 								variants={cardVariants}
-								whileHover={{ 
-									y: -10, 
+								whileHover={{
+									y: -10,
 									scale: 1.05,
-									transition: { duration: 0.3 }
+									transition: { duration: 0.3 },
 								}}
 								whileTap={{ scale: 0.95 }}
 							>
-								<motion.div 
+								<motion.div
 									className='mx-auto mb-4 inline-flex p-4 rounded-2xl bg-gradient-to-br from-[#FF5A5F] to-[#FC642D] text-white shadow-lg'
-									whileHover={{ 
+									whileHover={{
 										rotate: 360,
-										scale: 1.1 
+										scale: 1.1,
 									}}
 									transition={{ duration: 0.5 }}
 								>
 									<Icon className='h-8 w-8' />
 								</motion.div>
-								<motion.h3 
+								<motion.h3
 									className='heading-sm mb-2'
 									initial={{ opacity: 0 }}
 									whileInView={{ opacity: 1 }}
@@ -115,7 +115,7 @@ const HowItWorks: React.FC = () => {
 								>
 									{t(`landing.howItWorks.${step.key}.title`)}
 								</motion.h3>
-								<motion.p 
+								<motion.p
 									className='text-[#767676]'
 									initial={{ opacity: 0 }}
 									whileInView={{ opacity: 1 }}

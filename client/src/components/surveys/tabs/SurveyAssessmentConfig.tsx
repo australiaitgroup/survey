@@ -58,10 +58,7 @@ const SurveyAssessmentConfig: React.FC<Props> = ({ survey, onEditScoring }) => {
 				<div className='bg-green-50 rounded-lg p-3 mb-3'>
 					<div className='flex items-center justify-between mb-2'>
 						<h5 className='font-medium text-gray-800'>Scoring Rules</h5>
-						<button
-							className='text-sm text-blue-600 hover:text-blue-800'
-							onClick={onEditScoring}
-						>
+						<button className='btn-outline btn-small' onClick={onEditScoring}>
 							Edit Scoring Rules
 						</button>
 					</div>

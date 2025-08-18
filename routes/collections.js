@@ -5,7 +5,11 @@ const Response = require('../models/Response');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/AppError');
 const { HTTP_STATUS, ERROR_MESSAGES } = require('../shared/constants');
-const { collectionCreateSchema, collectionUpdateSchema, collectionSurveysUpdateSchema } = require('../schemas/collectionSchemas');
+const {
+	collectionCreateSchema,
+	collectionUpdateSchema,
+	collectionSurveysUpdateSchema,
+} = require('../schemas/collectionSchemas');
 
 const router = express.Router();
 
@@ -33,7 +37,12 @@ router.get(
 	'/collections/:id',
 	asyncHandler(async (req, res) => {
 		const item = await Collection.findById(req.params.id).lean();
-		if (!item) throw new AppError(ERROR_MESSAGES.COLLECTION_NOT_FOUND, HTTP_STATUS.NOT_FOUND, 'errors.collectionNotFound');
+		if (!item)
+			throw new AppError(
+				ERROR_MESSAGES.COLLECTION_NOT_FOUND,
+				HTTP_STATUS.NOT_FOUND,
+				'errors.collectionNotFound'
+			);
 		res.json({ success: true, data: item });
 	})
 );
@@ -45,7 +54,11 @@ router.patch(
 		const data = collectionUpdateSchema.parse(req.body);
 		const updated = await Collection.findByIdAndUpdate(req.params.id, data, { new: true });
 		if (!updated)
-			throw new AppError(ERROR_MESSAGES.COLLECTION_NOT_FOUND, HTTP_STATUS.NOT_FOUND, 'errors.collectionNotFound');
+			throw new AppError(
+				ERROR_MESSAGES.COLLECTION_NOT_FOUND,
+				HTTP_STATUS.NOT_FOUND,
+				'errors.collectionNotFound'
+			);
 		res.json({ success: true, data: updated });
 	})
 );
@@ -56,7 +69,11 @@ router.delete(
 	asyncHandler(async (req, res) => {
 		const deleted = await Collection.findByIdAndDelete(req.params.id);
 		if (!deleted)
-			throw new AppError(ERROR_MESSAGES.COLLECTION_NOT_FOUND, HTTP_STATUS.NOT_FOUND, 'errors.collectionNotFound');
+			throw new AppError(
+				ERROR_MESSAGES.COLLECTION_NOT_FOUND,
+				HTTP_STATUS.NOT_FOUND,
+				'errors.collectionNotFound'
+			);
 		res.json({ success: true, message: 'Collection deleted' });
 	})
 );
@@ -65,58 +82,76 @@ module.exports = router;
 
 // PATCH /api/collections/:id/surveys - update surveyIds
 router.patch(
-  '/collections/:id/surveys',
-  asyncHandler(async (req, res) => {
-    const { surveyIds } = collectionSurveysUpdateSchema.parse(req.body);
-    const updated = await Collection.findByIdAndUpdate(
-      req.params.id,
-      { surveyIds },
-      { new: true }
-    );
-    if (!updated)
-      throw new AppError(ERROR_MESSAGES.COLLECTION_NOT_FOUND, HTTP_STATUS.NOT_FOUND, 'errors.collectionNotFound');
-    res.json({ success: true, data: updated });
-  })
+	'/collections/:id/surveys',
+	asyncHandler(async (req, res) => {
+		const { surveyIds } = collectionSurveysUpdateSchema.parse(req.body);
+		const updated = await Collection.findByIdAndUpdate(
+			req.params.id,
+			{ surveyIds },
+			{ new: true }
+		);
+		if (!updated)
+			throw new AppError(
+				ERROR_MESSAGES.COLLECTION_NOT_FOUND,
+				HTTP_STATUS.NOT_FOUND,
+				'errors.collectionNotFound'
+			);
+		res.json({ success: true, data: updated });
+	})
 );
 
 // GET /api/collections/:id/stats - basic aggregated stats
 router.get(
-  '/collections/:id/stats',
-  asyncHandler(async (req, res) => {
-    const item = await Collection.findById(req.params.id).lean();
-    if (!item)
-      throw new AppError(ERROR_MESSAGES.COLLECTION_NOT_FOUND, HTTP_STATUS.NOT_FOUND, 'errors.collectionNotFound');
+	'/collections/:id/stats',
+	asyncHandler(async (req, res) => {
+		const item = await Collection.findById(req.params.id).lean();
+		if (!item)
+			throw new AppError(
+				ERROR_MESSAGES.COLLECTION_NOT_FOUND,
+				HTTP_STATUS.NOT_FOUND,
+				'errors.collectionNotFound'
+			);
 
-    const surveyIds = (item.surveyIds || []).map(String);
-    const totalSurveys = surveyIds.length;
+		const surveyIds = (item.surveyIds || []).map(String);
+		const totalSurveys = surveyIds.length;
 
-    let totalQuestions = 0;
-    let lastActivity = null;
+		let totalQuestions = 0;
+		let lastActivity = null;
 
-    if (totalSurveys > 0) {
-      const surveys = await Survey.find({ _id: { $in: surveyIds } }, { questions: 1, updatedAt: 1 }).lean();
-      totalQuestions = surveys.reduce((sum, s) => sum + ((s.questions || []).length), 0);
-      const surveyUpdated = surveys.map(s => s.updatedAt).filter(Boolean);
+		if (totalSurveys > 0) {
+			const surveys = await Survey.find(
+				{ _id: { $in: surveyIds } },
+				{ questions: 1, updatedAt: 1 }
+			).lean();
+			totalQuestions = surveys.reduce((sum, s) => sum + (s.questions || []).length, 0);
+			const surveyUpdated = surveys.map(s => s.updatedAt).filter(Boolean);
 
-      const responses = await Response.find({ surveyId: { $in: surveyIds } }, { updatedAt: 1 }).lean();
-      const responseUpdated = responses.map(r => r.updatedAt).filter(Boolean);
+			const responses = await Response.find(
+				{ surveyId: { $in: surveyIds } },
+				{ updatedAt: 1 }
+			).lean();
+			const responseUpdated = responses.map(r => r.updatedAt).filter(Boolean);
 
-      const allDates = [...surveyUpdated, ...responseUpdated].map(d => new Date(d).getTime()).filter(n => !isNaN(n));
-      if (allDates.length > 0) {
-        lastActivity = new Date(Math.max(...allDates)).toISOString();
-      }
-    }
+			const allDates = [...surveyUpdated, ...responseUpdated]
+				.map(d => new Date(d).getTime())
+				.filter(n => !isNaN(n));
+			if (allDates.length > 0) {
+				lastActivity = new Date(Math.max(...allDates)).toISOString();
+			}
+		}
 
-    const totalResponses = await Response.countDocuments(totalSurveys > 0 ? { surveyId: { $in: surveyIds } } : {});
+		const totalResponses = await Response.countDocuments(
+			totalSurveys > 0 ? { surveyId: { $in: surveyIds } } : {}
+		);
 
-    res.json({
-      success: true,
-      data: {
-        totalSurveys,
-        totalQuestions,
-        totalResponses,
-        lastActivity,
-      },
-    });
-  })
+		res.json({
+			success: true,
+			data: {
+				totalSurveys,
+				totalQuestions,
+				totalResponses,
+				lastActivity,
+			},
+		});
+	})
 );

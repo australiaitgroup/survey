@@ -55,7 +55,9 @@ const CreateSurveyModal: React.FC = () => {
 		},
 		{
 			value: SURVEY_TYPE.LIVE_QUIZ,
-			label: t('createModal.surveyTypes.live_quiz.label', { defaultValue: 'Kahoot (Live Quiz)' }),
+			label: t('createModal.surveyTypes.live_quiz.label', {
+				defaultValue: 'Kahoot (Live Quiz)',
+			}),
 			icon: PuzzlePieceIcon,
 			description: t('createModal.surveyTypes.live_quiz.description', {
 				defaultValue: 'Interactive real-time quiz mode',
@@ -75,7 +77,7 @@ const CreateSurveyModal: React.FC = () => {
 			name: publicBank.title,
 			questions: Array(publicBank.questionCount).fill(null), // Create array with correct length
 			isPublic: true,
-		}))
+		})),
 	];
 
 	if (!showCreateModal) return null;
@@ -87,10 +89,14 @@ const CreateSurveyModal: React.FC = () => {
 				if (value === SURVEY_TYPE.SURVEY) {
 					// For survey type, keep existing navigationMode or default to step-by-step
 					const current =
-						(prev.navigationMode as 'step-by-step' | 'one-question-per-page' | undefined) ||
-						'step-by-step';
+						(prev.navigationMode as
+							| 'step-by-step'
+							| 'one-question-per-page'
+							| undefined) || 'step-by-step';
 					const nextNav: 'step-by-step' | 'one-question-per-page' =
-						current === 'one-question-per-page' ? 'one-question-per-page' : 'step-by-step';
+						current === 'one-question-per-page'
+							? 'one-question-per-page'
+							: 'step-by-step';
 					return { ...prev, type: SURVEY_TYPE.SURVEY, navigationMode: nextNav };
 				} else {
 					// For assessment types, always use step-by-step
@@ -125,8 +131,7 @@ const CreateSurveyModal: React.FC = () => {
 	};
 
 	const isAssessmentType =
-		newSurvey.type === SURVEY_TYPE.ASSESSMENT ||
-		newSurvey.type === SURVEY_TYPE.LIVE_QUIZ;
+		newSurvey.type === SURVEY_TYPE.ASSESSMENT || newSurvey.type === SURVEY_TYPE.LIVE_QUIZ;
 
 	const handleMultiBankSave = (config: MultiQuestionBankConfig[]) => {
 		setNewSurvey(prev => ({ ...prev, multiQuestionBankConfig: config }));

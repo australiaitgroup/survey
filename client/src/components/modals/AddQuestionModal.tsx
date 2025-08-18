@@ -29,10 +29,10 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 	onRemoveOption,
 	loading = false,
 }) => {
-    const { t, i18n } = useTranslation('admin');
-    React.useEffect(() => {
-        i18n.loadNamespaces(['admin', 'translation', 'question', 'survey']).catch(() => {});
-    }, [i18n]);
+	const { t, i18n } = useTranslation('admin');
+	React.useEffect(() => {
+		i18n.loadNamespaces(['admin', 'translation', 'question', 'survey']).catch(() => {});
+	}, [i18n]);
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		onSubmit(form);
@@ -60,15 +60,13 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 			} else {
 				// Add to correct answers
 				if (Array.isArray(form.correctAnswer)) {
-					newCorrectAnswer = [
-						...(form.correctAnswer as number[]),
-						optionIndex,
-					].sort((a: number, b: number) => a - b);
+					newCorrectAnswer = [...(form.correctAnswer as number[]), optionIndex].sort(
+						(a: number, b: number) => a - b
+					);
 				} else if (form.correctAnswer !== undefined) {
-					newCorrectAnswer = [
-						form.correctAnswer as number,
-						optionIndex,
-					].sort((a: number, b: number) => a - b);
+					newCorrectAnswer = [form.correctAnswer as number, optionIndex].sort(
+						(a: number, b: number) => a - b
+					);
 				} else {
 					newCorrectAnswer = [optionIndex];
 				}
@@ -108,15 +106,15 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 		return getValidationErrors().length === 0;
 	};
 
-    return (
+	return (
 		<Drawer
 			show={isOpen}
 			onClose={onClose}
-            title={t('questionBanks.addQuestion', 'Add New Question')}
+			title={t('questionBanks.addQuestion', 'Add New Question')}
 			actions={
 				<div className='flex justify-end gap-3'>
-                    <button type='button' onClick={onClose} className='btn-secondary'>
-                        {i18n.t('buttons.cancel', { ns: 'translation', defaultValue: 'Cancel' })}
+					<button type='button' onClick={onClose} className='btn-secondary'>
+						{i18n.t('buttons.cancel', { ns: 'translation', defaultValue: 'Cancel' })}
 					</button>
 					<button
 						type='submit'
@@ -124,7 +122,9 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 						className='btn-primary'
 						disabled={!isFormValid() || loading}
 					>
-                        {loading ? t('questionBanks.adding', 'Adding...') : t('questionBanks.addQuestion', 'Add Question')}
+						{loading
+							? t('questionBanks.adding', 'Adding...')
+							: t('questionBanks.addQuestion', 'Add Question')}
 					</button>
 				</div>
 			}
@@ -136,12 +136,12 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 					<div className='space-y-6'>
 						{/* Question Text */}
 						<div>
-                            <label className='block text-sm font-medium text-gray-700 mb-2'>
-                                {t('question.textRequired', 'Question Text *')}
-                            </label>
+							<label className='block text-sm font-medium text-gray-700 mb-2'>
+								{t('question.textRequired', 'Question Text *')}
+							</label>
 							<textarea
 								className='input-field w-full'
-                                placeholder={t('question.enterText', 'Enter question text')}
+								placeholder={t('question.enterText', 'Enter question text')}
 								value={form.text}
 								onChange={e => onChange('text', e.target.value)}
 								rows={3}
@@ -156,29 +156,88 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 							</label>
 							<div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
 								{[
-									{ value: 'single_choice', label: i18n.t('type.singleChoice', { ns: 'question', defaultValue: 'Single Choice' }), description: t('questionBanks.hint.singleChoice', 'Students can select only one correct answer'), Icon: ListBulletIcon },
-									{ value: 'multiple_choice', label: i18n.t('type.multipleChoice', { ns: 'question', defaultValue: 'Multiple Choice' }), description: t('questionBanks.hint.multipleChoice', 'Students can select multiple correct answers'), Icon: Squares2X2Icon },
-									{ value: 'short_text', label: i18n.t('type.shortText', { ns: 'question', defaultValue: 'Short Text' }), description: t('questionBanks.hint.shortText', 'Students can enter a text response'), Icon: PencilSquareIcon },
+									{
+										value: 'single_choice',
+										label: i18n.t('type.singleChoice', {
+											ns: 'question',
+											defaultValue: 'Single Choice',
+										}),
+										description: t(
+											'questionBanks.hint.singleChoice',
+											'Students can select only one correct answer'
+										),
+										Icon: ListBulletIcon,
+									},
+									{
+										value: 'multiple_choice',
+										label: i18n.t('type.multipleChoice', {
+											ns: 'question',
+											defaultValue: 'Multiple Choice',
+										}),
+										description: t(
+											'questionBanks.hint.multipleChoice',
+											'Students can select multiple correct answers'
+										),
+										Icon: Squares2X2Icon,
+									},
+									{
+										value: 'short_text',
+										label: i18n.t('type.shortText', {
+											ns: 'question',
+											defaultValue: 'Short Text',
+										}),
+										description: t(
+											'questionBanks.hint.shortText',
+											'Students can enter a text response'
+										),
+										Icon: PencilSquareIcon,
+									},
 								].map(option => {
 									const isSelected = form.type === option.value;
 									const Icon = option.Icon as any;
 									return (
-										<label key={option.value} className={`relative block border rounded-lg p-4 cursor-pointer transition-all ${isSelected ? 'border-blue-500 ring-2 ring-blue-200 bg-blue-50' : 'border-gray-300 hover:border-blue-400'}`}>
-											<input type='radio' name='question-type' value={option.value} checked={isSelected} onChange={() => onChange('type', option.value)} className='sr-only' />
+										<label
+											key={option.value}
+											className={`relative block border rounded-lg p-4 cursor-pointer transition-all ${isSelected ? 'border-blue-500 ring-2 ring-blue-200 bg-blue-50' : 'border-gray-300 hover:border-blue-400'}`}
+										>
+											<input
+												type='radio'
+												name='question-type'
+												value={option.value}
+												checked={isSelected}
+												onChange={() => onChange('type', option.value)}
+												className='sr-only'
+											/>
 											<div className='flex items-start gap-3'>
-												<div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isSelected ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
+												<div
+													className={`w-10 h-10 rounded-lg flex items-center justify-center ${isSelected ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}
+												>
 													<Icon className='w-6 h-6' />
 												</div>
 												<div>
-													<div className={`text-sm font-medium ${isSelected ? 'text-blue-700' : 'text-gray-900'}`}>{option.label}</div>
-													<div className='text-xs text-gray-500 mt-1'>{option.description}</div>
+													<div
+														className={`text-sm font-medium ${isSelected ? 'text-blue-700' : 'text-gray-900'}`}
+													>
+														{option.label}
+													</div>
+													<div className='text-xs text-gray-500 mt-1'>
+														{option.description}
+													</div>
 												</div>
 											</div>
 											{isSelected && (
 												<div className='absolute top-2 right-2'>
 													<div className='w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center'>
-														<svg className='w-2.5 h-2.5 text-white' fill='currentColor' viewBox='0 0 20 20'>
-															<path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
+														<svg
+															className='w-2.5 h-2.5 text-white'
+															fill='currentColor'
+															viewBox='0 0 20 20'
+														>
+															<path
+																fillRule='evenodd'
+																d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
+																clipRule='evenodd'
+															/>
 														</svg>
 													</div>
 												</div>
@@ -191,27 +250,39 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 
 						{/* Question Description (Rich Text) */}
 						<div>
-                            <label className='block text-sm font-medium text-gray-700 mb-2'>
-                                {t('question.descriptionOptional', 'Question Description (Optional)')}
-                            </label>
+							<label className='block text-sm font-medium text-gray-700 mb-2'>
+								{t(
+									'question.descriptionOptional',
+									'Question Description (Optional)'
+								)}
+							</label>
 							<SimpleQuillEditor
 								value={form.description || ''}
 								onChange={value => onChange('description', value)}
-                                placeholder={t('question.descriptionPlaceholder', 'Enter scenario or context for the question...')}
+								placeholder={t(
+									'question.descriptionPlaceholder',
+									'Enter scenario or context for the question...'
+								)}
 								className='w-full'
 							/>
 						</div>
 
 						{/* Description Image */}
 						<div>
-                            <label className='block text-sm font-medium text-gray-700 mb-2'>
-                                {t('question.descriptionImageOptional', 'Description Image (Optional)')}
-                            </label>
+							<label className='block text-sm font-medium text-gray-700 mb-2'>
+								{t(
+									'question.descriptionImageOptional',
+									'Description Image (Optional)'
+								)}
+							</label>
 							<ImageUpload
 								imageUrl={form.descriptionImage || null}
 								onImageUpload={url => onChange('descriptionImage', url)}
 								onImageRemove={() => onChange('descriptionImage', '')}
-                                placeholder={t('question.descriptionImagePlaceholder', 'Upload image to illustrate question content')}
+								placeholder={t(
+									'question.descriptionImagePlaceholder',
+									'Upload image to illustrate question content'
+								)}
 								uploadMethod='cloudinary'
 								className='w-full'
 							/>
@@ -224,13 +295,19 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 						{/* Answer Configuration for Short Text */}
 						{form.type === 'short_text' && (
 							<div>
-                                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                                    {t('question.expectedAnswerOptional', 'Expected Answer (Optional)')}
-                                </label>
+								<label className='block text-sm font-medium text-gray-700 mb-2'>
+									{t(
+										'question.expectedAnswerOptional',
+										'Expected Answer (Optional)'
+									)}
+								</label>
 								<input
 									type='text'
 									className='input-field w-full'
-                                    placeholder={t('question.expectedAnswerPlaceholder', 'Enter expected answer for scoring (optional)')}
+									placeholder={t(
+										'question.expectedAnswerPlaceholder',
+										'Enter expected answer for scoring (optional)'
+									)}
 									value={
 										typeof form.correctAnswer === 'string'
 											? form.correctAnswer
@@ -253,9 +330,12 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 								return text.trim();
 							}).length >= 2 && (
 							<div>
-                                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                                        {t('question.selectCorrectAnswers', 'Select Correct Answer(s) *')}
-                                </label>
+								<label className='block text-sm font-medium text-gray-700 mb-2'>
+									{t(
+										'question.selectCorrectAnswers',
+										'Select Correct Answer(s) *'
+									)}
+								</label>
 								<div className='space-y-2'>
 									{form.options.map((opt, idx) => {
 										const optionText =
@@ -292,14 +372,23 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 													)}
 												</button>
 												<div className='flex-1'>
-                                                        <span className='text-sm text-gray-700'>
-                                                            {optionText || t('question.optionIndex', 'Option {{index}}', { index: idx + 1 })}
-                                                        </span>
+													<span className='text-sm text-gray-700'>
+														{optionText ||
+																t(
+																	'question.optionIndex',
+																	'Option {{index}}',
+																	{ index: idx + 1 }
+																)}
+													</span>
 													{optionImageUrl && (
 														<div className='mt-1'>
 															<img
 																src={optionImageUrl}
-                                                                alt={t('question.optionIndex', 'Option {{index}}', { index: idx + 1 })}
+																alt={t(
+																	'question.optionIndex',
+																	'Option {{index}}',
+																	{ index: idx + 1 }
+																)}
 																className='w-16 h-16 object-cover rounded border border-gray-300'
 															/>
 														</div>
@@ -310,22 +399,31 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 									})}
 								</div>
 								<div className='text-xs text-gray-500 mt-1'>
-                                        {form.type === 'single_choice'
-                                            ? t('questionBanks.hint.selectSingle', 'Click to select the single correct answer')
-                                            : t('questionBanks.hint.selectMultiple', 'Click the checkboxes to select multiple correct answers')}
+									{form.type === 'single_choice'
+										? t(
+											'questionBanks.hint.selectSingle',
+											'Click to select the single correct answer'
+										)
+										: t(
+											'questionBanks.hint.selectMultiple',
+											'Click the checkboxes to select multiple correct answers'
+										)}
 								</div>
 							</div>
 						)}
 
 						{/* Points */}
 						<div>
-                            <label className='block text-sm font-medium text-gray-700 mb-2'>
-                                {t('question.points', 'Points')}
-                            </label>
+							<label className='block text-sm font-medium text-gray-700 mb-2'>
+								{t('question.points', 'Points')}
+							</label>
 							<input
 								type='number'
 								className='input-field w-full'
-                                placeholder={t('question.pointsPlaceholder', 'Points for this question')}
+								placeholder={t(
+									'question.pointsPlaceholder',
+									'Points for this question'
+								)}
 								value={form.points || ''}
 								onChange={e =>
 									onChange(
@@ -336,39 +434,54 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 								min='1'
 								max='100'
 							/>
-                                <div className='text-xs text-gray-500 mt-1'>
-                                {t('question.pointsHelp', 'Points awarded for answering this question correctly')}
-                            </div>
+							<div className='text-xs text-gray-500 mt-1'>
+								{t(
+									'question.pointsHelp',
+									'Points awarded for answering this question correctly'
+								)}
+							</div>
 						</div>
 
 						{/* Difficulty */}
 						<div>
-                            <label className='block text-sm font-medium text-gray-700 mb-2'>
-                                {t('question.difficulty', 'Difficulty')}
-                            </label>
+							<label className='block text-sm font-medium text-gray-700 mb-2'>
+								{t('question.difficulty', 'Difficulty')}
+							</label>
 							<select
 								className='input-field w-full'
 								value={form.difficulty || 'medium'}
 								onChange={e => onChange('difficulty', e.target.value)}
 							>
-								<option value='easy'>{t('question.difficulty.easy', 'Easy')}</option>
-								<option value='medium'>{t('question.difficulty.medium', 'Medium')}</option>
-								<option value='hard'>{t('question.difficulty.hard', 'Hard')}</option>
+								<option value='easy'>
+									{t('question.difficulty.easy', 'Easy')}
+								</option>
+								<option value='medium'>
+									{t('question.difficulty.medium', 'Medium')}
+								</option>
+								<option value='hard'>
+									{t('question.difficulty.hard', 'Hard')}
+								</option>
 							</select>
-                            <div className='text-xs text-gray-500 mt-1'>
-                                {t('question.difficultyHelp', 'Set the difficulty level for this question')}
-                            </div>
+							<div className='text-xs text-gray-500 mt-1'>
+								{t(
+									'question.difficultyHelp',
+									'Set the difficulty level for this question'
+								)}
+							</div>
 						</div>
 
 						{/* Tags */}
 						<div>
-                            <label className='block text-sm font-medium text-gray-700 mb-2'>
-                                {t('question.tags', 'Tags (Optional)')}
-                            </label>
+							<label className='block text-sm font-medium text-gray-700 mb-2'>
+								{t('question.tags', 'Tags (Optional)')}
+							</label>
 							<input
 								type='text'
 								className='input-field w-full'
-                                placeholder={t('question.tagsPlaceholder', 'Enter tags separated by commas')}
+								placeholder={t(
+									'question.tagsPlaceholder',
+									'Enter tags separated by commas'
+								)}
 								value={form.tags ? form.tags.join(', ') : ''}
 								onChange={e => {
 									const tagString = e.target.value;
@@ -379,26 +492,35 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 									onChange('tags', tags);
 								}}
 							/>
-                            <div className='text-xs text-gray-500 mt-1'>
-                                {t('question.tagsHelp', 'Add tags to help organize and filter questions')}
-                            </div>
+							<div className='text-xs text-gray-500 mt-1'>
+								{t(
+									'question.tagsHelp',
+									'Add tags to help organize and filter questions'
+								)}
+							</div>
 						</div>
 
 						{/* Explanation */}
 						<div>
-                            <label className='block text-sm font-medium text-gray-700 mb-2'>
-                                {t('question.explanation', 'Answer Explanation (Optional)')}
-                            </label>
+							<label className='block text-sm font-medium text-gray-700 mb-2'>
+								{t('question.explanation', 'Answer Explanation (Optional)')}
+							</label>
 							<textarea
 								className='input-field w-full'
 								rows={3}
-                                placeholder={t('question.explanationPlaceholder', 'Explain why this is the correct answer')}
+								placeholder={t(
+									'question.explanationPlaceholder',
+									'Explain why this is the correct answer'
+								)}
 								value={form.explanation || ''}
 								onChange={e => onChange('explanation', e.target.value)}
 							/>
-                            <div className='text-xs text-gray-500 mt-1'>
-                                {t('question.explanationHelp', 'Provide explanation to help users understand the correct answer')}
-                            </div>
+							<div className='text-xs text-gray-500 mt-1'>
+								{t(
+									'question.explanationHelp',
+									'Provide explanation to help users understand the correct answer'
+								)}
+							</div>
 						</div>
 					</div>
 
@@ -408,15 +530,15 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 						{form.type !== 'short_text' && (
 							<div>
 								<div className='flex items-center justify-between mb-4'>
-                                    <label className='block text-lg font-medium text-gray-700'>
-                                        {t('question.optionsManagement', 'Options Management')}
-                                    </label>
+									<label className='block text-lg font-medium text-gray-700'>
+										{t('question.optionsManagement', 'Options Management')}
+									</label>
 									<button
 										className='btn-primary btn-small'
 										onClick={onAddOption}
 										type='button'
 									>
-                                        + {t('question.addOption', 'Add Option')}
+										+ {t('question.addOption', 'Add Option')}
 									</button>
 								</div>
 								{form.options && form.options.length > 0 ? (
@@ -437,12 +559,20 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 													className='border border-gray-200 rounded-lg p-4 space-y-3 bg-gray-50'
 												>
 													<div className='flex items-center gap-2'>
-                                                        <span className='text-sm font-medium text-gray-500 min-w-[80px]'>
-                                                            {t('question.optionIndex', 'Option {{index}}', { index: index + 1 })}
-                                                        </span>
+														<span className='text-sm font-medium text-gray-500 min-w-[80px]'>
+															{t(
+																'question.optionIndex',
+																'Option {{index}}',
+																{ index: index + 1 }
+															)}
+														</span>
 														<input
 															className='input-field flex-1'
-                                                            placeholder={t('question.enterOptionIndex', 'Enter option {{index}} text', { index: index + 1 })}
+															placeholder={t(
+																'question.enterOptionIndex',
+																'Enter option {{index}} text',
+																{ index: index + 1 }
+															)}
 															value={optionText}
 															onChange={e => {
 																const newOption =
@@ -459,21 +589,27 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 														{form.options &&
 															form.options.length > 2 && (
 															<button
-                                                                className='btn-secondary btn-small text-red-600 hover:bg-red-50'
+																className='btn-secondary btn-small text-red-600 hover:bg-red-50'
 																onClick={() =>
 																	onRemoveOption(index)
 																}
 																type='button'
 															>
-                                                                {i18n.t('buttons.delete', { ns: 'translation', defaultValue: 'Delete' })}
+																{i18n.t('buttons.delete', {
+																	ns: 'translation',
+																	defaultValue: 'Delete',
+																})}
 															</button>
 														)}
 													</div>
 
 													<div>
-                                                            <label className='block text-xs font-medium text-gray-600 mb-2'>
-                                                            {t('question.optionImageOptional', 'Option Image (Optional)')}
-                                                        </label>
+														<label className='block text-xs font-medium text-gray-600 mb-2'>
+															{t(
+																'question.optionImageOptional',
+																'Option Image (Optional)'
+															)}
+														</label>
 														<ImageUpload
 															imageUrl={optionImageUrl || null}
 															onImageUpload={url => {
@@ -499,7 +635,10 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 																		};
 																onOptionChange(index, newOption);
 															}}
-                                                            placeholder={t('question.optionImagePlaceholder', 'Add image for this option')}
+															placeholder={t(
+																'question.optionImagePlaceholder',
+																'Add image for this option'
+															)}
 															uploadMethod='cloudinary'
 															className='w-full'
 														/>
@@ -509,7 +648,7 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 										})}
 
 										{/* Add Option Button at Bottom */}
-                                        <div className='flex justify-center pt-2'>
+										<div className='flex justify-center pt-2'>
 											<button
 												className='btn-outline btn-small flex items-center gap-2'
 												onClick={onAddOption}
@@ -528,17 +667,20 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 														d='M12 6v6m0 0v6m0-6h6m-6 0H6'
 													/>
 												</svg>
-                                                {t('question.addOption', 'Add Option')}
+												{t('question.addOption', 'Add Option')}
 											</button>
 										</div>
 									</div>
 								) : (
-                                    <div className='text-gray-500 text-sm p-6 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50'>
+									<div className='text-gray-500 text-sm p-6 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50'>
 										<div className='mb-2'>📝</div>
-                                            <div>{t('question.noOptions', 'No options added yet')}</div>
-                                            <div className='text-xs mt-1'>
-                                                {t('question.noOptionsHelp', 'Click "Add Option" to start creating answer choices')}
-                                            </div>
+										<div>{t('question.noOptions', 'No options added yet')}</div>
+										<div className='text-xs mt-1'>
+											{t(
+												'question.noOptionsHelp',
+												'Click "Add Option" to start creating answer choices'
+											)}
+										</div>
 									</div>
 								)}
 							</div>
@@ -546,12 +688,15 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 
 						{/* Short Text Type Info */}
 						{form.type === 'short_text' && (
-                            <div className='text-gray-500 text-sm p-6 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50'>
+							<div className='text-gray-500 text-sm p-6 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50'>
 								<div className='mb-2'>✍️</div>
-                                <div>{t('question.shortText', 'Short Text Question')}</div>
-                                <div className='text-xs mt-1'>
-                                    {t('question.shortTextHelp', 'Users will be able to enter their own text response')}
-                                </div>
+								<div>{t('question.shortText', 'Short Text Question')}</div>
+								<div className='text-xs mt-1'>
+									{t(
+										'question.shortTextHelp',
+										'Users will be able to enter their own text response'
+									)}
+								</div>
 							</div>
 						)}
 					</div>

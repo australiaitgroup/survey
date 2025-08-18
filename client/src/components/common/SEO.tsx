@@ -19,10 +19,10 @@ const SEO: React.FC<SEOProps> = ({ title, description, openGraph }) => {
 			let el = document.head.querySelector<HTMLMetaElement>(selector);
 			if (!el) {
 				el = document.createElement('meta');
-				if (selector.startsWith("meta[name=")) {
+				if (selector.startsWith('meta[name=')) {
 					const name = selector.match(/meta\[name=['\"]([^'\"]+)/);
 					if (name && name[1]) el.setAttribute('name', name[1]);
-				} else if (selector.startsWith("meta[property=")) {
+				} else if (selector.startsWith('meta[property=')) {
 					const prop = selector.match(/meta\[property=['\"]([^'\"]+)/);
 					if (prop && prop[1]) el.setAttribute('property', prop[1]);
 				}

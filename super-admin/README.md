@@ -84,6 +84,7 @@ npm run clean
 ### Development Server
 
 The development server runs on `http://localhost:3000` with:
+
 - Hot Module Replacement (HMR)
 - TypeScript compilation
 - Real-time error reporting
@@ -93,27 +94,27 @@ The development server runs on `http://localhost:3000` with:
 ### ✅ Completed Features
 
 - **Companies Management**
-  - Company list with filtering and pagination
-  - Company detail view with user management
-  - Status modification (active/suspended/pending)
-  - Plan information display
-  - User list for each company
+    - Company list with filtering and pagination
+    - Company detail view with user management
+    - Status modification (active/suspended/pending)
+    - Plan information display
+    - User list for each company
 
 - **Public Banks Management**
-  - Banks list with CRUD operations
-  - Question management with drawer interface
-  - CSV import/export functionality
-  - Usage statistics and analytics
+    - Banks list with CRUD operations
+    - Question management with drawer interface
+    - CSV import/export functionality
+    - Usage statistics and analytics
 
 - **System Overview**
-  - Real-time statistics dashboard
-  - Growth charts and metrics
-  - System health indicators
+    - Real-time statistics dashboard
+    - Growth charts and metrics
+    - System health indicators
 
 - **Authentication & Authorization**
-  - JWT-based authentication
-  - Super Admin role protection
-  - Cross-tenant access controls
+    - JWT-based authentication
+    - Super Admin role protection
+    - Cross-tenant access controls
 
 ### 🚧 In Progress
 
@@ -176,6 +177,7 @@ npm run build
 ```
 
 Generates optimized static files in `dist/` directory with:
+
 - TypeScript compilation
 - Asset bundling and optimization
 - Code splitting

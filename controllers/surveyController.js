@@ -24,7 +24,25 @@ async function submitSurveyResponse(req, res) {
 			metadata: {
 				userAgent: req.get('User-Agent'),
 				ipAddress: req.ip || req.connection.remoteAddress,
-				deviceType: req.get('User-Agent')?.includes('Mobile') ? 'mobile' : 'desktop',
+				deviceType: (() => {
+					const userAgent = (req.get('User-Agent') || '').toLowerCase();
+					if (
+						userAgent.includes('mobile') ||
+						userAgent.includes('android') ||
+						userAgent.includes('iphone')
+					) {
+						return 'mobile';
+					} else if (userAgent.includes('tablet') || userAgent.includes('ipad')) {
+						return 'tablet';
+					} else if (
+						userAgent.includes('windows') ||
+						userAgent.includes('mac') ||
+						userAgent.includes('linux')
+					) {
+						return 'desktop';
+					}
+					return 'unknown';
+				})(),
 			},
 		};
 
@@ -60,26 +78,28 @@ async function processMultiQuestionBankConfig(config, userId) {
 		let questionBank;
 		let bankName;
 		let availableQuestions;
-		
+
 		if (bankConfig.isPublic) {
 			// Handle public banks
 			questionBank = await PublicBank.findOne({
 				_id: bankConfig.questionBankId,
 				isActive: true,
-				isPublished: true
+				isPublished: true,
 			});
-			
+
 			if (!questionBank) {
-				throw new Error(`Public question bank with ID ${bankConfig.questionBankId} not found`);
+				throw new Error(
+					`Public question bank with ID ${bankConfig.questionBankId} not found`
+				);
 			}
-			
+
 			// Check if user has access to this public bank
 			const user = await User.findById(userId).select('companyId subscription');
 			let hasAccess = false;
-			
+
 			if (user && user.companyId) {
 				hasAccess = await Entitlement.hasAccess(user.companyId, questionBank._id);
-				
+
 				// Also check if it's free or user has premium subscription
 				if (!hasAccess) {
 					if (questionBank.type === 'free') {
@@ -89,11 +109,13 @@ async function processMultiQuestionBankConfig(config, userId) {
 					}
 				}
 			}
-			
+
 			if (!hasAccess) {
-				throw new Error(`You do not have access to public question bank "${questionBank.title}"`);
+				throw new Error(
+					`You do not have access to public question bank "${questionBank.title}"`
+				);
 			}
-			
+
 			bankName = questionBank.title;
 			availableQuestions = questionBank.questions;
 		} else {
@@ -102,7 +124,7 @@ async function processMultiQuestionBankConfig(config, userId) {
 			if (!questionBank) {
 				throw new Error(`Question bank with ID ${bankConfig.questionBankId} not found`);
 			}
-			
+
 			bankName = questionBank.name;
 			availableQuestions = questionBank.questions;
 		}
@@ -142,26 +164,28 @@ async function processSelectedQuestions(selectedQuestions, userId) {
 		let questionBank;
 		let question;
 		let bankName;
-		
+
 		if (selection.isPublic) {
 			// Handle public banks
 			questionBank = await PublicBank.findOne({
 				_id: selection.questionBankId,
 				isActive: true,
-				isPublished: true
+				isPublished: true,
 			});
-			
+
 			if (!questionBank) {
-				throw new Error(`Public question bank with ID ${selection.questionBankId} not found`);
+				throw new Error(
+					`Public question bank with ID ${selection.questionBankId} not found`
+				);
 			}
-			
+
 			// Check if user has access to this public bank
 			const user = await User.findById(userId).select('companyId subscription');
 			let hasAccess = false;
-			
+
 			if (user && user.companyId) {
 				hasAccess = await Entitlement.hasAccess(user.companyId, questionBank._id);
-				
+
 				// Also check if it's free or user has premium subscription
 				if (!hasAccess) {
 					if (questionBank.type === 'free') {
@@ -171,11 +195,13 @@ async function processSelectedQuestions(selectedQuestions, userId) {
 					}
 				}
 			}
-			
+
 			if (!hasAccess) {
-				throw new Error(`You do not have access to public question bank "${questionBank.title}"`);
+				throw new Error(
+					`You do not have access to public question bank "${questionBank.title}"`
+				);
 			}
-			
+
 			bankName = questionBank.title;
 			question = questionBank.questions.id(selection.questionId);
 		} else {
@@ -184,7 +210,7 @@ async function processSelectedQuestions(selectedQuestions, userId) {
 			if (!questionBank) {
 				throw new Error(`Question bank with ID ${selection.questionBankId} not found`);
 			}
-			
+
 			bankName = questionBank.name;
 			question = questionBank.questions.id(selection.questionId);
 		}

@@ -612,6 +612,7 @@ router.get(
 				createdAt: response.createdAt,
 				timeSpent: response.timeSpent || 0,
 				isAutoSubmit: response.isAutoSubmit || false,
+				metadata: response.metadata || {},
 			};
 
 			// Add score information for assessment/live_quiz types

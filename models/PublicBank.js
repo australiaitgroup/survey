@@ -15,7 +15,7 @@ const publicBankSchema = new mongoose.Schema({
 		trim: true,
 		maxlength: 1000,
 	},
-	
+
 	// Type and Pricing
 	type: {
 		type: String,
@@ -33,7 +33,7 @@ const publicBankSchema = new mongoose.Schema({
 		default: 'USD',
 		uppercase: true,
 	},
-	
+
 	// Content
 	questions: [
 		{
@@ -147,13 +147,15 @@ const publicBankSchema = new mongoose.Schema({
 		type: Number,
 		default: 0,
 	},
-	
+
 	// Categorization
-	tags: [{
-		type: String,
-		trim: true,
-		lowercase: true,
-	}],
+	tags: [
+		{
+			type: String,
+			trim: true,
+			lowercase: true,
+		},
+	],
 	category: {
 		type: String,
 		trim: true,
@@ -163,13 +165,15 @@ const publicBankSchema = new mongoose.Schema({
 		enum: ['beginner', 'intermediate', 'advanced', 'expert'],
 		default: 'intermediate',
 	},
-	
+
 	// Localization
-	locales: [{
-		type: String,
-		default: ['en'],
-	}],
-	
+	locales: [
+		{
+			type: String,
+			default: ['en'],
+		},
+	],
+
 	// Status and Visibility
 	isActive: {
 		type: Boolean,
@@ -179,7 +183,7 @@ const publicBankSchema = new mongoose.Schema({
 		type: Boolean,
 		default: false,
 	},
-	
+
 	// Usage Statistics
 	purchaseCount: {
 		type: Number,
@@ -189,7 +193,7 @@ const publicBankSchema = new mongoose.Schema({
 		type: Number,
 		default: 0,
 	},
-	
+
 	// Resale Configuration
 	allowResale: {
 		type: Boolean,
@@ -200,7 +204,7 @@ const publicBankSchema = new mongoose.Schema({
 		min: 0,
 		default: null,
 	},
-	
+
 	// Metadata
 	createdBy: {
 		type: mongoose.Schema.Types.ObjectId,
@@ -219,7 +223,7 @@ const publicBankSchema = new mongoose.Schema({
 		type: Date,
 		default: Date.now,
 	},
-	
+
 	// SEO and Display
 	slug: {
 		type: String,
@@ -232,10 +236,12 @@ const publicBankSchema = new mongoose.Schema({
 		type: String,
 		trim: true,
 	},
-	previewQuestions: [{
-		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Question',
-	}],
+	previewQuestions: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'Question',
+		},
+	],
 });
 
 // Indexes for efficient queries
@@ -247,9 +253,9 @@ publicBankSchema.index({ purchaseCount: -1 });
 publicBankSchema.index({ usageCount: -1 });
 
 // Pre-save middleware to update timestamps and generate slug
-publicBankSchema.pre('save', function(next) {
+publicBankSchema.pre('save', function (next) {
 	this.updatedAt = new Date();
-	
+
 	// Generate slug if not provided
 	if (!this.slug && this.title) {
 		const baseSlug = this.title
@@ -258,20 +264,20 @@ publicBankSchema.pre('save', function(next) {
 			.replace(/\s+/g, '-')
 			.replace(/-+/g, '-')
 			.replace(/^-|-$/g, '');
-		
+
 		this.slug = baseSlug;
 	}
-	
+
 	// Update question count
 	if (this.questions) {
 		this.questionCount = this.questions.length;
 	}
-	
+
 	next();
 });
 
 // Virtual for display price
-publicBankSchema.virtual('displayPrice').get(function() {
+publicBankSchema.virtual('displayPrice').get(function () {
 	if (this.type === 'free') {
 		return 'Free';
 	}
@@ -279,7 +285,7 @@ publicBankSchema.virtual('displayPrice').get(function() {
 });
 
 // Static method to find published banks
-publicBankSchema.statics.findPublished = function(filters = {}) {
+publicBankSchema.statics.findPublished = function (filters = {}) {
 	return this.find({
 		...filters,
 		isActive: true,
@@ -288,25 +294,25 @@ publicBankSchema.statics.findPublished = function(filters = {}) {
 };
 
 // Static method to get usage statistics
-publicBankSchema.statics.getUsageStats = function(bankId) {
+publicBankSchema.statics.getUsageStats = function (bankId) {
 	return Promise.all([
 		// Count companies that purchased this bank
 		mongoose.model('BankPurchase').countDocuments({ bankId }),
 		// Count surveys using this bank
-		mongoose.model('Survey').countDocuments({ 
-			'questionBanks.bankId': bankId 
+		mongoose.model('Survey').countDocuments({
+			'questionBanks.bankId': bankId,
 		}),
 	]);
 };
 
 // Instance method to increment usage
-publicBankSchema.methods.incrementUsage = function() {
+publicBankSchema.methods.incrementUsage = function () {
 	this.usageCount += 1;
 	return this.save();
 };
 
 // Instance method to increment purchase count
-publicBankSchema.methods.incrementPurchaseCount = function() {
+publicBankSchema.methods.incrementPurchaseCount = function () {
 	this.purchaseCount += 1;
 	return this.save();
 };

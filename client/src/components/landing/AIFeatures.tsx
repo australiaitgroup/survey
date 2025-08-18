@@ -32,8 +32,12 @@ const AIFeatures: React.FC = () => {
 								<div className='mb-4 inline-flex p-4 rounded-2xl bg-gradient-to-br from-[#6D28D9] to-[#9333EA] text-white shadow-lg'>
 									<Icon className='h-7 w-7' />
 								</div>
-								<h3 className='heading-sm mb-2'>{t(`landing.ai.${item.key}.title`)}</h3>
-								<p className='text-[#767676]'>{t(`landing.ai.${item.key}.description`)}</p>
+								<h3 className='heading-sm mb-2'>
+									{t(`landing.ai.${item.key}.title`)}
+								</h3>
+								<p className='text-[#767676]'>
+									{t(`landing.ai.${item.key}.description`)}
+								</p>
 							</div>
 						);
 					})}

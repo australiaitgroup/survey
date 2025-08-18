@@ -11,10 +11,10 @@ import {
 } from '@heroicons/react/24/outline';
 
 const Features: React.FC = () => {
-    const { t, i18n } = useTranslation('translation');
-    React.useEffect(() => {
-        i18n.loadNamespaces(['translation']).catch(() => {});
-    }, [i18n]);
+	const { t, i18n } = useTranslation('translation');
+	React.useEffect(() => {
+		i18n.loadNamespaces(['translation']).catch(() => {});
+	}, [i18n]);
 
 	const getFeatureImage = (index: number) => {
 		const images = [
@@ -73,9 +73,9 @@ const Features: React.FC = () => {
 			opacity: 1,
 			transition: {
 				staggerChildren: 0.3,
-				delayChildren: 0.2
-			}
-		}
+				delayChildren: 0.2,
+			},
+		},
 	};
 
 	const itemVariants = {
@@ -85,15 +85,15 @@ const Features: React.FC = () => {
 			y: 0,
 			transition: {
 				duration: 0.8,
-				ease: "easeOut"
-			}
-		}
+				ease: 'easeOut',
+			},
+		},
 	};
 
 	return (
 		<section className='py-24 bg-white'>
 			<div className='container mx-auto px-6 lg:px-8'>
-				<motion.div 
+				<motion.div
 					className='text-center mb-20'
 					initial={{ opacity: 0, y: 30 }}
 					whileInView={{ opacity: 1, y: 0 }}
@@ -103,12 +103,12 @@ const Features: React.FC = () => {
 					<h2 className='heading-lg mb-4'>{t('landing.features.title')}</h2>
 				</motion.div>
 
-				<motion.div 
+				<motion.div
 					className='space-y-32'
 					variants={containerVariants}
-					initial="hidden"
-					whileInView="visible"
-					viewport={{ once: true, margin: "-100px" }}
+					initial='hidden'
+					whileInView='visible'
+					viewport={{ once: true, margin: '-100px' }}
 				>
 					{features.map((feature, index) => {
 						const Icon = feature.icon;
@@ -122,7 +122,7 @@ const Features: React.FC = () => {
 									!isEven ? 'lg:flex-row-reverse' : ''
 								}`}
 							>
-								<motion.div 
+								<motion.div
 									className='flex-1'
 									initial={{ opacity: 0, x: isEven ? -50 : 50 }}
 									whileInView={{ opacity: 1, x: 0 }}
@@ -138,7 +138,7 @@ const Features: React.FC = () => {
 									>
 										<Icon className='h-8 w-8' />
 									</motion.div>
-									<motion.h3 
+									<motion.h3
 										className='heading-md mb-6'
 										initial={{ opacity: 0, y: 20 }}
 										whileInView={{ opacity: 1, y: 0 }}
@@ -147,7 +147,7 @@ const Features: React.FC = () => {
 									>
 										{t(`landing.features.${feature.key}.title`)}
 									</motion.h3>
-									<motion.p 
+									<motion.p
 										className='body-lg'
 										initial={{ opacity: 0, y: 20 }}
 										whileInView={{ opacity: 1, y: 0 }}
@@ -157,7 +157,7 @@ const Features: React.FC = () => {
 										{t(`landing.features.${feature.key}.description`)}
 									</motion.p>
 								</motion.div>
-								<motion.div 
+								<motion.div
 									className='flex-1'
 									initial={{ opacity: 0, x: isEven ? 50 : -50 }}
 									whileInView={{ opacity: 1, x: 0 }}
@@ -165,7 +165,7 @@ const Features: React.FC = () => {
 									transition={{ duration: 0.8, delay: 0.4 }}
 								>
 									<div className='relative group'>
-										<motion.div 
+										<motion.div
 											className='absolute inset-0 bg-gradient-to-br from-[#FF5A5F]/20 to-[#FC642D]/20 rounded-3xl transform rotate-2'
 											whileHover={{ rotate: 4, scale: 1.02 }}
 											transition={{ duration: 0.3 }}

@@ -15,7 +15,7 @@ const AssessmentResults: React.FC<AssessmentResultsProps> = ({
 	assessmentResults,
 	scoringResult,
 }) => {
-    const { t } = useTranslation('survey');
+	const { t } = useTranslation('survey');
 
 	if (!survey) return null;
 
@@ -32,24 +32,25 @@ const AssessmentResults: React.FC<AssessmentResultsProps> = ({
 							>
 								{scoringResult.passed ? '🎉' : '📊'}
 							</div>
-                            <h2 className='text-3xl font-bold text-gray-800 mb-2'>
-                                {scoringResult.passed
-                                    ? t('assessment.results.passed', 'Congratulations! You Passed!')
-                                    : t('assessment.results.title', 'Assessment Results')}
-                            </h2>
+							<h2 className='text-3xl font-bold text-gray-800 mb-2'>
+								{scoringResult.passed
+									? t('assessment.results.passed', 'Congratulations! You Passed!')
+									: t('assessment.results.title', 'Assessment Results')}
+							</h2>
 							<div className='space-y-2 mb-4'>
 								<div
 									className={`text-2xl font-bold ${scoringResult.passed ? 'text-green-600' : 'text-red-600'}`}
 								>
-                                    {scoringResult.scoringMode === 'percentage'
-                                        ? `${scoringResult.displayScore} ${t('assessment.points', 'points')}`
-                                        : `${scoringResult.displayScore} / ${scoringResult.maxPossiblePoints} ${t('assessment.points', 'points')}`}
+									{scoringResult.scoringMode === 'percentage'
+										? `${scoringResult.displayScore} ${t('assessment.points', 'points')}`
+										: `${scoringResult.displayScore} / ${scoringResult.maxPossiblePoints} ${t('assessment.points', 'points')}`}
 								</div>
 								<div className='text-sm text-gray-600'>
-                                    {scoringResult.scoringDescription}
+									{scoringResult.scoringDescription}
 								</div>
 								<div className='text-sm text-gray-600'>
-                                {t('assessment.correctAnswers', 'Correct answers')}: {scoringResult.correctAnswers} /{' '}
+									{t('assessment.correctAnswers', 'Correct answers')}:{' '}
+									{scoringResult.correctAnswers} /{' '}
 									{scoringResult.correctAnswers + scoringResult.wrongAnswers}
 								</div>
 							</div>
@@ -89,9 +90,12 @@ const AssessmentResults: React.FC<AssessmentResultsProps> = ({
 
 										{result.descriptionImage && (
 											<div className='mb-4'>
-                                                <img
+												<img
 													src={result.descriptionImage}
-                                                    alt={t('assessment.questionIllustration', 'Question illustration')}
+													alt={t(
+														'assessment.questionIllustration',
+														'Question illustration'
+													)}
 													className='max-w-full h-auto rounded-lg border border-gray-300'
 													onError={e => {
 														e.currentTarget.style.display = 'none';
@@ -102,15 +106,21 @@ const AssessmentResults: React.FC<AssessmentResultsProps> = ({
 
 										<div className='space-y-1 text-sm'>
 											<div className='text-gray-700 break-words'>
-                                                <span className='font-medium'>{t('assessment.yourAnswer', 'Your Answer')}:</span>{' '}
+												<span className='font-medium'>
+													{t('assessment.yourAnswer', 'Your Answer')}:
+												</span>{' '}
 												{result.userAnswer}
 											</div>
 											{!result.isCorrect &&
 											survey?.scoringSettings?.showCorrectAnswers && (
 												<div className='text-green-700 break-words'>
-                                                    <span className='font-medium'>
-                                                        {t('assessment.correctAnswer', 'Correct Answer')}:
-                                                    </span>{' '}
+													<span className='font-medium'>
+														{t(
+															'assessment.correctAnswer',
+															'Correct Answer'
+														)}
+														:
+													</span>{' '}
 													{result.correctAnswer}
 												</div>
 											)}

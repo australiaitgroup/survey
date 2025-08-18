@@ -28,7 +28,8 @@ async function run() {
 	const bankId = qb.data._id;
 
 	// 3) Prepare CSV content with description column
-	const csv = `questionText,description,type,options,correctAnswers,tags,explanation,points,difficulty,descriptionImage\n` +
+	const csv =
+		`questionText,description,type,options,correctAnswers,tags,explanation,points,difficulty,descriptionImage\n` +
 		`What is 2+2?,"**Context**: Basic math test.",single,2;3;4,2,"math,basic",Simple addition,1,easy,\n` +
 		`Describe your experience with JavaScript,"You can use Markdown here.",text,,,,"dev,language",Optional explanation,1,medium,`;
 

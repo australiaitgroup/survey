@@ -202,13 +202,21 @@ const MultiQuestionBankModal: React.FC<MultiQuestionBankModalProps> = ({
 									Question Bank *
 								</label>
 								<select
-									value={config.questionBankId ? `${config.isPublic ? 'public' : 'local'}:${config.questionBankId}` : ''}
+									value={
+										config.questionBankId
+											? `${config.isPublic ? 'public' : 'local'}:${config.questionBankId}`
+											: ''
+									}
 									onChange={e => {
 										const value = e.target.value;
 										if (value) {
 											const [type, bankId] = value.split(':');
 											updateConfiguration(index, 'questionBankId', bankId);
-											updateConfiguration(index, 'isPublic', type === 'public');
+											updateConfiguration(
+												index,
+												'isPublic',
+												type === 'public'
+											);
 										} else {
 											updateConfiguration(index, 'questionBankId', '');
 											updateConfiguration(index, 'isPublic', false);
@@ -217,7 +225,7 @@ const MultiQuestionBankModal: React.FC<MultiQuestionBankModalProps> = ({
 									className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
 								>
 									<option value=''>Select a question bank</option>
-									
+
 									{/* Local Question Banks */}
 									{questionBanks.length > 0 && (
 										<optgroup label='📁 My Banks'>
@@ -228,30 +236,32 @@ const MultiQuestionBankModal: React.FC<MultiQuestionBankModalProps> = ({
 											))}
 										</optgroup>
 									)}
-									
+
 									{/* Authorized Public Banks */}
 									{publicBanks.length > 0 && (
 										<optgroup label='🌐 Public Banks (Authorized)'>
 											{publicBanks.map(bank => (
 												<option key={bank._id} value={`public:${bank._id}`}>
-													{bank.title} ({bank.questionCount} questions) - {bank.accessType}
+													{bank.title} ({bank.questionCount} questions) -{' '}
+													{bank.accessType}
 												</option>
 											))}
 										</optgroup>
 									)}
-									
+
 									{/* Locked Public Banks */}
 									{lockedPublicBanks.length > 0 && (
 										<optgroup label='🔒 Public Banks (Locked)'>
 											{lockedPublicBanks.map(bank => (
 												<option key={bank._id} value='' disabled>
-													🔒 {bank.title} ({bank.questionCount} questions) - Purchase Required
+													🔒 {bank.title} ({bank.questionCount} questions)
+													- Purchase Required
 												</option>
 											))}
 										</optgroup>
 									)}
 								</select>
-								
+
 								{/* Show locked banks info */}
 								{lockedPublicBanks.length > 0 && (
 									<div className='mt-2 p-2 bg-blue-50 rounded text-xs'>
@@ -261,7 +271,8 @@ const MultiQuestionBankModal: React.FC<MultiQuestionBankModalProps> = ({
 											onClick={() => handleGoToMarketplace('')}
 											className='text-blue-600 hover:text-blue-800 underline'
 										>
-											Browse {lockedPublicBanks.length} additional banks in Marketplace
+											Browse {lockedPublicBanks.length} additional banks in
+											Marketplace
 										</button>
 									</div>
 								)}

@@ -640,7 +640,7 @@ exports.importQuestionsFromCSV = async (req, res) => {
 // Download CSV template
 exports.downloadCSVTemplate = async (req, res) => {
 	try {
-			const csvTemplate = `questionText,description,type,options,correctAnswers,tags,explanation,points,difficulty,descriptionImage
+		const csvTemplate = `questionText,description,type,options,correctAnswers,tags,explanation,points,difficulty,descriptionImage
 	你喜欢哪个颜色？,"**场景**：请选择你最喜欢的颜色。",single,红色;绿色;蓝色,1,"颜色,兴趣",这是一个关于颜色偏好的问题,1,easy,
 	哪些是编程语言？,"提示：选择所有符合条件的选项。",multiple,JavaScript;Python;HTML,0;1,"技术,测试",选择所有编程语言选项,2,medium,
 	请简要说明你的人生目标,"可以使用Markdown，例如：**清晰简洁地描述**",text,,,"思辨,职业规划",请用简洁的语言描述,1,medium,
@@ -689,7 +689,7 @@ exports.getQuestionsFromMultipleBanks = async (req, res) => {
 				questionBank = await PublicBank.findOne({
 					_id: questionBankId,
 					isActive: true,
-					isPublished: true
+					isPublished: true,
 				});
 
 				if (!questionBank) {
@@ -953,7 +953,7 @@ exports.copyQuestionsFromPublicBank = async (req, res) => {
 
 		if (user && user.companyId) {
 			hasAccess = await Entitlement.hasAccess(user.companyId, sourceBank._id);
-			
+
 			// Also check if it's free or user has premium subscription
 			if (!hasAccess) {
 				if (sourceBank.type === 'free') {
@@ -971,7 +971,7 @@ exports.copyQuestionsFromPublicBank = async (req, res) => {
 		}
 
 		// Get the specific questions to copy
-		const questionsToCopy = sourceBank.questions.filter(q => 
+		const questionsToCopy = sourceBank.questions.filter(q =>
 			questionIds.includes(q._id.toString())
 		);
 
@@ -1009,7 +1009,6 @@ exports.copyQuestionsFromPublicBank = async (req, res) => {
 			},
 			copiedCount: copiedQuestions.length,
 		});
-
 	} catch (error) {
 		console.error('Error copying questions from public bank:', error);
 		res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({

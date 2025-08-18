@@ -48,6 +48,9 @@ const TakeSurvey: React.FC = () => {
 	const [infoStepDone, setInfoStepDone] = useState(false);
 	// Time tracking
 	const [startTime, setStartTime] = useState<Date | null>(null);
+	// Per-question time tracking
+	const [questionStartTimes, setQuestionStartTimes] = useState<Record<string, number>>({});
+	const [answerDurations, setAnswerDurations] = useState<Record<string, number>>({});
 	// No longer need assessment-specific state since assessments use TakeAssessment component
 
 	// Enable anti-cheating measures for assessments and quizzes
@@ -151,6 +154,24 @@ const TakeSurvey: React.FC = () => {
 		if (!startTime) {
 			setStartTime(new Date());
 		}
+
+		// Record time spent on current question if we're changing from it
+		const now = Date.now();
+
+		// If this question doesn't have a start time yet, record it
+		if (!questionStartTimes[qid]) {
+			setQuestionStartTimes(prev => ({ ...prev, [qid]: now }));
+		}
+
+		// If there's a previous answer for this question, update the duration
+		if (questionStartTimes[qid]) {
+			const duration = Math.floor((now - questionStartTimes[qid]) / 1000);
+			setAnswerDurations(prev => ({
+				...prev,
+				[qid]: (prev[qid] || 0) + Math.max(1, duration), // At least 1 second, add to existing duration
+			}));
+		}
+
 		setForm({ ...form, answers: { ...form.answers, [qid]: value } });
 	};
 
@@ -192,12 +213,25 @@ const TakeSurvey: React.FC = () => {
 			// Calculate time spent
 			const timeSpent = startTime ? Math.floor((Date.now() - startTime.getTime()) / 1000) : 0;
 
+			// Finalize answer durations for any questions that were being worked on
+			const now = Date.now();
+			const finalAnswerDurations: Record<string, number> = { ...answerDurations };
+
+			// Add time for any questions that have start times but no recorded duration yet
+			Object.entries(questionStartTimes).forEach(([qid, startTime]) => {
+				if (!finalAnswerDurations[qid]) {
+					const duration = Math.floor((now - startTime) / 1000);
+					finalAnswerDurations[qid] = Math.max(1, duration);
+				}
+			});
+
 			const payload: SurveyResponse = {
 				name: form.name,
 				email: form.email,
 				surveyId: survey._id,
 				answers: questions.map(q => form.answers[q._id]),
 				timeSpent,
+				answerDurations: finalAnswerDurations,
 			};
 			await axios.post(getApiPath(`/surveys/${survey._id}/responses`), payload);
 
@@ -431,29 +465,29 @@ const TakeSurvey: React.FC = () => {
 							{questionsLoaded &&
 								(effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE
 									? infoStepDone
-									: true
-								) &&
-								(effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE ? (
-									<OneQuestionPerPageView
-										questions={questions}
-										answers={form.answers}
-										onAnswerChange={handleAnswerChange}
-										onSubmit={handleSubmit}
-										loading={loading}
-										antiCheatEnabled={antiCheatEnabled && isAssessmentType}
-										getInputProps={getInputProps}
-									/>
-								) : (
-									<QuestionList
-										questions={questions}
-										answers={form.answers}
-										onAnswerChange={handleAnswerChange}
-										antiCheatEnabled={antiCheatEnabled}
-										isAssessmentType={Boolean(isAssessmentType)}
-										getInputProps={getInputProps}
-										sourceType={survey.sourceType}
-									/>
-								))}
+									: true) &&
+								(effectiveNavigationMode ===
+								NAVIGATION_MODE.ONE_QUESTION_PER_PAGE ? (
+										<OneQuestionPerPageView
+											questions={questions}
+											answers={form.answers}
+											onAnswerChange={handleAnswerChange}
+											onSubmit={handleSubmit}
+											loading={loading}
+											antiCheatEnabled={antiCheatEnabled && isAssessmentType}
+											getInputProps={getInputProps}
+										/>
+									) : (
+										<QuestionList
+											questions={questions}
+											answers={form.answers}
+											onAnswerChange={handleAnswerChange}
+											antiCheatEnabled={antiCheatEnabled}
+											isAssessmentType={Boolean(isAssessmentType)}
+											getInputProps={getInputProps}
+											sourceType={survey.sourceType}
+										/>
+									))}
 
 							{/* Start button for one-question-per-page before entering questions */}
 							{effectiveNavigationMode === NAVIGATION_MODE.ONE_QUESTION_PER_PAGE &&
@@ -499,7 +533,7 @@ const TakeSurvey: React.FC = () => {
 										{loading
 											? '✨ Submitting...'
 											: isBankBasedSource(survey?.sourceType) &&
-											!questionsLoaded
+												  !questionsLoaded
 												? '🎲 Load Questions'
 												: !questionsLoaded
 													? '🎲 Loading...'

@@ -175,12 +175,12 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 	};
 
 	// Load initial statistics with default filter (last 30 days)
-    useEffect(() => {
-        if (tabLocal === TAB_TYPES.STATISTICS && survey._id) {
-            // Load all-time stats on first enter; users can narrow with filter UI
-            loadStats(survey._id);
-        }
-    }, [tabLocal, survey._id]);
+	useEffect(() => {
+		if (tabLocal === TAB_TYPES.STATISTICS && survey._id) {
+			// Load all-time stats on first enter; users can narrow with filter UI
+			loadStats(survey._id);
+		}
+	}, [tabLocal, survey._id]);
 
 	const s = survey;
 	const currentForm = questionForms[s._id] || {
@@ -421,7 +421,7 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 						getAssessmentUrl={getAssessmentUrl}
 						getSurveyUrl={getSurveyUrl}
 						copyToClipboard={copyToClipboard}
-										loading={loading}
+						loading={loading}
 						handleQuestionsReorder={handleQuestionsReorder}
 						startEditQuestion={startEditQuestion}
 						deleteQuestion={deleteQuestion}
@@ -440,7 +440,7 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 						statsView={statsView}
 						setStatsView={setStatsView}
 						onRefresh={() => loadStats(s._id)}
-									onFilter={handleStatisticsFilter}
+						onFilter={handleStatisticsFilter}
 						responsePage={responsePage}
 						setResponsePage={setResponsePage}
 						pageSize={RESPONSE_PAGE_SIZE}
@@ -480,19 +480,19 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 					open={showEditQuestionModal}
 					questionIndex={editingQuestionIndex}
 					form={questionEditForms[`${s._id}-${editingQuestionIndex}`]}
-						onClose={cancelEditQuestion}
-						onSubmit={handleEditQuestionSubmit}
-						onChange={(field, value) =>
-							handleQuestionEditChange(s._id, editingQuestionIndex, field, value)
-						}
-						onOptionChange={(index, value) =>
+					onClose={cancelEditQuestion}
+					onSubmit={handleEditQuestionSubmit}
+					onChange={(field, value) =>
+						handleQuestionEditChange(s._id, editingQuestionIndex, field, value)
+					}
+					onOptionChange={(index, value) =>
 						handleQuestionEditOptionChange(s._id, editingQuestionIndex, index, value)
-						}
-						onAddOption={() => addQuestionEditOption(s._id, editingQuestionIndex)}
-						onRemoveOption={index =>
-							removeQuestionEditOption(s._id, editingQuestionIndex, index)
-						}
-						loading={loading}
+					}
+					onAddOption={() => addQuestionEditOption(s._id, editingQuestionIndex)}
+					onRemoveOption={index =>
+						removeQuestionEditOption(s._id, editingQuestionIndex, index)
+					}
+					loading={loading}
 				/>
 			</div>
 		</>

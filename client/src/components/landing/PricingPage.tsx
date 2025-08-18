@@ -17,7 +17,10 @@ const PricingPage: React.FC = () => {
 			<SEO
 				title={'Pricing — SigmaQ Survey Platform'}
 				description={t('landing.pricingPage.intro')}
-				openGraph={{ url: 'https://sigmaq.example.com/pricing', image: '/favicon-512x512.png' }}
+				openGraph={{
+					url: 'https://sigmaq.example.com/pricing',
+					image: '/favicon-512x512.png',
+				}}
 			/>
 			<LandingNavbar />
 			<main>
@@ -50,8 +53,12 @@ const PricingPage: React.FC = () => {
 					<div className='container mx-auto px-6 lg:px-8'>
 						<div className='grid grid-cols-1 lg:grid-cols-2 gap-8 items-center'>
 							<div>
-								<h2 className='heading-md mb-3'>{t('landing.pricingPage.resale.title')}</h2>
-								<p className='text-[#767676] mb-4'>{t('landing.pricingPage.resale.subtitle')}</p>
+								<h2 className='heading-md mb-3'>
+									{t('landing.pricingPage.resale.title')}
+								</h2>
+								<p className='text-[#767676] mb-4'>
+									{t('landing.pricingPage.resale.subtitle')}
+								</p>
 								<ul className='list-disc pl-6 text-[#484848] space-y-2'>
 									<li>{t('landing.pricingPage.resale.points.0')}</li>
 									<li>{t('landing.pricingPage.resale.points.1')}</li>

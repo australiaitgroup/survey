@@ -7,13 +7,13 @@ import CopyQuestionsModal from './CopyQuestionsModal';
 import api from '../../utils/axiosConfig';
 
 interface PublicQuestionBankCardProps {
-    bank: PublicQuestionBank;
-    onEntitlementChange?: () => void;
+	bank: PublicQuestionBank;
+	onEntitlementChange?: () => void;
 }
 
 const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 	bank,
-	onEntitlementChange
+	onEntitlementChange,
 }) => {
 	const { t } = useTranslation('admin');
 	const { navigate } = useAdmin();
@@ -22,10 +22,10 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 	const [showPreviewModal, setShowPreviewModal] = useState(false);
 	const [showCopyModal, setShowCopyModal] = useState(false);
 	const [copyData, setCopyData] = useState<{
-        sourceBankId: string;
-        sourceBankTitle: string;
-        questionIds: string[];
-    } | null>(null);
+		sourceBankId: string;
+		sourceBankTitle: string;
+		questionIds: string[];
+	} | null>(null);
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
 	// Format price display
@@ -40,7 +40,7 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 		return date.toLocaleDateString('en-US', {
 			month: 'short',
 			day: 'numeric',
-			year: 'numeric'
+			year: 'numeric',
 		});
 	};
 
@@ -60,9 +60,7 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 
 	// Get type badge style
 	const getTypeBadgeStyle = (type: string) => {
-		return type === 'FREE'
-			? 'bg-green-100 text-green-700'
-			: 'bg-purple-100 text-purple-700';
+		return type === 'FREE' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700';
 	};
 
 	// Handle free bank attachment
@@ -153,7 +151,7 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 		setCopyData({
 			sourceBankId,
 			sourceBankTitle: bank.title,
-			questionIds
+			questionIds,
 		});
 		setShowCopyModal(true);
 	};
@@ -208,8 +206,7 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 					>
 						{loading
 							? t('questionBanks.marketplace.adding', 'Adding...')
-							: t('questionBanks.marketplace.addToUse', 'Add to use')
-						}
+							: t('questionBanks.marketplace.addToUse', 'Add to use')}
 					</button>
 				);
 			}
@@ -235,8 +232,7 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 					>
 						{loading
 							? t('questionBanks.marketplace.processing', 'Processing...')
-							: t('questionBanks.marketplace.buyOnce', 'Buy once')
-						}
+							: t('questionBanks.marketplace.buyOnce', 'Buy once')}
 					</button>
 				);
 				buttons.push(
@@ -248,8 +244,7 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 					>
 						{loading
 							? t('questionBanks.marketplace.processing', 'Processing...')
-							: t('questionBanks.marketplace.subscribe', 'Subscribe')
-						}
+							: t('questionBanks.marketplace.subscribe', 'Subscribe')}
 					</button>
 				);
 			}
@@ -257,9 +252,7 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 
 		return (
 			<div className='w-full'>
-				<div className='flex flex-wrap gap-2 sm:flex-nowrap'>
-					{buttons}
-				</div>
+				<div className='flex flex-wrap gap-2 sm:flex-nowrap'>{buttons}</div>
 			</div>
 		);
 	};
@@ -284,11 +277,15 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 						{/* Status Badges - Below Title */}
 						<div className='flex flex-wrap gap-2 mb-3'>
 							{/* Type Badge */}
-							<span className={`px-2 py-1 text-xs font-semibold rounded-full ${getTypeBadgeStyle(bank.type)}`}>
+							<span
+								className={`px-2 py-1 text-xs font-semibold rounded-full ${getTypeBadgeStyle(bank.type)}`}
+							>
 								{bank.type === 'FREE' ? 'FREE' : `PAID ${formatPrice(bank.price)}`}
 							</span>
 							{/* Entitlement Status Badge */}
-							<span className={`px-2 py-1 text-xs font-medium rounded-full border ${getEntitlementStyle(localEntitlement)}`}>
+							<span
+								className={`px-2 py-1 text-xs font-medium rounded-full border ${getEntitlementStyle(localEntitlement)}`}
+							>
 								{localEntitlement === 'Owned' && '✓ '}
 								{localEntitlement === 'Included' && '◉ '}
 								{localEntitlement === 'Locked' && '🔒 '}
@@ -297,13 +294,15 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 						</div>
 
 						{/* Description - truncated to 2 lines */}
-						<p className='text-gray-600 text-sm mb-3 line-clamp-2'
+						<p
+							className='text-gray-600 text-sm mb-3 line-clamp-2'
 							style={{
 								display: '-webkit-box',
 								WebkitLineClamp: 2,
 								WebkitBoxOrient: 'vertical',
-								overflow: 'hidden'
-							}}>
+								overflow: 'hidden',
+							}}
+						>
 							{bank.description}
 						</p>
 
@@ -319,7 +318,7 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 							))}
 							{bank.tags.length > 3 && (
 								<span className='px-2 py-1 text-xs text-gray-500'>
-                                    +{bank.tags.length - 3} more
+									+{bank.tags.length - 3} more
 								</span>
 							)}
 						</div>
@@ -336,9 +335,7 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 					</div>
 
 					{/* Action Buttons - Always at Bottom */}
-					<div className='border-t border-gray-100 pt-3 mt-auto'>
-						{renderCTAs()}
-					</div>
+					<div className='border-t border-gray-100 pt-3 mt-auto'>{renderCTAs()}</div>
 				</div>
 			</div>
 

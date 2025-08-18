@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../utils/axiosConfig';
 import { QUESTION_TYPE } from '../../constants';
+import PerQuestionTimeLineChart from './PerQuestionTimeLineChart';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 interface CandidateDetailViewProps {
 	responseId: string;
@@ -74,10 +76,20 @@ interface CandidateData {
 
 const CandidateDetailView: React.FC<CandidateDetailViewProps> = ({ responseId, onBack }) => {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
+	const location = useLocation();
+	const params = useParams();
 	const [candidateData, setCandidateData] = useState<CandidateData | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [activeTab, setActiveTab] = useState<'overview' | 'answers' | 'analysis'>('overview');
+
+	// Sync active tab with URL suffix /overview | /answers | /analysis
+	useEffect(() => {
+		if (location.pathname.endsWith('/answers')) setActiveTab('answers');
+		else if (location.pathname.endsWith('/analysis')) setActiveTab('analysis');
+		else setActiveTab('overview');
+	}, [location.pathname]);
 
 	useEffect(() => {
 		loadCandidateData();
@@ -125,9 +137,9 @@ const CandidateDetailView: React.FC<CandidateDetailViewProps> = ({ responseId, o
 
 	const formatDateTime = (dateString: string): string => {
 		const date = new Date(dateString);
-		return date.toLocaleString('en-US', { 
-			timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, 
-			timeZoneName: 'short' 
+		return date.toLocaleString('en-US', {
+			timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+			timeZoneName: 'short',
 		});
 	};
 
@@ -238,7 +250,11 @@ const CandidateDetailView: React.FC<CandidateDetailViewProps> = ({ responseId, o
 				<div className='border-b border-gray-200'>
 					<nav className='flex -mb-px'>
 						<button
-							onClick={() => setActiveTab('overview')}
+							onClick={() =>
+								navigate(
+									`/admin/survey/${params.surveyId}/candidate/${responseId}/overview`
+								)
+							}
 							className={`py-3 px-6 font-medium text-sm border-b-2 transition-colors ${
 								activeTab === 'overview'
 									? 'border-blue-500 text-blue-600'
@@ -248,7 +264,11 @@ const CandidateDetailView: React.FC<CandidateDetailViewProps> = ({ responseId, o
 							Overview
 						</button>
 						<button
-							onClick={() => setActiveTab('answers')}
+							onClick={() =>
+								navigate(
+									`/admin/survey/${params.surveyId}/candidate/${responseId}/answers`
+								)
+							}
 							className={`py-3 px-6 font-medium text-sm border-b-2 transition-colors ${
 								activeTab === 'answers'
 									? 'border-blue-500 text-blue-600'
@@ -258,7 +278,11 @@ const CandidateDetailView: React.FC<CandidateDetailViewProps> = ({ responseId, o
 							Answer Details
 						</button>
 						<button
-							onClick={() => setActiveTab('analysis')}
+							onClick={() =>
+								navigate(
+									`/admin/survey/${params.surveyId}/candidate/${responseId}/analysis`
+								)
+							}
 							className={`py-3 px-6 font-medium text-sm border-b-2 transition-colors ${
 								activeTab === 'analysis'
 									? 'border-blue-500 text-blue-600'
@@ -458,6 +482,26 @@ const CandidateDetailView: React.FC<CandidateDetailViewProps> = ({ responseId, o
 									</div>
 								</div>
 							)}
+
+							{/* Time per Question (line chart) - Overview only */}
+							{candidateData.questionDetails &&
+								candidateData.questionDetails.length > 0 && (
+								<div className='md:col-span-2 bg-white rounded-lg p-4 border border-gray-200'>
+									<div className='flex items-center justify-between mb-2'>
+										<h3 className='font-semibold text-gray-900'>
+												Time per Question
+										</h3>
+										<div className='text-xs text-gray-500'>
+												Seconds spent on each question
+										</div>
+									</div>
+									<PerQuestionTimeLineChart
+										times={candidateData.questionDetails.map(
+											q => q.timeSpent ?? 0
+										)}
+									/>
+								</div>
+							)}
 						</div>
 					)}
 
@@ -506,7 +550,7 @@ const CandidateDetailView: React.FC<CandidateDetailViewProps> = ({ responseId, o
 													</p>
 												</div>
 												<div className='text-right ml-4'>
-													{score && (
+													{candidateData.score && (
 														<div className='text-sm font-medium'>
 															{question.pointsAwarded} /{' '}
 															{question.maxPoints} pts
@@ -600,7 +644,7 @@ const CandidateDetailView: React.FC<CandidateDetailViewProps> = ({ responseId, o
 															</span>
 														)}
 													</div>
-													{score &&
+													{candidateData.score &&
 													!question.isCorrect &&
 													question.correctAnswer && (
 														<>

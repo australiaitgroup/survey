@@ -7,6 +7,7 @@ export const surveyResponseSchema = z.object({
 	answers: z.array(z.union([z.string(), z.array(z.string())])),
 	timeSpent: z.number().optional(),
 	isAutoSubmit: z.boolean().optional(),
+	answerDurations: z.record(z.string(), z.number()).optional(),
 });
 
 export type SurveyResponse = z.infer<typeof surveyResponseSchema>;

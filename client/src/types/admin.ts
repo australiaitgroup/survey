@@ -43,18 +43,23 @@ export interface UserResponse {
 	createdAt: string;
 	timeSpent?: number;
 	isAutoSubmit?: boolean;
-  // Optional scoring info for assessment/quiz/iq
-  score?: {
-    totalPoints: number;
-    correctAnswers: number;
-    wrongAnswers: number;
-    percentage: number;
-    displayScore: number;
-    scoringMode: 'percentage' | 'accumulated';
-    maxPossiblePoints: number;
-    passed: boolean;
-    formattedScore?: string;
-  };
+	metadata?: {
+		userAgent?: string;
+		ipAddress?: string;
+		deviceType?: string;
+	};
+	// Optional scoring info for assessment/quiz/iq
+	score?: {
+		totalPoints: number;
+		correctAnswers: number;
+		wrongAnswers: number;
+		percentage: number;
+		displayScore: number;
+		scoringMode: 'percentage' | 'accumulated';
+		maxPossiblePoints: number;
+		passed: boolean;
+		formattedScore?: string;
+	};
 }
 
 export interface StatsSummary {
@@ -133,6 +138,11 @@ export interface NewSurveyForm {
 			useCustomPoints: boolean;
 			defaultQuestionPoints: number;
 		};
+		multipleChoiceScoring?: {
+			enablePartialScoring: boolean;
+			partialScoringMode: 'proportional' | 'all_or_nothing';
+		};
+		includeShortTextInScore?: boolean;
 	};
 }
 

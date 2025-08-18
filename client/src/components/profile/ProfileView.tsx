@@ -6,10 +6,10 @@ import ImageUpload from '../common/ImageUpload';
 import BillingView from '../billing/BillingView';
 
 const ProfileView: React.FC = () => {
-    const { t, i18n } = useTranslation('translation');
-    useEffect(() => {
-        i18n.loadNamespaces(['translation']).catch(() => {});
-    }, [i18n]);
+	const { t, i18n } = useTranslation('translation');
+	useEffect(() => {
+		i18n.loadNamespaces(['translation']).catch(() => {});
+	}, [i18n]);
 	const location = useLocation();
 	const navigate = useNavigate();
 	const {
@@ -32,7 +32,9 @@ const ProfileView: React.FC = () => {
 	// Get active tab from URL search params
 	const searchParams = new URLSearchParams(location.search);
 	const tabFromUrl = searchParams.get('tab') as 'personal' | 'company' | 'billing' | null;
-	const [activeTab, setActiveTab] = useState<'personal' | 'company' | 'billing'>(tabFromUrl || 'personal');
+	const [activeTab, setActiveTab] = useState<'personal' | 'company' | 'billing'>(
+		tabFromUrl || 'personal'
+	);
 
 	useEffect(() => {
 		loadProfile();
@@ -106,7 +108,7 @@ const ProfileView: React.FC = () => {
 	if (loading && !profileData) {
 		return (
 			<div className='flex justify-center items-center py-12'>
-                <div className='text-lg text-gray-600'>{t('common.loading', 'Loading...')}</div>
+				<div className='text-lg text-gray-600'>{t('common.loading', 'Loading...')}</div>
 			</div>
 		);
 	}
@@ -116,8 +118,15 @@ const ProfileView: React.FC = () => {
 			<div className='bg-white rounded-lg shadow-sm border border-gray-200'>
 				{/* Header */}
 				<div className='px-6 py-4 border-b border-gray-200'>
-					<h2 className='text-2xl font-bold text-gray-900'>{t('profile.settings', 'Profile Settings')}</h2>
-					<p className='text-gray-600 mt-1'>{t('profile.manageInfo', 'Manage your personal, company and billing information')}</p>
+					<h2 className='text-2xl font-bold text-gray-900'>
+						{t('profile.settings', 'Profile Settings')}
+					</h2>
+					<p className='text-gray-600 mt-1'>
+						{t(
+							'profile.manageInfo',
+							'Manage your personal, company and billing information'
+						)}
+					</p>
 				</div>
 
 				{/* Error Message */}
@@ -723,7 +732,9 @@ const ProfileView: React.FC = () => {
 								disabled={loading}
 								className='w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
 							>
-								{loading ? t('profile.updating', 'Updating...') : t('profile.updateCompanyInfo', 'Update Company Info')}
+								{loading
+									? t('profile.updating', 'Updating...')
+									: t('profile.updateCompanyInfo', 'Update Company Info')}
 							</button>
 						</form>
 					</div>

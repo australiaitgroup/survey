@@ -60,9 +60,9 @@ const TakeAssessment: React.FC = () => {
 	const [submitted, setSubmitted] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
-    const [assessmentResults, setAssessmentResults] = useState<AssessmentResult[]>([]);
-    const [scoringResult, setScoringResult] = useState<ScoringResult | null>(null);
-    const [assessmentMeta, setAssessmentMeta] = useState<{ responseId?: string }>({});
+	const [assessmentResults, setAssessmentResults] = useState<AssessmentResult[]>([]);
+	const [scoringResult, setScoringResult] = useState<ScoringResult | null>(null);
+	const [assessmentMeta, setAssessmentMeta] = useState<{ responseId?: string }>({});
 	const [startTime, setStartTime] = useState<Date | null>(null);
 
 	// Question timing tracking
@@ -82,7 +82,7 @@ const TakeAssessment: React.FC = () => {
 		sourceType === SOURCE_TYPE.MANUAL_SELECTION;
 
 	// Use both hooks for comprehensive protection
-    const { getInputProps } = useAntiCheating({
+	const { getInputProps } = useAntiCheating({
 		enabled: antiCheatEnabled,
 		disableCopy: true,
 		disablePaste: true,
@@ -134,11 +134,13 @@ const TakeAssessment: React.FC = () => {
 
 				// Use a timeout to ensure the state update has been processed
 				setTimeout(() => {
-					handleSubmit(null, true).then(() => {
-						console.log('Auto-submit successful');
-					}).catch((error) => {
-						console.error('Auto-submit failed:', error);
-					});
+					handleSubmit(null, true)
+						.then(() => {
+							console.log('Auto-submit successful');
+						})
+						.catch(error => {
+							console.error('Auto-submit failed:', error);
+						});
 				}, 100);
 			}
 		}
@@ -148,7 +150,22 @@ const TakeAssessment: React.FC = () => {
 				clearTimeout(timerRef.current);
 			}
 		};
-	}, [timer.isActive, timer.timeLeft, survey, questionsLoaded, submitted, questions, form, currentStep, currentQuestionStartTime, questionTimings, currentQuestionIndex, startTime, assessmentMeta, slug]);
+	}, [
+		timer.isActive,
+		timer.timeLeft,
+		survey,
+		questionsLoaded,
+		submitted,
+		questions,
+		form,
+		currentStep,
+		currentQuestionStartTime,
+		questionTimings,
+		currentQuestionIndex,
+		startTime,
+		assessmentMeta,
+		slug,
+	]);
 
 	const formatTime = (seconds: number): string => {
 		const mins = Math.floor(seconds / 60);
@@ -160,13 +177,15 @@ const TakeAssessment: React.FC = () => {
 		// If slug is provided, fetch that specific assessment
 		if (slug) {
 			setLoading(true);
-            const apiUrl = getApiPath(`/assessment/${slug}`);
+			const apiUrl = getApiPath(`/assessment/${slug}`);
 			axios
 				.get<Survey>(apiUrl)
 				.then(res => {
 					// Verify it's an assessment type
 					if (res.data.type !== 'assessment') {
-						setError('This is not an assessment. Please use the survey interface instead.');
+						setError(
+							'This is not an assessment. Please use the survey interface instead.'
+						);
 						return;
 					}
 					setSurvey(res.data);
@@ -180,7 +199,7 @@ const TakeAssessment: React.FC = () => {
 						});
 					}
 
-                    // Do not pre-load any questions for assessments
+					// Do not pre-load any questions for assessments
 				})
 				.catch(() => {
 					setError('Assessment not found');
@@ -195,18 +214,18 @@ const TakeAssessment: React.FC = () => {
 		setCurrentStep('questions');
 		setStartTime(new Date());
 
-        // Start assessment - lock questions server-side and return masked list
-        try {
-            const startResp = await axios.post(getApiPath(`/assessment/${slug}/start`), {
-                name: form.name,
-                email: form.email,
-            });
-            setQuestions(startResp.data.questions || []);
-            setQuestionsLoaded(true);
-            setAssessmentMeta({ responseId: startResp.data.responseId });
-        } catch (e) {
-            console.error('Failed to start assessment:', e);
-        }
+		// Start assessment - lock questions server-side and return masked list
+		try {
+			const startResp = await axios.post(getApiPath(`/assessment/${slug}/start`), {
+				name: form.name,
+				email: form.email,
+			});
+			setQuestions(startResp.data.questions || []);
+			setQuestionsLoaded(true);
+			setAssessmentMeta({ responseId: startResp.data.responseId });
+		} catch (e) {
+			console.error('Failed to start assessment:', e);
+		}
 
 		// Start timing for the first question (index-based)
 		if ((questionsLoaded ? questions : survey.questions)?.length > 0) {
@@ -233,8 +252,8 @@ const TakeAssessment: React.FC = () => {
 		}));
 	};
 
-    const nextQuestion = (isSkip = false) => {
-		const currentQuestions = questionsLoaded ? questions : (survey?.questions || []);
+	const nextQuestion = (isSkip = false) => {
+		const currentQuestions = questionsLoaded ? questions : survey?.questions || [];
 		if (!currentQuestions.length) return;
 
 		// Record end time for current question
@@ -284,7 +303,7 @@ const TakeAssessment: React.FC = () => {
 	};
 
 	const prevQuestion = () => {
-		const currentQuestions = questionsLoaded ? questions : (survey?.questions || []);
+		const currentQuestions = questionsLoaded ? questions : survey?.questions || [];
 		if (!currentQuestions.length || currentQuestionIndex <= 0) return;
 
 		// Record end time for current question
@@ -322,10 +341,19 @@ const TakeAssessment: React.FC = () => {
 	const handleSubmit = async (e: React.FormEvent | null = null, isAutoSubmit = false) => {
 		if (e) e.preventDefault();
 
-		console.log('handleSubmit called', { isAutoSubmit, survey: !!survey, questionsLoaded, submitted });
+		console.log('handleSubmit called', {
+			isAutoSubmit,
+			survey: !!survey,
+			questionsLoaded,
+			submitted,
+		});
 
 		if (!survey || !questionsLoaded || submitted) {
-			console.log('handleSubmit early return', { survey: !!survey, questionsLoaded, submitted });
+			console.log('handleSubmit early return', {
+				survey: !!survey,
+				questionsLoaded,
+				submitted,
+			});
 			return;
 		}
 
@@ -336,7 +364,7 @@ const TakeAssessment: React.FC = () => {
 			// Record end time for the last question if we're still on a question
 			let finalQuestionTimings = { ...questionTimings };
 			if (currentStep === 'questions' && currentQuestionStartTime) {
-				const currentQuestions = questionsLoaded ? questions : (survey?.questions || []);
+				const currentQuestions = questionsLoaded ? questions : survey?.questions || [];
 				const currentQuestion = currentQuestions[currentQuestionIndex];
 				if (currentQuestion) {
 					const endTime = Date.now();
@@ -369,25 +397,31 @@ const TakeAssessment: React.FC = () => {
 				),
 			};
 
-			console.log('Submitting to API', { url: getApiPath(`/assessment/${slug}/submit`), data: submitData });
-			const submitResp = await axios.post(getApiPath(`/assessment/${slug}/submit`), submitData);
+			console.log('Submitting to API', {
+				url: getApiPath(`/assessment/${slug}/submit`),
+				data: submitData,
+			});
+			const submitResp = await axios.post(
+				getApiPath(`/assessment/${slug}/submit`),
+				submitData
+			);
 
-            const apiScore = submitResp.data.score;
-            const apiResults = submitResp.data.questionResults || [];
+			const apiScore = submitResp.data.score;
+			const apiResults = submitResp.data.questionResults || [];
 
 			console.log('API submission successful', { apiScore, apiResults });
 
-            setAssessmentResults(apiResults);
-            setScoringResult({
-                totalPoints: apiScore.totalPoints,
-                maxPossiblePoints: apiScore.maxPossiblePoints,
-                correctAnswers: apiScore.correctAnswers,
-                wrongAnswers: apiScore.wrongAnswers,
-                displayScore: apiScore.displayScore,
-                passed: apiScore.passed,
-                scoringMode: apiScore.scoringMode,
-                scoringDescription: apiScore.scoringDescription,
-            });
+			setAssessmentResults(apiResults);
+			setScoringResult({
+				totalPoints: apiScore.totalPoints,
+				maxPossiblePoints: apiScore.maxPossiblePoints,
+				correctAnswers: apiScore.correctAnswers,
+				wrongAnswers: apiScore.wrongAnswers,
+				displayScore: apiScore.displayScore,
+				passed: apiScore.passed,
+				scoringMode: apiScore.scoringMode,
+				scoringDescription: apiScore.scoringDescription,
+			});
 			setSubmitted(true);
 			setCurrentStep('results');
 
@@ -414,7 +448,7 @@ const TakeAssessment: React.FC = () => {
 		return <UnavailableCard status={survey.status} onHome={() => navigate('/')} />;
 	}
 
-    // For assessment: 不再使用 Survey 的“无题目卡片”逻辑，题目在 start 后返回
+	// For assessment: 不再使用 Survey 的“无题目卡片”逻辑，题目在 start 后返回
 
 	// No survey found
 	if (!survey) {
@@ -434,7 +468,7 @@ const TakeAssessment: React.FC = () => {
 		);
 	}
 
-	const currentQuestions = questionsLoaded ? questions : (survey.questions || []);
+	const currentQuestions = questionsLoaded ? questions : survey.questions || [];
 	const currentQuestion = currentQuestions[currentQuestionIndex];
 	const totalQuestions = currentQuestions.length;
 	const progress = totalQuestions > 0 ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
@@ -449,7 +483,9 @@ const TakeAssessment: React.FC = () => {
 				{currentStep === 'instructions' && (
 					<div className='w-full bg-white rounded-xl border border-[#EBEBEB] p-8'>
 						<div className='text-center mb-8'>
-							<h1 className='text-2xl font-bold text-gray-800 mb-4'>Assessment Instructions</h1>
+							<h1 className='text-2xl font-bold text-gray-800 mb-4'>
+								Assessment Instructions
+							</h1>
 							<p className='text-gray-600'>
 								Please read the instructions carefully before starting.
 							</p>
@@ -478,12 +514,17 @@ const TakeAssessment: React.FC = () => {
 									{survey.timeLimit && (
 										<div className='bg-yellow-50 rounded-lg p-6'>
 											<div className='flex items-center mb-3'>
-												<span className='text-yellow-600 text-xl mr-2'>⏱️</span>
-												<h3 className='font-medium text-yellow-800'>Time Limit</h3>
+												<span className='text-yellow-600 text-xl mr-2'>
+													⏱️
+												</span>
+												<h3 className='font-medium text-yellow-800'>
+													Time Limit
+												</h3>
 											</div>
 											<p className='text-yellow-700 text-sm leading-relaxed'>
-												You have <strong>{survey.timeLimit} minutes</strong> to complete this assessment.
-												The timer will start when you begin the first question.
+												You have <strong>{survey.timeLimit} minutes</strong>{' '}
+												to complete this assessment. The timer will start
+												when you begin the first question.
 											</p>
 										</div>
 									)}
@@ -492,11 +533,14 @@ const TakeAssessment: React.FC = () => {
 									<div className='bg-green-50 rounded-lg p-6'>
 										<div className='flex items-center mb-3'>
 											<span className='text-green-600 text-xl mr-2'>📝</span>
-											<h3 className='font-medium text-green-800'>Questions</h3>
+											<h3 className='font-medium text-green-800'>
+												Questions
+											</h3>
 										</div>
 										<p className='text-green-700 text-sm leading-relaxed'>
-											This assessment contains <strong>{totalQuestions} questions</strong>.
-											You can navigate back and forth between questions at any time.
+											This assessment contains{' '}
+											<strong>{totalQuestions} questions</strong>. You can
+											navigate back and forth between questions at any time.
 										</p>
 									</div>
 								</div>
@@ -518,11 +562,13 @@ const TakeAssessment: React.FC = () => {
 										</li>
 										<li className='flex items-start'>
 											<span className='text-blue-500 mr-2 mt-1'>•</span>
-											You can navigate between questions using the Previous/Next buttons
+											You can navigate between questions using the
+											Previous/Next buttons
 										</li>
 										<li className='flex items-start'>
 											<span className='text-green-500 mr-2 mt-1'>•</span>
-											You can skip difficult questions using the Skip button (skipped questions count as incorrect)
+											You can skip difficult questions using the Skip button
+											(skipped questions count as incorrect)
 										</li>
 										<li className='flex items-start'>
 											<span className='text-blue-500 mr-2 mt-1'>•</span>
@@ -559,7 +605,12 @@ const TakeAssessment: React.FC = () => {
 												type='text'
 												className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
 												value={form.name}
-												onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
+												onChange={e =>
+													setForm(prev => ({
+														...prev,
+														name: e.target.value,
+													}))
+												}
 												required
 												placeholder='Enter your full name'
 												{...getInputProps()}
@@ -573,7 +624,12 @@ const TakeAssessment: React.FC = () => {
 												type='email'
 												className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
 												value={form.email}
-												onChange={e => setForm(prev => ({ ...prev, email: e.target.value }))}
+												onChange={e =>
+													setForm(prev => ({
+														...prev,
+														email: e.target.value,
+													}))
+												}
 												required
 												placeholder='Enter your email address'
 												{...getInputProps()}
@@ -667,16 +723,28 @@ const TakeAssessment: React.FC = () => {
 							{/* Right Side - Answer Options */}
 							<div className='flex flex-col'>
 								{/* Answer Options */}
-								{currentQuestion.type !== 'short_text' && currentQuestion.options && (
+								{currentQuestion.type !== 'short_text' &&
+									currentQuestion.options && (
 									<div className='space-y-3 flex-1'>
 										{currentQuestion.options.map((option, index) => {
-											const optionText = typeof option === 'string' ? option : option.text || '';
-											const optionImage = typeof option === 'object' ? option.imageUrl : null;
-									const isSelected =
-										currentQuestion.type === 'single_choice'
-											? form.answers[currentQuestionIndex] === optionText
-											: Array.isArray(form.answers[currentQuestionIndex]) &&
-												form.answers[currentQuestionIndex].includes(optionText);
+											const optionText =
+													typeof option === 'string'
+														? option
+														: option.text || '';
+											const optionImage =
+													typeof option === 'object'
+														? option.imageUrl
+														: null;
+											const isSelected =
+													currentQuestion.type === 'single_choice'
+														? form.answers[currentQuestionIndex] ===
+															optionText
+														: Array.isArray(
+															form.answers[currentQuestionIndex]
+														) &&
+															form.answers[
+																currentQuestionIndex
+															].includes(optionText);
 
 											return (
 												<label
@@ -687,30 +755,54 @@ const TakeAssessment: React.FC = () => {
 															: 'border-gray-200 hover:border-blue-300/60'
 													}`}
 												>
-										<input
-														type={currentQuestion.type === 'single_choice' ? 'radio' : 'checkbox'}
-												name={`q_${currentQuestionIndex}`}
+													<input
+														type={
+															currentQuestion.type ===
+																'single_choice'
+																? 'radio'
+																: 'checkbox'
+														}
+														name={`q_${currentQuestionIndex}`}
 														className='mt-1 mr-3'
 														checked={isSelected}
 														onChange={() => {
-														if (currentQuestion.type === 'single_choice') {
-														handleAnswerChange(currentQuestionIndex, optionText);
+															if (
+																currentQuestion.type ===
+																	'single_choice'
+															) {
+																handleAnswerChange(
+																	currentQuestionIndex,
+																	optionText
+																);
 															} else {
-														const currentAnswers = (form.answers[currentQuestionIndex] as string[]) || [];
+																const currentAnswers =
+																		(form.answers[
+																			currentQuestionIndex
+																		] as string[]) || [];
 																if (isSelected) {
 																	handleAnswerChange(
-																currentQuestionIndex,
-																		currentAnswers.filter(a => a !== optionText)
+																		currentQuestionIndex,
+																		currentAnswers.filter(
+																			a =>
+																				a !== optionText
+																		)
 																	);
 																} else {
 																	handleAnswerChange(
-																currentQuestionIndex,
-																		[...currentAnswers, optionText]
+																		currentQuestionIndex,
+																		[
+																			...currentAnswers,
+																			optionText,
+																		]
 																	);
 																}
 															}
 														}}
-											disabled={timer.isExpired || loading || submitted}
+														disabled={
+															timer.isExpired ||
+																loading ||
+																submitted
+														}
 														{...getInputProps()}
 													/>
 													<div className='flex-1'>
@@ -739,8 +831,13 @@ const TakeAssessment: React.FC = () => {
 									<div className='flex-1'>
 										<textarea
 											className='w-full h-40 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none'
-										value={form.answers[currentQuestionIndex] || ''}
-										onChange={e => handleAnswerChange(currentQuestionIndex, e.target.value)}
+											value={form.answers[currentQuestionIndex] || ''}
+											onChange={e =>
+												handleAnswerChange(
+													currentQuestionIndex,
+													e.target.value
+												)
+											}
 											placeholder='Enter your answer here...'
 											disabled={timer.isExpired || loading || submitted}
 											{...getInputProps()}
@@ -752,9 +849,14 @@ const TakeAssessment: React.FC = () => {
 
 						{/* Navigation + Center Progress */}
 						<div className='flex justify-between items-center pt-4'>
-								<button
+							<button
 								onClick={prevQuestion}
-									disabled={currentQuestionIndex === 0 || timer.isExpired || loading || submitted}
+								disabled={
+									currentQuestionIndex === 0 ||
+									timer.isExpired ||
+									loading ||
+									submitted
+								}
 								className='btn-secondary disabled:opacity-50 disabled:cursor-not-allowed'
 							>
 								Previous
@@ -763,7 +865,7 @@ const TakeAssessment: React.FC = () => {
 							<div className='flex gap-3'>
 								{/* Skip Button on the right side */}
 								{currentQuestionIndex < totalQuestions - 1 && (
-										<button
+									<button
 										onClick={skipQuestion}
 										disabled={timer.isExpired || loading || submitted}
 										className='btn-outline text-gray-600 border-gray-300 hover:border-gray-400 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed'
@@ -781,7 +883,11 @@ const TakeAssessment: React.FC = () => {
 										{loading ? 'Submitting...' : 'Submit Assessment'}
 									</button>
 								) : (
-									<button onClick={() => nextQuestion(false)} disabled={timer.isExpired || loading || submitted} className='btn-primary disabled:opacity-50 disabled:cursor-not-allowed'>
+									<button
+										onClick={() => nextQuestion(false)}
+										disabled={timer.isExpired || loading || submitted}
+										className='btn-primary disabled:opacity-50 disabled:cursor-not-allowed'
+									>
 										Next
 									</button>
 								)}
@@ -790,7 +896,8 @@ const TakeAssessment: React.FC = () => {
 
 						{/* Navigation Tip */}
 						<div className='text-center mt-3 text-xs text-gray-500'>
-							💡 Tip: You can navigate between questions or skip difficult ones before submitting
+							💡 Tip: You can navigate between questions or skip difficult ones before
+							submitting
 						</div>
 					</div>
 				)}

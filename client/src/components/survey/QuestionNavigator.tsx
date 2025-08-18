@@ -20,7 +20,7 @@ const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
 	onSubmit,
 	loading = false,
 }) => {
-    const { t } = useTranslation('survey');
+	const { t } = useTranslation('survey');
 	const isFirstQuestion = currentQuestion === 0;
 	const isLastQuestion = currentQuestion === totalQuestions - 1;
 
@@ -45,13 +45,13 @@ const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
 						d='M15 19l-7-7 7-7'
 					/>
 				</svg>
-                {t('navigation.previous', 'Previous')}
+				{t('navigation.previous', 'Previous')}
 			</button>
 
 			{/* Progress Indicator */}
 			<div className='flex items-center gap-3'>
 				<div className='text-sm text-[#767676] font-medium'>
-                    {t('navigation.progress', 'Question {{current}} of {{total}}', {
+					{t('navigation.progress', 'Question {{current}} of {{total}}', {
 						current: currentQuestion + 1,
 						total: totalQuestions,
 					})}
@@ -82,11 +82,11 @@ const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
 					{loading ? (
 						<>
 							<div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
-                            {t('navigation.submitting', 'Submitting...')}
+							{t('navigation.submitting', 'Submitting...')}
 						</>
 					) : (
 						<>
-                            {t('navigation.submit', 'Submit Survey')}
+							{t('navigation.submit', 'Submit Survey')}
 							<svg
 								className='w-4 h-4'
 								fill='none'
@@ -114,7 +114,7 @@ const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
 							: 'bg-[#FF5A5F] text-white hover:bg-[#E54A4F]'
 					}`}
 				>
-                    {t('navigation.next', 'Next')}
+					{t('navigation.next', 'Next')}
 					<svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
 						<path
 							strokeLinecap='round'

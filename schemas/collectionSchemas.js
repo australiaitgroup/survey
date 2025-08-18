@@ -18,7 +18,7 @@ const collectionUpdateSchema = z.object({
 
 // Additional schema for updating surveys
 const collectionSurveysUpdateSchema = z.object({
-  surveyIds: z.array(objectId).default([]),
+	surveyIds: z.array(objectId).default([]),
 });
 
 module.exports = { collectionCreateSchema, collectionUpdateSchema, collectionSurveysUpdateSchema };

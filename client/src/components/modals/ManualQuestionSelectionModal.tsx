@@ -141,14 +141,14 @@ const ManualQuestionSelectionModal: React.FC<ManualQuestionSelectionModalProps> 
 				setQuestionBankInfo({
 					_id: data.bankId,
 					name: data.bankTitle,
-					description: `Public Bank - ${data.totalQuestions} questions total`
+					description: `Public Bank - ${data.totalQuestions} questions total`,
 				});
 
 				// Simple pagination for public banks
 				const startIndex = (currentPage - 1) * questionsPerPage;
 				const endIndex = currentPage * questionsPerPage;
 				const paginatedQuestions = data.questions.slice(startIndex, endIndex);
-				
+
 				setQuestions(paginatedQuestions);
 				setTotalPages(Math.ceil(data.questions.length / questionsPerPage));
 				setTotalQuestions(data.questions.length);
@@ -199,7 +199,7 @@ const ManualQuestionSelectionModal: React.FC<ManualQuestionSelectionModalProps> 
 		// Save current anchor point for return navigation
 		localStorage.setItem('returnToSurveyCreation', 'true');
 		localStorage.setItem('lockedBankId', bankId);
-		
+
 		// Navigate to marketplace tab
 		navigate('/admin/question-banks?tab=marketplace');
 	};
@@ -283,7 +283,7 @@ const ManualQuestionSelectionModal: React.FC<ManualQuestionSelectionModalProps> 
 						className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
 					>
 						<option value=''>Choose a question bank</option>
-						
+
 						{/* Local Question Banks */}
 						{questionBanks.length > 0 && (
 							<optgroup label='📁 My Banks'>
@@ -294,30 +294,32 @@ const ManualQuestionSelectionModal: React.FC<ManualQuestionSelectionModalProps> 
 								))}
 							</optgroup>
 						)}
-						
+
 						{/* Authorized Public Banks */}
 						{publicBanks.length > 0 && (
 							<optgroup label='🌐 Public Banks (Authorized)'>
 								{publicBanks.map(bank => (
 									<option key={bank._id} value={`public:${bank._id}`}>
-										{bank.title} ({bank.questionCount} questions) - {bank.accessType}
+										{bank.title} ({bank.questionCount} questions) -{' '}
+										{bank.accessType}
 									</option>
 								))}
 							</optgroup>
 						)}
-						
+
 						{/* Locked Public Banks */}
 						{lockedPublicBanks.length > 0 && (
 							<optgroup label='🔒 Public Banks (Locked)'>
 								{lockedPublicBanks.map(bank => (
 									<option key={bank._id} value='' disabled>
-										🔒 {bank.title} ({bank.questionCount} questions) - Purchase Required
+										🔒 {bank.title} ({bank.questionCount} questions) - Purchase
+										Required
 									</option>
 								))}
 							</optgroup>
 						)}
 					</select>
-					
+
 					{/* Show locked banks with purchase options */}
 					{lockedPublicBanks.length > 0 && (
 						<div className='mt-2'>
@@ -326,7 +328,10 @@ const ManualQuestionSelectionModal: React.FC<ManualQuestionSelectionModalProps> 
 							</p>
 							<div className='space-y-1'>
 								{lockedPublicBanks.slice(0, 3).map(bank => (
-									<div key={bank._id} className='flex items-center justify-between text-xs bg-gray-50 p-2 rounded'>
+									<div
+										key={bank._id}
+										className='flex items-center justify-between text-xs bg-gray-50 p-2 rounded'
+									>
 										<span className='text-gray-600'>
 											🔒 {bank.title} ({bank.questionCount} questions)
 										</span>
@@ -347,7 +352,8 @@ const ManualQuestionSelectionModal: React.FC<ManualQuestionSelectionModalProps> 
 											onClick={() => handleGoToMarketplace('')}
 											className='text-blue-600 hover:text-blue-800 text-xs underline'
 										>
-											View all {lockedPublicBanks.length} locked banks in Marketplace
+											View all {lockedPublicBanks.length} locked banks in
+											Marketplace
 										</button>
 									</div>
 								)}

@@ -33,8 +33,8 @@ const responseSchema = new mongoose.Schema({
 					enum: ['single_choice', 'multiple_choice', 'short_text'],
 					required: true,
 				},
-                // Store option texts only for snapshots
-                options: [String],
+				// Store option texts only for snapshots
+				options: [String],
 				correctAnswer: mongoose.Schema.Types.Mixed, // Number, [Number], or String
 				explanation: String,
 				points: { type: Number, default: 1 },
@@ -122,8 +122,12 @@ const responseSchema = new mongoose.Schema({
 });
 
 // Method to create question snapshots from survey questions
-responseSchema.methods.createQuestionSnapshots = function (questions, userAnswers, answerDurations) {
-    this.questionSnapshots = questions.map((question, index) => {
+responseSchema.methods.createQuestionSnapshots = function (
+	questions,
+	userAnswers,
+	answerDurations
+) {
+	this.questionSnapshots = questions.map((question, index) => {
 		const userAnswer = userAnswers[index] || null;
 
 		// Create snapshot of question data
@@ -146,13 +150,13 @@ responseSchema.methods.createQuestionSnapshots = function (questions, userAnswer
 				pointsAwarded: 0,
 				maxPoints: question.points || 1,
 			},
-            durationInSeconds: (() => {
-                if (!answerDurations) return 0;
-                const byId = answerDurations[String(question._id)] ?? answerDurations[question._id];
-                const byIndex = answerDurations[String(index)] ?? answerDurations[index];
-                const v = byId ?? byIndex;
-                return typeof v === 'number' && v >= 0 ? v : 0;
-            })(),
+			durationInSeconds: (() => {
+				if (!answerDurations) return 0;
+				const byId = answerDurations[String(question._id)] ?? answerDurations[question._id];
+				const byIndex = answerDurations[String(index)] ?? answerDurations[index];
+				const v = byId ?? byIndex;
+				return typeof v === 'number' && v >= 0 ? v : 0;
+			})(),
 		};
 
 		// Calculate scoring for this question

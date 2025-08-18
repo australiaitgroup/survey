@@ -49,7 +49,10 @@ const AdminNavbar: React.FC = () => {
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
-			if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+			if (
+				profileDropdownRef.current &&
+				!profileDropdownRef.current.contains(event.target as Node)
+			) {
 				setProfileDropdownOpen(false);
 			}
 		};
@@ -108,10 +111,14 @@ const AdminNavbar: React.FC = () => {
 								className='flex items-center gap-2 px-3 py-2 text-gray-700 hover:text-[#FF5A5F] transition-colors duration-200 cursor-pointer'
 							>
 								<UserCircleIcon className='w-5 h-5' />
-								<span className='font-medium'>{tCommon('navigation.profile', 'Profile')}</span>
-								<ChevronDownIcon className={`w-4 h-4 transition-transform ${
-									profileDropdownOpen ? 'rotate-180' : ''
-								}`} />
+								<span className='font-medium'>
+									{tCommon('navigation.profile', 'Profile')}
+								</span>
+								<ChevronDownIcon
+									className={`w-4 h-4 transition-transform ${
+										profileDropdownOpen ? 'rotate-180' : ''
+									}`}
+								/>
 							</button>
 							{profileDropdownOpen && (
 								<div className='absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10'>
@@ -123,21 +130,31 @@ const AdminNavbar: React.FC = () => {
 										className='flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors duration-200 cursor-pointer'
 									>
 										<UserCircleIcon className='w-5 h-5' />
-										<span className='font-medium'>{tCommon('navigation.profile', 'Profile')}</span>
+										<span className='font-medium'>
+											{tCommon('navigation.profile', 'Profile')}
+										</span>
 									</button>
 									<button
 										onClick={handleCompanyInfoClick}
 										className='flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors duration-200 cursor-pointer'
 									>
 										<BuildingOfficeIcon className='w-5 h-5' />
-										<span className='font-medium'>{tCommon('navigation.companyInfo', { defaultValue: 'Company Info' })}</span>
+										<span className='font-medium'>
+											{tCommon('navigation.companyInfo', {
+												defaultValue: 'Company Info',
+											})}
+										</span>
 									</button>
 									<button
 										onClick={handleBillingClick}
 										className='flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors duration-200 cursor-pointer'
 									>
 										<CreditCardIcon className='w-5 h-5' />
-										<span className='font-medium'>{tCommon('navigation.billing', { defaultValue: 'Billing' })}</span>
+										<span className='font-medium'>
+											{tCommon('navigation.billing', {
+												defaultValue: 'Billing',
+											})}
+										</span>
 									</button>
 									<div className='border-t border-gray-200'></div>
 									<button
@@ -148,7 +165,9 @@ const AdminNavbar: React.FC = () => {
 										className='flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-200 cursor-pointer'
 									>
 										<ArrowRightOnRectangleIcon className='w-5 h-5' />
-										<span className='font-medium'>{tCommon('buttons.logout')}</span>
+										<span className='font-medium'>
+											{tCommon('buttons.logout')}
+										</span>
 									</button>
 								</div>
 							)}
@@ -207,7 +226,11 @@ const AdminNavbar: React.FC = () => {
 							className='flex items-center gap-3 w-full px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200 cursor-pointer'
 						>
 							<BuildingOfficeIcon className='w-5 h-5' />
-							<span className='font-medium'>{tCommon('navigation.companyInfo', { defaultValue: 'Company Info' })}</span>
+							<span className='font-medium'>
+								{tCommon('navigation.companyInfo', {
+									defaultValue: 'Company Info',
+								})}
+							</span>
 						</button>
 
 						<button
@@ -215,7 +238,9 @@ const AdminNavbar: React.FC = () => {
 							className='flex items-center gap-3 w-full px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200 cursor-pointer'
 						>
 							<CreditCardIcon className='w-5 h-5' />
-							<span className='font-medium'>{tCommon('navigation.billing', { defaultValue: 'Billing' })}</span>
+							<span className='font-medium'>
+								{tCommon('navigation.billing', { defaultValue: 'Billing' })}
+							</span>
 						</button>
 
 						<div className='border-t border-gray-200 my-2'></div>

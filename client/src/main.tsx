@@ -25,44 +25,59 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 		<BrowserRouter>
 			<AnalyticsProvider>
 				<Routes>
-				<Route path='/' element={<LandingPage />} />
-				<Route path='/home' element={<LandingPage />} />
-				<Route path='/signup' element={<OnboardingPage />} />
-				<Route path='/login' element={<Admin />} />
-				<Route path='/demo' element={<TakeSurvey />} />
-				<Route path='/responsive-demo' element={<ResponsiveLayoutDemo />} />
-				<Route path='/contact-sales' element={<LandingPage />} />
-				<Route path='/pricing' element={<PricingPage />} />
-				<Route path='/features' element={<FeaturesPage />} />
-				<Route path='/about' element={<AboutPage />} />
-				<Route path='/contact' element={<ContactPage />} />
-				<Route path='/privacy' element={<PrivacyPage />} />
-				<Route path='/terms' element={<TermsPage />} />
-				<Route path='/case-studies' element={<CaseStudiesPage />} />
-				<Route path='/onboarding' element={<OnboardingPage />} />
-				<Route path='/admin' element={<Admin />} />
-				<Route path='/admin/login' element={<Admin />} />
-				<Route path='/admin/register' element={<Admin />} />
-				<Route path='/admin/surveys' element={<Admin />} />
-				<Route path='/admin/question-banks' element={<Admin />} />
-                <Route path='/admin/collections' element={<Admin />} />
-                <Route path='/admin/collections/:id' element={<Admin />} />
-				<Route path='/admin/question-bank/:id' element={<Admin />} />
-				<Route path='/admin/survey/:id' element={<Admin />} />
-				<Route path='/admin/survey/:id/invitations' element={<Admin />} />
-				<Route path='/admin/survey/:id/statistics' element={<Admin />} />
-				<Route path='/admin/survey/:surveyId/candidate/:responseId' element={<Admin />} />
-				<Route path='/admin/profile' element={<Admin />} />
-				<Route path='/admin/billing' element={<Admin />} />
-				<Route path='/admin/:id' element={<Admin />} />
-				{/* Non-tenant routes (backward compatibility) */}
-				<Route path='/survey/:slug' element={<TakeSurvey />} />
-				<Route path='/assessment/:slug' element={<TakeAssessment />} />
+					<Route path='/' element={<LandingPage />} />
+					<Route path='/home' element={<LandingPage />} />
+					<Route path='/signup' element={<OnboardingPage />} />
+					<Route path='/login' element={<Admin />} />
+					<Route path='/demo' element={<TakeSurvey />} />
+					<Route path='/responsive-demo' element={<ResponsiveLayoutDemo />} />
+					<Route path='/contact-sales' element={<LandingPage />} />
+					<Route path='/pricing' element={<PricingPage />} />
+					<Route path='/features' element={<FeaturesPage />} />
+					<Route path='/about' element={<AboutPage />} />
+					<Route path='/contact' element={<ContactPage />} />
+					<Route path='/privacy' element={<PrivacyPage />} />
+					<Route path='/terms' element={<TermsPage />} />
+					<Route path='/case-studies' element={<CaseStudiesPage />} />
+					<Route path='/onboarding' element={<OnboardingPage />} />
+					<Route path='/admin' element={<Admin />} />
+					<Route path='/admin/login' element={<Admin />} />
+					<Route path='/admin/register' element={<Admin />} />
+					<Route path='/admin/surveys' element={<Admin />} />
+					<Route path='/admin/question-banks' element={<Admin />} />
+					<Route path='/admin/collections' element={<Admin />} />
+					<Route path='/admin/collections/:id' element={<Admin />} />
+					<Route path='/admin/question-bank/:id' element={<Admin />} />
+					<Route path='/admin/survey/:id' element={<Admin />} />
+					<Route path='/admin/survey/:id/invitations' element={<Admin />} />
+					<Route path='/admin/survey/:id/statistics' element={<Admin />} />
+					<Route
+						path='/admin/survey/:surveyId/candidate/:responseId'
+						element={<Admin />}
+					/>
+					<Route
+						path='/admin/survey/:surveyId/candidate/:responseId/overview'
+						element={<Admin />}
+					/>
+					<Route
+						path='/admin/survey/:surveyId/candidate/:responseId/answers'
+						element={<Admin />}
+					/>
+					<Route
+						path='/admin/survey/:surveyId/candidate/:responseId/analysis'
+						element={<Admin />}
+					/>
+					<Route path='/admin/profile' element={<Admin />} />
+					<Route path='/admin/billing' element={<Admin />} />
+					<Route path='/admin/:id' element={<Admin />} />
+					{/* Non-tenant routes (backward compatibility) */}
+					<Route path='/survey/:slug' element={<TakeSurvey />} />
+					<Route path='/assessment/:slug' element={<TakeAssessment />} />
 
-				{/* Multi-tenant routes */}
-				<Route path='/:companySlug/survey/:slug' element={<TakeSurvey />} />
-				<Route path='/:companySlug/assessment/:slug' element={<TakeAssessment />} />
-				<Route path='/legacy' element={<Survey />} />
+					{/* Multi-tenant routes */}
+					<Route path='/:companySlug/survey/:slug' element={<TakeSurvey />} />
+					<Route path='/:companySlug/assessment/:slug' element={<TakeAssessment />} />
+					<Route path='/legacy' element={<Survey />} />
 				</Routes>
 			</AnalyticsProvider>
 		</BrowserRouter>

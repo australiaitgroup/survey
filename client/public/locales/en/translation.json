@@ -80,10 +80,22 @@
 		"howItWorks": {
 			"title": "How It Works",
 			"subtitle": "From building to insights in minutes",
-			"step1": { "title": "Build", "description": "Create surveys with templates and drag-and-drop" },
-			"step2": { "title": "Customize", "description": "Branding, logic, languages, and access control" },
-			"step3": { "title": "Analyze", "description": "Visual dashboards, exports, and AI insights" },
-			"step4": { "title": "Share", "description": "Send links, embed, or invite participants" }
+			"step1": {
+				"title": "Build",
+				"description": "Create surveys with templates and drag-and-drop"
+			},
+			"step2": {
+				"title": "Customize",
+				"description": "Branding, logic, languages, and access control"
+			},
+			"step3": {
+				"title": "Analyze",
+				"description": "Visual dashboards, exports, and AI insights"
+			},
+			"step4": {
+				"title": "Share",
+				"description": "Send links, embed, or invite participants"
+			}
 		},
 		"about": {
 			"title": "About SigmaQ",
@@ -403,8 +415,7 @@
 			"privacy": "Privacy Policy",
 			"terms": "Terms of Service",
 			"copyright": "© 2025 SigmaQ. All rights reserved."
-		}
-		,
+		},
 		"featuresPage": {
 			"title": "All Features",
 			"intro": "Explore SigmaQ capabilities across AI authoring, analytics, automation and more"

@@ -6,179 +6,217 @@ import { PublicBanksAPI } from '../../api/publicBanks';
 import { PublicBank, Question } from '../../types/publicBanks';
 
 class PublicBanksComponent {
-  private api: PublicBanksAPI;
-  private banksList: PublicBanksList;
-  private questionsManager: QuestionsManager;
-  private csvManager: CSVManager;
-  private usageModal: BankUsageModal;
+	private api: PublicBanksAPI;
+	private banksList: PublicBanksList;
+	private questionsManager: QuestionsManager;
+	private csvManager: CSVManager;
+	private usageModal: BankUsageModal;
 
-  // View state
-  public currentView: 'list' | 'detail' = 'list';
-  public activeTab: 'overview' | 'questions' = 'overview';
-  public selectedBankDetail: PublicBank | null = null;
+	// View state
+	public currentView: 'list' | 'detail' = 'list';
+	public activeTab: 'overview' | 'questions' = 'overview';
+	public selectedBankDetail: PublicBank | null = null;
 
-  constructor() {
-    this.api = new PublicBanksAPI();
-    this.banksList = new PublicBanksList(this.api);
-    this.questionsManager = new QuestionsManager(this.api);
-    this.csvManager = new CSVManager(this.api);
-    this.usageModal = new BankUsageModal(this.api);
+	constructor() {
+		this.api = new PublicBanksAPI();
+		this.banksList = new PublicBanksList(this.api);
+		this.questionsManager = new QuestionsManager(this.api);
+		this.csvManager = new CSVManager(this.api);
+		this.usageModal = new BankUsageModal(this.api);
 
-    // Set up callbacks
-    this.csvManager.onQuestionsReload = () => {
-      this.questionsManager.loadQuestions();
-    };
+		// Set up callbacks
+		this.csvManager.onQuestionsReload = () => {
+			this.questionsManager.loadQuestions();
+		};
 
-    this.init();
-  }
+		this.init();
+	}
 
-  private init(): void {
-    this.renderContent();
-    this.setupEventListeners();
-    console.log('Public Banks component initialized');
-  }
+	private init(): void {
+		this.renderContent();
+		this.setupEventListeners();
+		console.log('Public Banks component initialized');
+	}
 
-  private renderContent(): void {
-    const content = document.getElementById('public-banks-content');
-    if (!content) return;
+	private renderContent(): void {
+		const content = document.getElementById('public-banks-content');
+		if (!content) return;
 
-    // Render the HTML template
-    // This would be replaced with your templating solution
-    content.innerHTML = this.getTemplate();
-  }
+		// Render the HTML template
+		// This would be replaced with your templating solution
+		content.innerHTML = this.getTemplate();
+	}
 
-  private setupEventListeners(): void {
-    // Set up Alpine.js data binding
-    window.publicBanksData = this.getAlpineData();
-  }
+	private setupEventListeners(): void {
+		// Set up Alpine.js data binding
+		window.publicBanksData = this.getAlpineData();
+	}
 
-  async loadData(): Promise<void> {
-    await this.banksList.loadData();
-  }
+	async loadData(): Promise<void> {
+		await this.banksList.loadData();
+	}
 
-  async viewBankDetail(bank: PublicBank): Promise<void> {
-    this.selectedBankDetail = bank;
-    this.currentView = 'detail';
-    this.activeTab = 'overview';
+	async viewBankDetail(bank: PublicBank): Promise<void> {
+		this.selectedBankDetail = bank;
+		this.currentView = 'detail';
+		this.activeTab = 'overview';
 
-    // Load questions for this bank
-    this.questionsManager.setBankId(bank._id);
-    this.csvManager.setBankId(bank._id);
-    await this.questionsManager.loadQuestions();
-  }
+		// Load questions for this bank
+		this.questionsManager.setBankId(bank._id);
+		this.csvManager.setBankId(bank._id);
+		await this.questionsManager.loadQuestions();
+	}
 
-  backToList(): void {
-    this.currentView = 'list';
-    this.selectedBankDetail = null;
-    this.activeTab = 'overview';
-  }
+	backToList(): void {
+		this.currentView = 'list';
+		this.selectedBankDetail = null;
+		this.activeTab = 'overview';
+	}
 
-  async refreshData(): Promise<void> {
-    if (this.currentView === 'list') {
-      await this.banksList.loadData();
-    } else if (this.currentView === 'detail' && this.activeTab === 'questions') {
-      await this.questionsManager.loadQuestions();
-    }
-  }
+	async refreshData(): Promise<void> {
+		if (this.currentView === 'list') {
+			await this.banksList.loadData();
+		} else if (this.currentView === 'detail' && this.activeTab === 'questions') {
+			await this.questionsManager.loadQuestions();
+		}
+	}
 
-  private getAlpineData(): any {
-    return {
-      // Expose all component instances to Alpine
-      banksList: this.banksList,
-      questionsManager: this.questionsManager,
-      csvManager: this.csvManager,
-      usageModal: this.usageModal,
+	private getAlpineData(): any {
+		return {
+			// Expose all component instances to Alpine
+			banksList: this.banksList,
+			questionsManager: this.questionsManager,
+			csvManager: this.csvManager,
+			usageModal: this.usageModal,
 
-      // View state
-      currentView: this.currentView,
-      activeTab: this.activeTab,
-      selectedBankDetail: this.selectedBankDetail,
+			// View state
+			currentView: this.currentView,
+			activeTab: this.activeTab,
+			selectedBankDetail: this.selectedBankDetail,
 
-      // Methods
-      loadData: () => this.loadData(),
-      viewBankDetail: (bank: PublicBank) => this.viewBankDetail(bank),
-      backToList: () => this.backToList(),
-      refreshData: () => this.refreshData(),
+			// Methods
+			loadData: () => this.loadData(),
+			viewBankDetail: (bank: PublicBank) => this.viewBankDetail(bank),
+			backToList: () => this.backToList(),
+			refreshData: () => this.refreshData(),
 
-      // Delegate to sub-components
-      // Banks list
-      get data() { return this.banksList.data; },
-      get filteredData() { return this.banksList.filteredData; },
-      get loading() { return this.banksList.loading || this.questionsManager.loading; },
-      get filters() { return this.banksList.filters; },
-      get pagination() { return this.banksList.pagination; },
-      get modalOpen() { return this.banksList.modalOpen; },
-      get editMode() { return this.banksList.editMode; },
-      get formData() { return this.banksList.formData; },
+			// Delegate to sub-components
+			// Banks list
+			get data() {
+				return this.banksList.data;
+			},
+			get filteredData() {
+				return this.banksList.filteredData;
+			},
+			get loading() {
+				return this.banksList.loading || this.questionsManager.loading;
+			},
+			get filters() {
+				return this.banksList.filters;
+			},
+			get pagination() {
+				return this.banksList.pagination;
+			},
+			get modalOpen() {
+				return this.banksList.modalOpen;
+			},
+			get editMode() {
+				return this.banksList.editMode;
+			},
+			get formData() {
+				return this.banksList.formData;
+			},
 
-      // Questions
-      get questions() { return this.questionsManager.questions; },
-      get questionsPagination() { return this.questionsManager.pagination; },
-      get questionsFilters() { return this.questionsManager.filters; },
-      get questionDrawerOpen() { return this.questionsManager.questionDrawerOpen; },
-      get questionEditMode() { return this.questionsManager.questionEditMode; },
-      get questionForm() { return this.questionsManager.questionForm; },
+			// Questions
+			get questions() {
+				return this.questionsManager.questions;
+			},
+			get questionsPagination() {
+				return this.questionsManager.pagination;
+			},
+			get questionsFilters() {
+				return this.questionsManager.filters;
+			},
+			get questionDrawerOpen() {
+				return this.questionsManager.questionDrawerOpen;
+			},
+			get questionEditMode() {
+				return this.questionsManager.questionEditMode;
+			},
+			get questionForm() {
+				return this.questionsManager.questionForm;
+			},
 
-      // CSV
-      get csvImportModalOpen() { return this.csvManager.csvImportModalOpen; },
-      get csvImportResults() { return this.csvManager.csvImportResults; },
+			// CSV
+			get csvImportModalOpen() {
+				return this.csvManager.csvImportModalOpen;
+			},
+			get csvImportResults() {
+				return this.csvManager.csvImportResults;
+			},
 
-      // Usage modal
-      get usageModalOpen() { return this.usageModal.modalOpen; },
-      get usageData() { return this.usageModal.usageData; },
+			// Usage modal
+			get usageModalOpen() {
+				return this.usageModal.modalOpen;
+			},
+			get usageData() {
+				return this.usageModal.usageData;
+			},
 
-      // Bind all methods
-      debounceSearch: () => this.banksList.debounceSearch(),
-      applyFilters: () => this.banksList.applyFilters(),
-      openCreateModal: () => this.banksList.openCreateModal(),
-      openEditModal: (bank: PublicBank) => this.banksList.openEditModal(bank),
-      closeModal: () => this.banksList.closeModal(),
-      saveBank: () => this.banksList.saveBank(),
-      deleteBank: (bank: PublicBank) => this.banksList.deleteBank(bank),
-      addTag: () => this.banksList.addTag(),
-      removeTag: (index: number) => this.banksList.removeTag(index),
-      getVisiblePages: () => this.banksList.getVisiblePages(),
-      goToPage: (page: number) => this.banksList.goToPage(page),
+			// Bind all methods
+			debounceSearch: () => this.banksList.debounceSearch(),
+			applyFilters: () => this.banksList.applyFilters(),
+			openCreateModal: () => this.banksList.openCreateModal(),
+			openEditModal: (bank: PublicBank) => this.banksList.openEditModal(bank),
+			closeModal: () => this.banksList.closeModal(),
+			saveBank: () => this.banksList.saveBank(),
+			deleteBank: (bank: PublicBank) => this.banksList.deleteBank(bank),
+			addTag: () => this.banksList.addTag(),
+			removeTag: (index: number) => this.banksList.removeTag(index),
+			getVisiblePages: () => this.banksList.getVisiblePages(),
+			goToPage: (page: number) => this.banksList.goToPage(page),
 
-      // Questions methods
-      loadQuestions: () => this.questionsManager.loadQuestions(),
-      openAddQuestionDrawer: () => this.questionsManager.openAddQuestionDrawer(),
-      openEditQuestionDrawer: (q: Question, i: number) => this.questionsManager.openEditQuestionDrawer(q, i),
-      closeQuestionDrawer: () => this.questionsManager.closeQuestionDrawer(),
-      saveQuestion: () => this.questionsManager.saveQuestion(),
-      deleteQuestion: (index: number) => this.questionsManager.deleteQuestion(index),
-      duplicateQuestion: (index: number) => this.questionsManager.duplicateQuestion(index),
-      onQuestionTypeChange: () => this.questionsManager.onQuestionTypeChange(),
-      addOption: () => this.questionsManager.addOption(),
-      removeOption: (index: number) => this.questionsManager.removeOption(index),
-      addQuestionTag: () => this.questionsManager.addQuestionTag(),
-      removeQuestionTag: (index: number) => this.questionsManager.removeQuestionTag(index),
-      debounceQuestionsSearch: () => this.questionsManager.debounceQuestionsSearch(),
-      getQuestionsVisiblePages: () => this.questionsManager.getQuestionsVisiblePages(),
-      goToQuestionsPage: (page: number) => this.questionsManager.goToPage(page),
+			// Questions methods
+			loadQuestions: () => this.questionsManager.loadQuestions(),
+			openAddQuestionDrawer: () => this.questionsManager.openAddQuestionDrawer(),
+			openEditQuestionDrawer: (q: Question, i: number) =>
+				this.questionsManager.openEditQuestionDrawer(q, i),
+			closeQuestionDrawer: () => this.questionsManager.closeQuestionDrawer(),
+			saveQuestion: () => this.questionsManager.saveQuestion(),
+			deleteQuestion: (index: number) => this.questionsManager.deleteQuestion(index),
+			duplicateQuestion: (index: number) => this.questionsManager.duplicateQuestion(index),
+			onQuestionTypeChange: () => this.questionsManager.onQuestionTypeChange(),
+			addOption: () => this.questionsManager.addOption(),
+			removeOption: (index: number) => this.questionsManager.removeOption(index),
+			addQuestionTag: () => this.questionsManager.addQuestionTag(),
+			removeQuestionTag: (index: number) => this.questionsManager.removeQuestionTag(index),
+			debounceQuestionsSearch: () => this.questionsManager.debounceQuestionsSearch(),
+			getQuestionsVisiblePages: () => this.questionsManager.getQuestionsVisiblePages(),
+			goToQuestionsPage: (page: number) => this.questionsManager.goToPage(page),
 
-      // CSV methods
-      openCSVImportModal: () => this.csvManager.openCSVImportModal(),
-      closeCSVImportModal: () => this.csvManager.closeCSVImportModal(),
-      importCSV: async () => {
-        const input = document.getElementById('csv-file-input') as HTMLInputElement;
-        if (input?.files?.[0]) {
-          return await this.csvManager.importCSV(input.files[0]);
-        }
-        return Promise.resolve();
-      },
-      exportCSV: () => this.csvManager.exportCSV(this.selectedBankDetail?.title || 'questions'),
-      downloadCSVTemplate: () => this.csvManager.downloadCSVTemplate(),
+			// CSV methods
+			openCSVImportModal: () => this.csvManager.openCSVImportModal(),
+			closeCSVImportModal: () => this.csvManager.closeCSVImportModal(),
+			importCSV: async () => {
+				const input = document.getElementById('csv-file-input') as HTMLInputElement;
+				if (input?.files?.[0]) {
+					return await this.csvManager.importCSV(input.files[0]);
+				}
+				return Promise.resolve();
+			},
+			exportCSV: () =>
+				this.csvManager.exportCSV(this.selectedBankDetail?.title || 'questions'),
+			downloadCSVTemplate: () => this.csvManager.downloadCSVTemplate(),
 
-      // Usage modal methods
-      openUsageModal: (bank: PublicBank) => this.usageModal.openModal(bank),
-      closeUsageModal: () => this.usageModal.closeModal()
-    };
-  }
+			// Usage modal methods
+			openUsageModal: (bank: PublicBank) => this.usageModal.openModal(bank),
+			closeUsageModal: () => this.usageModal.closeModal(),
+		};
+	}
 
-  private getTemplate(): string {
-    // Public Banks UI with list view and a drawer for create/edit
-    return `
+	private getTemplate(): string {
+		// Public Banks UI with list view and a drawer for create/edit
+		return `
       <div x-data="publicBanksData" class="space-y-6" x-init="loadData()">
         <!-- Header / Actions -->
         <div class="flex items-center justify-between">
@@ -350,17 +388,17 @@ class PublicBanksComponent {
         </div>
       </div>
     `;
-  }
+	}
 }
 
 // Extend the existing Window interface
 declare global {
-  interface Window {
-    publicBanksData?: any;
-  }
+	interface Window {
+		publicBanksData?: any;
+	}
 }
 
 // Initialize when loaded
 if (typeof window !== 'undefined') {
-  (window as any).publicBanksComponent = new PublicBanksComponent();
+	(window as any).publicBanksComponent = new PublicBanksComponent();
 }

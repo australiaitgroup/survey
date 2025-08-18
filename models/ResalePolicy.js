@@ -12,7 +12,7 @@ const resalePolicySchema = new mongoose.Schema({
 		ref: 'PublicBank',
 		required: true,
 	},
-	
+
 	// Resale Configuration
 	isEnabled: {
 		type: Boolean,
@@ -28,7 +28,7 @@ const resalePolicySchema = new mongoose.Schema({
 		default: 'USD',
 		uppercase: true,
 	},
-	
+
 	// Pricing Strategy
 	pricingType: {
 		type: String,
@@ -44,7 +44,7 @@ const resalePolicySchema = new mongoose.Schema({
 		type: Number,
 		min: 0,
 	},
-	
+
 	// Restrictions
 	minPrice: {
 		type: Number,
@@ -54,7 +54,7 @@ const resalePolicySchema = new mongoose.Schema({
 		type: Number,
 		min: 0,
 	},
-	
+
 	// Availability
 	isActive: {
 		type: Boolean,
@@ -67,7 +67,7 @@ const resalePolicySchema = new mongoose.Schema({
 	endDate: {
 		type: Date,
 	},
-	
+
 	// Usage Tracking
 	salesCount: {
 		type: Number,
@@ -80,7 +80,7 @@ const resalePolicySchema = new mongoose.Schema({
 	lastSaleAt: {
 		type: Date,
 	},
-	
+
 	// Metadata
 	createdBy: {
 		type: mongoose.Schema.Types.ObjectId,
@@ -99,7 +99,7 @@ const resalePolicySchema = new mongoose.Schema({
 		type: Date,
 		default: Date.now,
 	},
-	
+
 	// Notes and Comments
 	notes: {
 		type: String,
@@ -120,9 +120,9 @@ resalePolicySchema.index({ bankId: 1, isEnabled: 1 });
 resalePolicySchema.index({ isActive: 1, isEnabled: 1 });
 
 // Pre-save middleware
-resalePolicySchema.pre('save', function(next) {
+resalePolicySchema.pre('save', function (next) {
 	this.updatedAt = new Date();
-	
+
 	// Calculate resale price based on pricing type
 	if (this.pricingType === 'percentage' && this.percentageOfOriginal) {
 		// Will need to populate original price from PublicBank
@@ -131,51 +131,49 @@ resalePolicySchema.pre('save', function(next) {
 		// Will need to populate original price from PublicBank
 		// This calculation should be done in the route handler
 	}
-	
+
 	// Validate price constraints
 	if (this.minPrice && this.resalePrice < this.minPrice) {
 		this.resalePrice = this.minPrice;
 	}
-	
+
 	if (this.maxPrice && this.resalePrice > this.maxPrice) {
 		this.resalePrice = this.maxPrice;
 	}
-	
+
 	next();
 });
 
 // Virtual for effective status
-resalePolicySchema.virtual('isEffective').get(function() {
+resalePolicySchema.virtual('isEffective').get(function () {
 	const now = new Date();
-	return this.isActive && 
-		   this.isEnabled &&
-		   this.startDate <= now &&
-		   (!this.endDate || this.endDate >= now);
+	return (
+		this.isActive &&
+		this.isEnabled &&
+		this.startDate <= now &&
+		(!this.endDate || this.endDate >= now)
+	);
 });
 
 // Virtual for pricing display
-resalePolicySchema.virtual('displayPrice').get(function() {
+resalePolicySchema.virtual('displayPrice').get(function () {
 	return `${this.currency} ${this.resalePrice}`;
 });
 
 // Static method to find effective policies for company
-resalePolicySchema.statics.findEffectiveForCompany = function(companyId) {
+resalePolicySchema.statics.findEffectiveForCompany = function (companyId) {
 	const now = new Date();
 	return this.find({
 		companyId,
 		isActive: true,
 		isEnabled: true,
 		startDate: { $lte: now },
-		$or: [
-			{ endDate: { $exists: false } },
-			{ endDate: null },
-			{ endDate: { $gte: now } }
-		]
+		$or: [{ endDate: { $exists: false } }, { endDate: null }, { endDate: { $gte: now } }],
 	}).populate('bankId');
 };
 
 // Static method to get resale price for company and bank
-resalePolicySchema.statics.getResalePrice = async function(companyId, bankId) {
+resalePolicySchema.statics.getResalePrice = async function (companyId, bankId) {
 	const policy = await this.findOne({
 		companyId,
 		bankId,
@@ -185,15 +183,15 @@ resalePolicySchema.statics.getResalePrice = async function(companyId, bankId) {
 		$or: [
 			{ endDate: { $exists: false } },
 			{ endDate: null },
-			{ endDate: { $gte: new Date() } }
-		]
+			{ endDate: { $gte: new Date() } },
+		],
 	});
-	
+
 	return policy ? policy.resalePrice : null;
 };
 
 // Instance method to record sale
-resalePolicySchema.methods.recordSale = function(amount) {
+resalePolicySchema.methods.recordSale = function (amount) {
 	this.salesCount += 1;
 	this.totalRevenue += amount;
 	this.lastSaleAt = new Date();
@@ -201,29 +199,29 @@ resalePolicySchema.methods.recordSale = function(amount) {
 };
 
 // Instance method to calculate price from original
-resalePolicySchema.methods.calculatePriceFromOriginal = function(originalPrice) {
+resalePolicySchema.methods.calculatePriceFromOriginal = function (originalPrice) {
 	switch (this.pricingType) {
-		case 'percentage':
-			if (this.percentageOfOriginal) {
-				return Math.round(originalPrice * (this.percentageOfOriginal / 100) * 100) / 100;
-			}
-			break;
-		case 'markup':
-			if (this.markupAmount) {
-				return originalPrice + this.markupAmount;
-			}
-			break;
-		case 'fixed':
-		default:
-			return this.resalePrice;
+	case 'percentage':
+		if (this.percentageOfOriginal) {
+			return Math.round(originalPrice * (this.percentageOfOriginal / 100) * 100) / 100;
+		}
+		break;
+	case 'markup':
+		if (this.markupAmount) {
+			return originalPrice + this.markupAmount;
+		}
+		break;
+	case 'fixed':
+	default:
+		return this.resalePrice;
 	}
 	return this.resalePrice;
 };
 
 // Instance method to update pricing
-resalePolicySchema.methods.updatePricing = function(originalPrice) {
+resalePolicySchema.methods.updatePricing = function (originalPrice) {
 	const calculatedPrice = this.calculatePriceFromOriginal(originalPrice);
-	
+
 	// Apply constraints
 	if (this.minPrice && calculatedPrice < this.minPrice) {
 		this.resalePrice = this.minPrice;
@@ -232,7 +230,7 @@ resalePolicySchema.methods.updatePricing = function(originalPrice) {
 	} else {
 		this.resalePrice = calculatedPrice;
 	}
-	
+
 	return this;
 };
 

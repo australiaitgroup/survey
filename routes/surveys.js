@@ -129,20 +129,20 @@ router.get(
 			survey.company = companyInfo;
 		}
 
-        // For non-survey types (assessment/live_quiz), never include questions in initial response
-        // This prevents leaking correct answers or content prior to start
-        if (survey.type && survey.type !== 'survey') {
-            survey.questions = [];
-        } else if (
-            [
-                SOURCE_TYPE.QUESTION_BANK,
-                SOURCE_TYPE.MULTI_QUESTION_BANK,
-                SOURCE_TYPE.MANUAL_SELECTION,
-            ].includes(survey.sourceType)
-        ) {
-            // For regular survey type but bank-based sources, also avoid pre-sending questions
-            survey.questions = [];
-        }
+		// For non-survey types (assessment/live_quiz), never include questions in initial response
+		// This prevents leaking correct answers or content prior to start
+		if (survey.type && survey.type !== 'survey') {
+			survey.questions = [];
+		} else if (
+			[
+				SOURCE_TYPE.QUESTION_BANK,
+				SOURCE_TYPE.MULTI_QUESTION_BANK,
+				SOURCE_TYPE.MANUAL_SELECTION,
+			].includes(survey.sourceType)
+		) {
+			// For regular survey type but bank-based sources, also avoid pre-sending questions
+			survey.questions = [];
+		}
 
 		res.json(survey);
 	})
@@ -150,8 +150,8 @@ router.get(
 
 // Get questions for a survey (handles both manual and question bank modes)
 router.get(
-    '/survey/:slug/questions',
-    asyncHandler(async (req, res) => {
+	'/survey/:slug/questions',
+	asyncHandler(async (req, res) => {
 		const { slug } = req.params;
 		const { email, attempt } = req.query;
 
@@ -164,12 +164,12 @@ router.get(
 
 		if (!survey) throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
 
-        // Only allow this endpoint for regular survey type
-        if (survey.type && survey.type !== 'survey') {
-            throw new AppError('Use assessment endpoints for this survey', HTTP_STATUS.FORBIDDEN);
-        }
+		// Only allow this endpoint for regular survey type
+		if (survey.type && survey.type !== 'survey') {
+			throw new AppError('Use assessment endpoints for this survey', HTTP_STATUS.FORBIDDEN);
+		}
 
-        let questions = [];
+		let questions = [];
 
 		if (survey.sourceType === SOURCE_TYPE.MANUAL) {
 			// For manual surveys, return the questions directly
@@ -321,7 +321,6 @@ router.get(
 				}
 			}
 		}
-
 
 		res.json({
 			questions,

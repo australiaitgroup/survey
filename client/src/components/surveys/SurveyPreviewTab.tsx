@@ -117,11 +117,11 @@ const LeftPane: React.FC<{ survey: Survey; onFocusQuestion: (q: Question) => voi
 };
 
 // Right pane renderer that reuses end-user components but isolated
-const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number; forceSingleColumn?: boolean }> = ({
-	survey,
-	externalPageIndex,
-	forceSingleColumn = false,
-}) => {
+const RightPane: React.FC<{
+	survey: Survey;
+	externalPageIndex?: number;
+	forceSingleColumn?: boolean;
+}> = ({ survey, externalPageIndex, forceSingleColumn = false }) => {
 	const { answers, setAnswer } = usePreview();
 	const { t } = useTranslation();
 	const [submitted, setSubmitted] = useState(false);
@@ -379,19 +379,27 @@ const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number; forceSin
 								const isMultipleChoice = q.type === QUESTION_TYPE.MULTIPLE_CHOICE;
 								const currentAnswer = (answers as any)[q._id];
 								const isSelected = isMultipleChoice
-									? Array.isArray(currentAnswer) && currentAnswer.includes(optionValue)
+									? Array.isArray(currentAnswer) &&
+										currentAnswer.includes(optionValue)
 									: currentAnswer === optionValue;
 
 								const handleOptionChange = () => {
 									if (isMultipleChoice) {
-										const currentAnswers = Array.isArray(currentAnswer) ? currentAnswer : [];
+										const currentAnswers = Array.isArray(currentAnswer)
+											? currentAnswer
+											: [];
 										if (isSelected) {
 											// Remove from selection
-											const newAnswers = currentAnswers.filter((val: any) => val !== optionValue);
+											const newAnswers = currentAnswers.filter(
+												(val: any) => val !== optionValue
+											);
 											handleAnswerChange(q._id, newAnswers);
 										} else {
 											// Add to selection
-											handleAnswerChange(q._id, [...currentAnswers, optionValue]);
+											handleAnswerChange(q._id, [
+												...currentAnswers,
+												optionValue,
+											]);
 										}
 									} else {
 										// Single choice
@@ -415,15 +423,22 @@ const RightPane: React.FC<{ survey: Survey; externalPageIndex?: number; forceSin
 											<div
 												className={`w-4 h-4 ${isMultipleChoice ? 'rounded' : 'rounded-full'} border-2 flex items-center justify-center transition-all ${isSelected ? 'border-[#FF5A5F] bg-[#FF5A5F]' : 'border-[#DDDDDD] group-hover:border-[#FF5A5F]'}`}
 											>
-												{isSelected && (
-													isMultipleChoice ? (
-														<svg className='w-2.5 h-2.5 text-white' fill='currentColor' viewBox='0 0 20 20'>
-															<path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
+												{isSelected &&
+													(isMultipleChoice ? (
+														<svg
+															className='w-2.5 h-2.5 text-white'
+															fill='currentColor'
+															viewBox='0 0 20 20'
+														>
+															<path
+																fillRule='evenodd'
+																d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
+																clipRule='evenodd'
+															/>
 														</svg>
 													) : (
 														<div className='w-1.5 h-1.5 rounded-full bg-white'></div>
-													)
-												)}
+													))}
 											</div>
 										</div>
 										<span>{optionValue}</span>
