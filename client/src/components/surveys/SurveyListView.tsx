@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSurveys } from '../../hooks/useSurveys';
 import SurveyCard from './SurveyCard';
+import CreateSurveyWizard from '../modals/CreateSurveyWizard';
 import { SURVEY_STATUS, SURVEY_TYPE } from '../../constants';
+import { useAdmin } from '../../contexts/AdminContext';
 
 const SurveyListView: React.FC = () => {
-	const { surveys, error, loading } = useSurveys();
+	const { surveys, error, loading, refreshSurveys } = useSurveys();
+	const { navigate } = useAdmin();
 	// Filtering and sorting hooks must be declared unconditionally
 	const [query, setQuery] = React.useState('');
 	const [status, setStatus] = React.useState<string>('');
@@ -12,6 +15,7 @@ const SurveyListView: React.FC = () => {
 	const [sortBy, setSortBy] = React.useState<
 		'createdAt_desc' | 'createdAt_asc' | 'title_asc' | 'title_desc'
 	>('createdAt_desc');
+	const [showCreateWizard, setShowCreateWizard] = useState(false);
 
 	const filtered = React.useMemo(() => {
 		const q = query.trim().toLowerCase();
@@ -64,46 +68,43 @@ const SurveyListView: React.FC = () => {
 
 	if (!surveys || surveys.length === 0) {
 		return (
-			<div className='space-y-8'>
-				{/* Hero Card */}
-				<div className='bg-white rounded-xl shadow-lg p-8 text-center'>
-					<div className='mb-6'>
-						<h2 className='text-3xl font-bold text-gray-900 mb-2'>Welcome to SigmaQ</h2>
-						<p className='text-lg text-gray-600'>
-							Create your first assessment in 3 steps.
-						</p>
+			<>
+				<div className='space-y-8'>
+					{/* Hero Card */}
+					<div className='bg-white rounded-xl shadow-lg p-8 text-center border border-gray-100'>
+						<div className='mb-6'>
+							<div className='w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-blue-100'>
+								<svg className='w-10 h-10 text-blue-600' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+									<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' />
+								</svg>
+							</div>
+							<h2 className='text-3xl font-bold text-gray-900 mb-2'>Welcome to SigmaQ</h2>
+							<p className='text-lg text-gray-600'>
+								Create your first survey in just 3 simple steps
+							</p>
+						</div>
+						<div className='flex flex-col sm:flex-row gap-3 justify-center items-center'>
+							<button
+								className='bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium shadow-sm hover:shadow-md transition-all'
+								onClick={() => setShowCreateWizard(true)}
+							>
+								✨ Create your first survey
+							</button>
+							<button
+								className='bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-5 py-2 rounded-lg font-medium shadow-sm hover:shadow-md transition-all'
+								onClick={() => navigate('/admin/question-banks?tab=marketplace')}
+							>
+								🛍️ Browse marketplace
+							</button>
+						</div>
 					</div>
-					<div className='flex flex-col sm:flex-row gap-4 justify-center items-center'>
-						<button
-							className='btn-primary px-6 py-3 text-lg font-medium'
-							onClick={() => {
-								// TODO: Open lightweight create wizard
-								console.log('TODO: Open create survey wizard');
-							}}
-						>
-							Create your first survey
-						</button>
-						<button
-							className='btn-secondary px-6 py-3 text-lg font-medium'
-							onClick={() => {
-								// TODO: Navigate to Question Banks > Marketplace with return URL
-								console.log('TODO: Navigate to marketplace');
-							}}
-						>
-							Use a public bank
-						</button>
-					</div>
-				</div>
 
-				{/* Quick Start Grid */}
-				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
-					<div
-						className='bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow cursor-pointer'
-						onClick={() => {
-							// TODO: Navigate to create survey
-							console.log('TODO: Navigate to create survey');
-						}}
-					>
+					{/* Quick Start Grid */}
+					<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+						<div
+							className='bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow cursor-pointer'
+							onClick={() => setShowCreateWizard(true)}
+						>
 						<div className='w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 mx-auto'>
 							<svg
 								className='w-6 h-6 text-blue-600'
@@ -130,8 +131,7 @@ const SurveyListView: React.FC = () => {
 					<div
 						className='bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow cursor-pointer'
 						onClick={() => {
-							// TODO: Navigate to public banks
-							console.log('TODO: Navigate to public banks');
+							navigate('/admin/question-banks?tab=marketplace');
 						}}
 					>
 						<div className='w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 mx-auto'>
@@ -159,10 +159,7 @@ const SurveyListView: React.FC = () => {
 
 					<div
 						className='bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow cursor-pointer'
-						onClick={() => {
-							// TODO: Navigate to import CSV
-							console.log('TODO: Navigate to import CSV');
-						}}
+						onClick={() => navigate('/admin/question-banks?action=import')}
 					>
 						<div className='w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 mx-auto'>
 							<svg
@@ -189,10 +186,7 @@ const SurveyListView: React.FC = () => {
 
 					<div
 						className='bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow cursor-pointer'
-						onClick={() => {
-							// TODO: Navigate to samples
-							console.log('TODO: Navigate to explore samples');
-						}}
+						onClick={() => setShowCreateWizard(true)}
 					>
 						<div className='w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4 mx-auto'>
 							<svg
@@ -224,14 +218,37 @@ const SurveyListView: React.FC = () => {
 					</div>
 				</div>
 			</div>
+
+				{/* Create Survey Wizard */}
+				<CreateSurveyWizard
+					show={showCreateWizard}
+					onClose={() => setShowCreateWizard(false)}
+					onSuccess={refreshSurveys}
+				/>
+			</>
 		);
 	}
 
 	return (
-		<div className='space-y-6'>
-			{/* Filters */}
-			<div className='bg-gray-50 rounded-lg p-3'>
-				<div className='flex flex-wrap items-center gap-2'>
+		<>
+			<div className='space-y-6'>
+				{/* Header with Create Button */}
+				<div className='flex justify-between items-center mb-4'>
+					<h2 className='text-2xl font-bold text-gray-900'>Surveys</h2>
+					<button
+						onClick={() => setShowCreateWizard(true)}
+						className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transition-all flex items-center gap-2'
+					>
+						<svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+							<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
+						</svg>
+						Create Survey
+					</button>
+				</div>
+
+				{/* Filters */}
+				<div className='bg-gray-50 rounded-lg p-3'>
+					<div className='flex flex-wrap items-center gap-2'>
 					<input
 						className='input-field flex-1 min-w-[160px] md:min-w-[240px] px-2 py-1 text-sm h-8'
 						placeholder='Search by title/description/slug'
@@ -290,7 +307,15 @@ const SurveyListView: React.FC = () => {
 					<SurveyCard key={survey?._id || `survey-${index}`} survey={survey} />
 				))
 			)}
-		</div>
+			</div>
+
+			{/* Create Survey Wizard */}
+			<CreateSurveyWizard
+				show={showCreateWizard}
+				onClose={() => setShowCreateWizard(false)}
+				onSuccess={refreshSurveys}
+			/>
+		</>
 	);
 };
 

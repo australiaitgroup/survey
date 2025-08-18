@@ -182,6 +182,28 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 		}
 	}, [tabLocal, survey._id]);
 
+	// Check for action=preview query parameter
+	useEffect(() => {
+		const searchParams = new URLSearchParams(location.search);
+		if (searchParams.get('action') === 'preview') {
+			// Scroll to preview section or show preview tab
+			setTimeout(() => {
+				const previewElement = document.getElementById('survey-preview');
+				if (previewElement) {
+					previewElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				}
+				// Also show inline preview if it was hidden
+				setShowInlinePreview(true);
+			}, 500);
+			// Clean up the URL
+			searchParams.delete('action');
+			const newUrl = searchParams.toString() 
+				? `${location.pathname}?${searchParams.toString()}`
+				: location.pathname;
+			window.history.replaceState({}, '', newUrl);
+		}
+	}, [location.search]);
+
 	const s = survey;
 	const currentForm = questionForms[s._id] || {
 		text: '',
