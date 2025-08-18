@@ -37,8 +37,11 @@ const LandingNavbar: React.FC = () => {
 	}, [mobileMenuOpen]);
 
 	const navLinks = [
-		{ key: 'features', href: '#features' },
-		{ key: 'pricing', href: '#pricing' },
+		{ key: 'features', href: '/features' },
+		{ key: 'pricing', href: '/pricing' },
+		{ key: 'caseStudies', href: '/case-studies' },
+		{ key: 'about', href: '/about' },
+		{ key: 'contact', href: '/contact' },
 	];
 
 	return (
@@ -54,13 +57,23 @@ const LandingNavbar: React.FC = () => {
 					{/* Desktop Navigation */}
 					<div className='hidden md:flex items-center space-x-8'>
 						{navLinks.map(link => (
-							<a
-								key={link.key}
-								href={link.href}
-								className='text-[#484848] hover:text-[#FF5A5F] transition duration-200 ease-in-out font-medium'
-							>
-								{t(`landing.footer.${link.key}`)}
-							</a>
+							link.href.startsWith('#') ? (
+								<a
+									key={link.key}
+									href={link.href}
+									className='text-[#484848] hover:text-[#FF5A5F] transition duration-200 ease-in-out font-medium'
+								>
+									{t(`landing.footer.${link.key}`)}
+								</a>
+							) : (
+								<Link
+									key={link.key}
+									to={link.href}
+									className='text-[#484848] hover:text-[#FF5A5F] transition duration-200 ease-in-out font-medium'
+								>
+									{t(`landing.footer.${link.key}`)}
+								</Link>
+							)
 						))}
 						<LanguageSwitcher />
 						<Link
@@ -120,14 +133,25 @@ const LandingNavbar: React.FC = () => {
 								{/* Navigation links */}
 								<div className='space-y-6'>
 									{navLinks.map(link => (
-										<a
-											key={link.key}
-											href={link.href}
-											className='block text-xl font-medium text-gray-900 hover:text-blue-600 transition duration-150 ease-in-out'
-											onClick={() => setMobileMenuOpen(false)}
-										>
-											{t(`landing.footer.${link.key}`)}
-										</a>
+										link.href.startsWith('#') ? (
+											<a
+												key={link.key}
+												href={link.href}
+												className='block text-xl font-medium text-gray-900 hover:text-blue-600 transition duration-150 ease-in-out'
+												onClick={() => setMobileMenuOpen(false)}
+											>
+												{t(`landing.footer.${link.key}`)}
+											</a>
+										) : (
+											<Link
+												key={link.key}
+												to={link.href}
+												className='block text-xl font-medium text-gray-900 hover:text-blue-600 transition duration-150 ease-in-out'
+												onClick={() => setMobileMenuOpen(false)}
+											>
+												{t(`landing.footer.${link.key}`)}
+											</Link>
+										)
 									))}
 								</div>
 

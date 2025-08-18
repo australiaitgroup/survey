@@ -10,8 +10,11 @@ const Footer: React.FC = () => {
 	}, [i18n]);
 
 	const links = [
-		{ key: 'features', to: '#features' },
-		{ key: 'pricing', to: '#pricing' },
+		{ key: 'features', to: '/features' },
+		{ key: 'pricing', to: '/pricing' },
+		{ key: 'caseStudies', to: '/case-studies' },
+		{ key: 'about', to: '/about' },
+		{ key: 'contact', to: '/contact' },
 		{ key: 'helpCenter', to: '/help' },
 		{ key: 'privacy', to: '/privacy' },
 		{ key: 'terms', to: '/terms' },
@@ -36,12 +39,21 @@ const Footer: React.FC = () => {
 						<ul className='space-y-3'>
 							{links.map(link => (
 								<li key={link.key}>
-									<Link
-										to={link.to}
-										className='text-[#767676] hover:text-[#FF5A5F] transition duration-200 ease-in-out'
-									>
-										{t(`landing.footer.${link.key}`)}
-									</Link>
+									{link.to.startsWith('#') ? (
+										<a
+											href={link.to}
+											className='text-[#767676] hover:text-[#FF5A5F] transition duration-200 ease-in-out'
+										>
+											{t(`landing.footer.${link.key}`)}
+										</a>
+									) : (
+										<Link
+											to={link.to}
+											className='text-[#767676] hover:text-[#FF5A5F] transition duration-200 ease-in-out'
+										>
+											{t(`landing.footer.${link.key}`)}
+										</Link>
+									)}
 								</li>
 							))}
 						</ul>

@@ -7,6 +7,13 @@ import TakeAssessment from './TakeAssessment';
 import Admin from './Admin';
 import OnboardingPage from './components/onboarding/OnboardingPage';
 import LandingPage from './components/landing/LandingPage';
+import FeaturesPage from './components/landing/FeaturesPage';
+import AboutPage from './components/landing/AboutPage';
+import ContactPage from './components/landing/ContactPage';
+import PrivacyPage from './components/landing/PrivacyPage';
+import TermsPage from './components/landing/TermsPage';
+import CaseStudiesPage from './components/landing/CaseStudiesPage';
+import PricingPage from './components/landing/PricingPage';
 import ResponsiveLayoutDemo from './components/survey/ResponsiveLayoutDemo';
 import './styles.css';
 import './styles/markdown.css';
@@ -23,6 +30,13 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 				<Route path='/demo' element={<TakeSurvey />} />
 				<Route path='/responsive-demo' element={<ResponsiveLayoutDemo />} />
 				<Route path='/contact-sales' element={<LandingPage />} />
+				<Route path='/pricing' element={<PricingPage />} />
+				<Route path='/features' element={<FeaturesPage />} />
+				<Route path='/about' element={<AboutPage />} />
+				<Route path='/contact' element={<ContactPage />} />
+				<Route path='/privacy' element={<PrivacyPage />} />
+				<Route path='/terms' element={<TermsPage />} />
+				<Route path='/case-studies' element={<CaseStudiesPage />} />
 				<Route path='/onboarding' element={<OnboardingPage />} />
 				<Route path='/admin' element={<Admin />} />
 				<Route path='/admin/login' element={<Admin />} />
