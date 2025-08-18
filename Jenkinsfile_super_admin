@@ -123,7 +123,7 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
         stage('Deploy to S3') {
             steps {
                 echo 'Deploying Super Admin to S3...'
-                withAWS(region: env.AWS_REGION, credentials: 'aws-credentials') {
+                withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
                     dir('super-admin') {
                         sh '''
                             echo "🚀 Starting S3 deployment..."
@@ -180,14 +180,7 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
     post {
         always {
             echo 'Pipeline completed'
-            script {
-                try {
-                    // Use Jenkins Workspace Cleanup to fully clean workspace (including node_modules) after each run
-                    cleanWs()
-                } catch (Exception e) {
-                    echo "Workspace cleanup failed: ${e.getMessage()}"
-                }
-            }
+            cleanWs()
         }
         success {
             echo '🎉 Super Admin deployment successful!'
