@@ -180,8 +180,14 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
     post {
         always {
             echo 'Pipeline completed'
-            // Use Jenkins Workspace Cleanup to fully clean workspace (including node_modules) after each run
-            cleanWs()
+            script {
+                try {
+                    // Use Jenkins Workspace Cleanup to fully clean workspace (including node_modules) after each run
+                    cleanWs(cleanWhenAborted: true, deleteDirs: true)
+                } catch (Exception e) {
+                    echo "Workspace cleanup failed: ${e.getMessage()}"
+                }
+            }
         }
         success {
             echo '🎉 Super Admin deployment successful!'
@@ -190,6 +196,8 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
         }
         failure {
             echo '❌ Super Admin deployment failed!'
+            echo 'ERROR: Check Jenkins credentials configuration'
+            echo 'Required credentials: aws-credentials, S3_BUCKET_NAME, AWS_REGION'
             // You can add failure notifications here
         }
     }
