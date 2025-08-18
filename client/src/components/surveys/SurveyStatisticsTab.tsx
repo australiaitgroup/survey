@@ -4,6 +4,8 @@ import type { EnhancedStats, Survey } from '../../types/admin';
 import { STATS_VIEW } from '../../constants';
 import { StatisticsFilter } from './tabs/StatisticsFilter';
 import api from '../../utils/axiosConfig';
+import TimeSpentChart from './TimeSpentChart';
+import CalendarHeatmap, { HeatmapDatum } from './CalendarHeatmap';
 
 type Filters = {
 	name?: string;
@@ -40,6 +42,79 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 }) => {
 	const { t } = useTranslation();
 
+	const escapeCsv = (value: unknown): string => {
+		const s = value === null || value === undefined ? '' : String(value);
+		if (/[",\n]/.test(s)) {
+			return '"' + s.replace(/"/g, '""') + '"';
+		}
+		return s;
+	};
+
+	const downloadCsv = (csv: string, filename: string) => {
+		const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement('a');
+		link.href = url;
+		link.setAttribute('download', filename);
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		URL.revokeObjectURL(url);
+	};
+
+	const exportIndividualCsv = () => {
+		if (!stats?.userResponses) return;
+		const headers = [
+			'RESPONSE_ID',
+			'NAME',
+			'EMAIL',
+			'SUBMITTED_AT',
+			'TIME_SPENT_SECONDS',
+			'PASSED',
+			'SCORE',
+		];
+		const rows = stats.userResponses.map(r => {
+			const submitted = new Date(r.createdAt).toISOString();
+			const passed = (r as any)?.score ? ((r as any).score.passed ? 'YES' : 'NO') : '';
+			const score = (r as any)?.score
+				? (r as any).score.scoringMode === 'percentage'
+					? `${(r as any).score.percentage}%`
+					: `${(r as any).score.totalPoints}/${(r as any).score.maxPossiblePoints}`
+				: '';
+			return [
+				escapeCsv((r as any)._id),
+				escapeCsv((r as any).name),
+				escapeCsv((r as any).email),
+				escapeCsv(submitted),
+				escapeCsv((r as any).timeSpent ?? ''),
+				escapeCsv(passed),
+				escapeCsv(score),
+			].join(',');
+		});
+		const csv = [headers.join(','), ...rows].join('\n');
+		downloadCsv(csv, `${survey.slug || survey.title || 'survey'}-responses.csv`);
+	};
+
+	const exportAggregatedCsv = () => {
+		if (!stats?.aggregatedStats) return;
+		const total = stats?.summary?.totalResponses || 0;
+		const headers = ['QUESTION', 'OPTION', 'COUNT', 'PERCENTAGE'];
+		const rows: string[] = [];
+		stats.aggregatedStats.forEach(st => {
+			Object.entries(st.options).forEach(([opt, count]) => {
+				const pct = total > 0 ? (((count as number) / total) * 100).toFixed(1) + '%' : '0.0%';
+				rows.push([
+					escapeCsv(st.question),
+					escapeCsv(opt),
+					escapeCsv(count as number),
+					escapeCsv(pct),
+				].join(','));
+			});
+		});
+		const csv = [headers.join(','), ...rows].join('\n');
+		downloadCsv(csv, `${survey.slug || survey.title || 'survey'}-aggregated.csv`);
+	};
+
 	const totals = stats?.summary || { totalResponses: 0, completionRate: 0, totalQuestions: 0 };
 
 	const formatTime = (seconds: number): string => {
@@ -51,41 +126,41 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 		return `${minutes}m ${remainingSeconds}s`;
 	};
 
-  // Local state for per-response details (question-level correctness)
-  const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
-  const [details, setDetails] = React.useState<Record<string, any>>({});
-  const [loadingDetail, setLoadingDetail] = React.useState<Record<string, boolean>>({});
-  
-  // Sort state
-  const [sortOrder, setSortOrder] = React.useState<'newest' | 'oldest'>('newest');
+	// Local state for per-response details (question-level correctness)
+	const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
+	const [details, setDetails] = React.useState<Record<string, unknown>>({});
+	const [loadingDetail, setLoadingDetail] = React.useState<Record<string, boolean>>({});
 
-  const toggleExpand = async (responseId: string) => {
-    const isOpen = expanded[responseId];
-    const next = { ...expanded, [responseId]: !isOpen };
-    setExpanded(next);
-    if (!isOpen && !details[responseId]) {
-      try {
-        setLoadingDetail(prev => ({ ...prev, [responseId]: true }));
-        const res = await api.get(`/admin/responses/${responseId}`);
-        setDetails(prev => ({ ...prev, [responseId]: res.data }));
-      } catch (e) {
-        // noop; optional: surface error toast
-      } finally {
-        setLoadingDetail(prev => ({ ...prev, [responseId]: false }));
-      }
-    }
-  };
+	// Sort state
+	const [sortOrder, setSortOrder] = React.useState<'newest' | 'oldest'>('newest');
 
-  // Sort responses by date
-  const getSortedResponses = () => {
-    if (!stats?.userResponses) return [];
-    const sorted = [...stats.userResponses].sort((a, b) => {
-      const dateA = new Date(a.createdAt).getTime();
-      const dateB = new Date(b.createdAt).getTime();
-      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
-    });
-    return sorted;
-  };
+	const toggleExpand = async (responseId: string): Promise<void> => {
+		const isOpen = expanded[responseId];
+		const next = { ...expanded, [responseId]: !isOpen };
+		setExpanded(next);
+		if (!isOpen && !details[responseId]) {
+			try {
+				setLoadingDetail(prev => ({ ...prev, [responseId]: true }));
+				const res = await api.get(`/admin/responses/${responseId}`);
+				setDetails(prev => ({ ...prev, [responseId]: res.data }));
+			} catch {
+				// noop
+			} finally {
+				setLoadingDetail(prev => ({ ...prev, [responseId]: false }));
+			}
+		}
+	};
+
+	// Sort responses by date
+	const getSortedResponses = (): Array<{ _id: string; name?: string; email?: string; createdAt: string; timeSpent?: number; score?: unknown }> => {
+		if (!stats?.userResponses) return [];
+		const sorted = [...stats.userResponses].sort((a, b) => {
+			const dateA = new Date((a as any).createdAt).getTime();
+			const dateB = new Date((b as any).createdAt).getTime();
+			return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+		});
+		return sorted as any;
+	};
 
 	return (
 		<div className='card'>
@@ -110,16 +185,21 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 					<button className='btn-secondary text-sm' onClick={onRefresh} type='button'>
 						Refresh Data
 					</button>
+					<button className='btn-secondary text-sm' onClick={exportIndividualCsv} type='button'>
+						Export CSV (Individual)
+					</button>
+					<button className='btn-secondary text-sm' onClick={exportAggregatedCsv} type='button'>
+						Export CSV (Aggregated)
+					</button>
 				</div>
 			</div>
 
 			{!stats ? (
 				<div className='text-center py-8 text-gray-500'>
-					<p>No statistics data, click "Refresh Data" to load</p>
+					<p>No statistics data, click &quot;Refresh Data&quot; to load</p>
 				</div>
 			) : (
 				<div className='space-y-4'>
-					<StatisticsFilter onFilter={onFilter} loading={filterLoading} />
 					{/* Overview */}
 					<div className='bg-blue-50 rounded-lg p-4'>
 						<h5 className='font-semibold text-gray-800 mb-2'>Overview</h5>
@@ -144,6 +224,31 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 							</div>
 						</div>
 					</div>
+
+					{/* Time charts in two columns */}
+					{stats?.userResponses && stats.userResponses.length > 0 && (
+						<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+							<div className='bg-white rounded-lg p-4 border border-gray-200'>
+								<h5 className='font-semibold text-gray-800 mb-2'>Time Spent Distribution</h5>
+								<TimeSpentChart seconds={stats.userResponses.map(r => (r as any).timeSpent)} />
+								<p className='text-xs text-gray-500 mt-2'>Distribution of total time spent per response</p>
+							</div>
+							<div className='bg-white rounded-lg p-4 border border-gray-200'>
+								<h5 className='font-semibold text-gray-800 mb-2'>Daily Activity</h5>
+								<CalendarHeatmap
+									data={stats.userResponses.map(r => ({
+										date: new Date((r as any).createdAt).toISOString().slice(0, 10),
+										value: Number((r as any).timeSpent || 0),
+									})) as HeatmapDatum[]}
+									weeks={20}
+									valueLabel={(v) => `${Math.round(v)}s`}
+								/>
+								<p className='text-xs text-gray-500 mt-2'>Daily responses and total time (last ~20 weeks)</p>
+							</div>
+						</div>
+					)}
+
+					<StatisticsFilter onFilter={onFilter} loading={filterLoading} />
 
 					{/* View toggle */}
 					<div className='flex space-x-4 border-b border-gray-200 pb-2'>
@@ -238,168 +343,133 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 											responsePage * pageSize
 										)
 										.map(response => (
-                                            <div key={response._id} className='bg-gray-50 rounded-lg p-4'>
-                                                <div className='flex justify-between items-start mb-3'>
-                                                    <div>
-                                                        <div className='font-semibold text-gray-800'>
-                                                            {response.name}
-                                                        </div>
-                                                        <div className='text-sm text-gray-500'>
-                                                            {response.email}
-                                                        </div>
-                                                    </div>
-                                                    {survey.type !== 'survey' && response.score && (
-                                                        <div className='flex items-center gap-2'>
-                                                            <span
-                                                                className={`px-2 py-1 text-xs rounded-full ${
-                                                                    response.score.passed
-                                                                        ? 'bg-green-100 text-green-700'
-                                                                        : 'bg-red-100 text-red-700'
-                                                                }`}
-                                                            >
-                                                                {response.score.passed ? 'Passed' : 'Failed'}
-                                                            </span>
-                                                            <span className='text-sm text-gray-700'>
-                                                                {response.score.scoringMode === 'percentage'
-                                                                    ? `${response.score.percentage}%`
-                                                                    : `${response.score.totalPoints}/${response.score.maxPossiblePoints}`}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                    <div className='text-sm text-gray-600'>
-                                                        <div>Submitted at: <span className='font-medium text-gray-800'>{new Date(response.createdAt).toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: 'short' })}</span></div>
-                                                        <div>Time spent: <span className='font-medium text-gray-800'>{formatTime(response.timeSpent ?? 0)}</span></div>
-                                                    </div>
-                                                    <div className='mt-3 flex gap-2'>
-                                                        <button
-                                                            className='btn-outline btn-small'
-                                                            onClick={() => toggleExpand((response as any)._id)}
-                                                            type='button'
-                                                        >
-                                                            {expanded[(response as any)._id] ? 'Hide Result Detail' : 'View Result Detail'}
-                                                        </button>
-                                                        <button
-                                                            className='btn-secondary btn-small text-red-600'
-                                                            onClick={async () => {
-                                                                if (!confirm('Are you sure you want to delete this response?')) return;
-                                                                try {
-                                                                    await api.delete(`/admin/responses/${(response as any)._id}`);
-                                                                    onRefresh();
-                                                                } catch (e) {
-                                                                    alert('Failed to delete response');
-                                                                }
-                                                            }}
-                                                            type='button'
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                    </div>
+											<div key={(response as any)._id} className='bg-gray-50 rounded-lg p-4'>
+												<div className='flex justify-between items-start mb-3'>
+													<div>
+														<div className='font-semibold text-gray-800'>
+															{(response as any).name}
+														</div>
+														<div className='text-sm text-gray-500'>
+															{(response as any).email}
+														</div>
+													</div>
+													{survey.type !== 'survey' && (response as any).score && (
+														<div className='flex items-center gap-2'>
+															<span
+																className={`px-2 py-1 text-xs rounded-full ${
+																	(response as any).score.passed
+																		? 'bg-green-100 text-green-700'
+																		: 'bg-red-100 text-red-700'
+																}`}
+															>
+																{(response as any).score.passed ? 'Passed' : 'Failed'}
+															</span>
+															<span className='text-sm text-gray-700'>
+																{(response as any).score.scoringMode === 'percentage'
+																		? `${(response as any).score.percentage}%`
+																		: `${(response as any).score.totalPoints}/${(response as any).score.maxPossiblePoints}`}
+															</span>
+														</div>
+													)}
+												</div>
+												<div className='text-sm text-gray-600'>
+													<div>
+														Submitted at: <span className='font-medium text-gray-800'>{new Date((response as any).createdAt).toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, timeZoneName: 'short' })}</span>
+													</div>
+													<div>
+														Time spent: <span className='font-medium text-gray-800'>{formatTime((response as any).timeSpent ?? 0)}</span>
+													</div>
+												</div>
+												<div className='mt-3 flex gap-2'>
+													<button
+														className='btn-outline btn-small'
+														onClick={() => toggleExpand((response as any)._id)}
+														type='button'
+													>
+														{expanded[(response as any)._id] ? 'Hide Result Detail' : 'View Result Detail'}
+													</button>
+													<button
+														className='btn-secondary btn-small text-red-600'
+														onClick={async () => {
+															if (!confirm('Are you sure you want to delete this response?')) return;
+															try {
+																await api.delete(`/admin/responses/${(response as any)._id}`);
+																onRefresh();
+															} catch {
+																alert('Failed to delete response');
+															}
+														}}
+														type='button'
+													>
+														Delete
+													</button>
+												</div>
 
-                                                {expanded[(response as any)._id] && (
-                                                    <div className='mt-3 rounded-md border border-gray-200 bg-white'>
-                                                        {loadingDetail[(response as any)._id] ? (
-                                                            <div className='p-3 text-sm text-gray-500'>Loading...</div>
-                                                        ) : (
-                                                            <div className='divide-y divide-gray-100'>
-                                                                 {(details[(response as any)._id]?.questionDetails || []).map((q: any, idx: number) => {
-                                                                    const normalizeOptionText = (opt: any) => {
-                                                                        if (typeof opt === 'string') {
-                                                                            if (opt.includes('text:')) {
-                                                                                const m = opt.match(/text:\s*'([^']+)'/);
-                                                                                return m ? m[1] : opt;
-                                                                            }
-                                                                            return opt;
-                                                                        }
-                                                                        return (opt && opt.text) || '';
-                                                                    };
-                                                                    const getCorrectDisplay = () => {
-                                                                        if (q.questionType === 'single_choice' && typeof q.correctAnswer === 'number') {
-                                                                            const opts = q.options || [];
-                                                                            return normalizeOptionText(opts[q.correctAnswer]);
-                                                                        }
-                                                                        if (q.questionType === 'multiple_choice' && Array.isArray(q.correctAnswer)) {
-                                                                            const opts = q.options || [];
-                                                                            return q.correctAnswer.map((idx: number) => normalizeOptionText(opts[idx])).join(', ');
-                                                                        }
-                                                                        return String(q.correctAnswer ?? '—');
-                                                                    };
-                                                                    const getUserDisplay = () => {
-                                                                        if (Array.isArray(q.userAnswer)) return q.userAnswer.join(', ');
-                                                                        return String(q.userAnswer ?? '—');
-                                                                    };
-                                                                    const correctDisplay = getCorrectDisplay();
-                                                                    const userDisplay = getUserDisplay();
-                                                                    return (
-                                                                    <div key={idx} className='p-3 text-sm flex items-start gap-3'>
-                                                                        {survey.type !== 'survey' && (
-                                                                        <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${q.isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                                            {q.isCorrect ? 'Correct' : 'Wrong'}
-                                                                        </div>
-                                                                        )}
-                                                                        <div className='flex-1 min-w-0'>
-                                                                            <div className='font-medium text-gray-800 truncate'>#{q.questionIndex + 1} {q.questionText}</div>
-                                                                            <div className='text-gray-600 mt-0.5'>
-                                                                                <span className='mr-2'>Your answer: <span className='font-medium text-gray-800'>{userDisplay}</span></span>
-                                                                                {survey.type !== 'survey' && (
-                                                                                <span>Correct: <span className='font-medium text-gray-800'>{correctDisplay}</span></span>
-                                                                                )}
-                                                                            </div>
-                                                                            <div className='text-xs text-gray-500 mt-0.5'>Time on question: {q.timeSpent ?? 0}s</div>
-                                                                        </div>
-                                                                        {survey.type !== 'survey' && (
-                                                                        <div className='text-right text-gray-700 whitespace-nowrap'>
-                                                                            {q.pointsAwarded}/{q.maxPoints} pts
-                                                                        </div>
-                                                                        )}
-                                                                    </div>
-                                                                )})}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )}
-											</div>
-										))}
-									{getSortedResponses().length > pageSize && (
-										<div className='flex items-center justify-between mt-2'>
-											<button
-												onClick={() =>
-													setResponsePage(prev =>
-														Math.max(
-															1,
-															(typeof prev === 'number' ? prev : 1) -
-																1
-														)
-													)
-												}
-												disabled={responsePage <= 1}
-												className='px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed'
-											>
-												Prev
-											</button>
-											<button
-												onClick={() =>
-													setResponsePage(prev =>
-														Math.min(
-															Math.ceil(
-																getSortedResponses().length /
-																	pageSize
-															),
-															(typeof prev === 'number' ? prev : 1) +
-																1
-														)
-													)
-												}
-												disabled={
-													responsePage >=
-													Math.ceil(getSortedResponses().length / pageSize)
-												}
-												className='px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed'
-											>
-												Next
-											</button>
+											{expanded[(response as any)._id] && (
+												<div className='mt-3 rounded-md border border-gray-200 bg-white'>
+													{loadingDetail[(response as any)._id] ? (
+														<div className='p-3 text-sm text-gray-500'>Loading...</div>
+													) : (
+														<div className='divide-y divide-gray-100'>
+															{(((details[(response as any)._id] as any)?.questionDetails) || []).map((q: any, idx: number) => {
+																const normalizeOptionText = (opt: any) => {
+																	if (typeof opt === 'string') {
+																		if (opt.includes('text:')) {
+																			const m = opt.match(/text:\s*'([^']+)'/);
+																			return m ? m[1] : opt;
+																		}
+																		return opt;
+																	}
+																	return (opt && (opt as any).text) || '';
+																};
+																const getCorrectDisplay = () => {
+																	if (q.questionType === 'single_choice' && typeof q.correctAnswer === 'number') {
+																		const opts = q.options || [];
+																		return normalizeOptionText(opts[q.correctAnswer]);
+																	}
+																	if (q.questionType === 'multiple_choice' && Array.isArray(q.correctAnswer)) {
+																		const opts = q.options || [];
+																		return q.correctAnswer.map((idxx: number) => normalizeOptionText(opts[idxx])).join(', ');
+																	}
+																	return String(q.correctAnswer ?? '—');
+																};
+																const getUserDisplay = () => {
+																	if (Array.isArray(q.userAnswer)) return q.userAnswer.join(', ');
+																	return String(q.userAnswer ?? '—');
+																};
+																const correctDisplay = getCorrectDisplay();
+																const userDisplay = getUserDisplay();
+																return (
+																	<div key={idx} className='p-3 text-sm flex items-start gap-3'>
+																		{survey.type !== 'survey' && (
+																			<div className={`px-2 py-0.5 rounded-full text-xs font-medium ${q.isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+																				{q.isCorrect ? 'Correct' : 'Wrong'}
+																			</div>
+																		)}
+																		<div className='flex-1 min-w-0'>
+																			<div className='font-medium text-gray-800 truncate'>#{q.questionIndex + 1} {q.questionText}</div>
+																			<div className='text-gray-600 mt-0.5'>
+																				<span className='mr-2'>Your answer: <span className='font-medium text-gray-800'>{userDisplay}</span></span>
+																				{survey.type !== 'survey' && (
+																					<span>Correct: <span className='font-medium text-gray-800'>{correctDisplay}</span></span>
+																				)}
+																			</div>
+																			<div className='text-xs text-gray-500 mt-0.5'>Time on question: {q.timeSpent ?? 0}s</div>
+																		</div>
+																		{survey.type !== 'survey' && (
+																			<div className='text-right text-gray-700 whitespace-nowrap'>
+																				{q.pointsAwarded}/{q.maxPoints} pts
+																			</div>
+																		)}
+																	</div>
+																);
+															})}
+														</div>
+													)}
+												</div>
+											)}
 										</div>
-									)}
+									))}
 								</>
 							) : (
 								<div className='text-center py-8 text-gray-500'>

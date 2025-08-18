@@ -52,6 +52,31 @@ A modern, full-stack survey application built with Node.js, Express, MongoDB, Re
 - **QRCode** library for QR code generation
 - **React Hook Form** for form handling
 
+## Public Website (Landing)
+
+- Routes:
+  - `/` Home (Hero, How It Works, Product Suite, Features, Question Banks, AI, Pricing, Testimonials)
+  - `/features` All features overview（AI authoring, analytics, automation, product suite）
+  - `/pricing` Plans with Question Banks highlight and resale/monetization intro
+  - `/about` Brand story, mission, values, milestones, team, customers
+  - `/contact` Contact channels + contact form（stored in DB）
+  - `/case-studies` Case studies overview
+- Responsive by default（Tailwind grid and breakpoints）
+- Internationalization: English/中文（i18next）
+
+### Google Analytics (optional)
+
+The site supports GA4. If not configured, builds still work and analytics is skipped.
+
+1) Add an env variable to the frontend (optional):
+
+```bash
+cd client
+echo "VITE_GA_MEASUREMENT_ID=G-XXXXXXXX" >> .env
+```
+
+2) Deploy as usual. Page views will be sent on route changes.
+
 ## 📚 Documentation
 
 详细的系统文档请查看 [docs/](./docs/) 目录：
@@ -103,6 +128,12 @@ A modern, full-stack survey application built with Node.js, Express, MongoDB, Re
     ADMIN_PASSWORD=password
     PORT=5050
     ```
+
+   Optional (frontend analytics): in `client/.env` you can set
+
+   ```env
+   VITE_GA_MEASUREMENT_ID=G-XXXXXXXX
+   ```
 
 5. **Start the backend server**
 
@@ -178,30 +209,30 @@ A modern, full-stack survey application built with Node.js, Express, MongoDB, Re
     - **Public Banks**: Full question bank management with bottom-sliding drawer interface
     - **Transactions**: Financial transaction monitoring and analysis
     - **Audit Logs**: Comprehensive system activity audit trail
-    
+
 3. **Default Super Admin Account**
-    
+
     The system comes with a default super admin account for initial setup:
-    
+
     ```
     Email: superadmin@system.com
     Password: SuperAdmin@2024!
     ```
-    
+
     **To initialize the default account, run:**
     ```bash
     node scripts/init-super-admin.js
     ```
-    
+
     ⚠️ **IMPORTANT**: Change the password immediately after first login!
 
 4. **Creating Additional Super Admin Users**
-    
+
     **Option 1: Using the provided script**
     ```bash
     node scripts/create-super-admin.js admin@example.com
     ```
-    
+
     **Option 2: Manually in MongoDB**
     ```javascript
     // Connect to MongoDB and run:
@@ -232,6 +263,7 @@ A modern, full-stack survey application built with Node.js, Express, MongoDB, Re
 - `GET /api/surveys` - List all active surveys
 - `GET /api/survey/:slug` - Get survey by slug
 - `POST /api/surveys/:id/responses` - Submit survey response
+- `POST /api/contact` - Submit a contact message (stored in DB)
 
 ### Admin Endpoints (require authentication)
 

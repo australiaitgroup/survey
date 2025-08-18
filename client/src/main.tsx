@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import AnalyticsProvider from './AnalyticsProvider';
 import Survey from './Survey';
 import TakeSurvey from './TakeSurvey';
 import TakeAssessment from './TakeAssessment';
@@ -22,7 +23,8 @@ import './i18n';
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 	<React.StrictMode>
 		<BrowserRouter>
-			<Routes>
+			<AnalyticsProvider>
+				<Routes>
 				<Route path='/' element={<LandingPage />} />
 				<Route path='/home' element={<LandingPage />} />
 				<Route path='/signup' element={<OnboardingPage />} />
@@ -61,7 +63,8 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 				<Route path='/:companySlug/survey/:slug' element={<TakeSurvey />} />
 				<Route path='/:companySlug/assessment/:slug' element={<TakeAssessment />} />
 				<Route path='/legacy' element={<Survey />} />
-			</Routes>
+				</Routes>
+			</AnalyticsProvider>
 		</BrowserRouter>
 	</React.StrictMode>
 );

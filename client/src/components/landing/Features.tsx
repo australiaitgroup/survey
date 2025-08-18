@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import {
 	ChartBarIcon,
 	DocumentChartBarIcon,
@@ -66,47 +67,115 @@ const Features: React.FC = () => {
 		},
 	];
 
+	const containerVariants = {
+		hidden: { opacity: 0 },
+		visible: {
+			opacity: 1,
+			transition: {
+				staggerChildren: 0.3,
+				delayChildren: 0.2
+			}
+		}
+	};
+
+	const itemVariants = {
+		hidden: { opacity: 0, y: 50 },
+		visible: {
+			opacity: 1,
+			y: 0,
+			transition: {
+				duration: 0.8,
+				ease: "easeOut"
+			}
+		}
+	};
+
 	return (
 		<section className='py-24 bg-white'>
 			<div className='container mx-auto px-6 lg:px-8'>
-				<div className='text-center mb-20'>
+				<motion.div 
+					className='text-center mb-20'
+					initial={{ opacity: 0, y: 30 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: true }}
+					transition={{ duration: 0.6 }}
+				>
 					<h2 className='heading-lg mb-4'>{t('landing.features.title')}</h2>
-				</div>
+				</motion.div>
 
-				<div className='space-y-32'>
+				<motion.div 
+					className='space-y-32'
+					variants={containerVariants}
+					initial="hidden"
+					whileInView="visible"
+					viewport={{ once: true, margin: "-100px" }}
+				>
 					{features.map((feature, index) => {
 						const Icon = feature.icon;
 						const isEven = index % 2 === 0;
 
 						return (
-							<div
+							<motion.div
 								key={feature.key}
+								variants={itemVariants}
 								className={`flex flex-col lg:flex-row items-center gap-16 ${
 									!isEven ? 'lg:flex-row-reverse' : ''
 								}`}
 							>
-								<div className='flex-1'>
-									<div
+								<motion.div 
+									className='flex-1'
+									initial={{ opacity: 0, x: isEven ? -50 : 50 }}
+									whileInView={{ opacity: 1, x: 0 }}
+									viewport={{ once: true }}
+									transition={{ duration: 0.8, delay: 0.2 }}
+								>
+									<motion.div
 										className={
 											'inline-flex p-4 rounded-2xl bg-gradient-to-br from-[#FF5A5F] to-[#FC642D] text-white mb-6 shadow-lg'
 										}
+										whileHover={{ scale: 1.1, rotate: 5 }}
+										transition={{ duration: 0.3 }}
 									>
 										<Icon className='h-8 w-8' />
-									</div>
-									<h3 className='heading-md mb-6'>
+									</motion.div>
+									<motion.h3 
+										className='heading-md mb-6'
+										initial={{ opacity: 0, y: 20 }}
+										whileInView={{ opacity: 1, y: 0 }}
+										viewport={{ once: true }}
+										transition={{ duration: 0.6, delay: 0.4 }}
+									>
 										{t(`landing.features.${feature.key}.title`)}
-									</h3>
-									<p className='body-lg'>
+									</motion.h3>
+									<motion.p 
+										className='body-lg'
+										initial={{ opacity: 0, y: 20 }}
+										whileInView={{ opacity: 1, y: 0 }}
+										viewport={{ once: true }}
+										transition={{ duration: 0.6, delay: 0.6 }}
+									>
 										{t(`landing.features.${feature.key}.description`)}
-									</p>
-								</div>
-								<div className='flex-1'>
+									</motion.p>
+								</motion.div>
+								<motion.div 
+									className='flex-1'
+									initial={{ opacity: 0, x: isEven ? 50 : -50 }}
+									whileInView={{ opacity: 1, x: 0 }}
+									viewport={{ once: true }}
+									transition={{ duration: 0.8, delay: 0.4 }}
+								>
 									<div className='relative group'>
-										<div className='absolute inset-0 bg-gradient-to-br from-[#FF5A5F]/20 to-[#FC642D]/20 rounded-3xl transform rotate-2 group-hover:rotate-3 transition-transform duration-300'></div>
-										<img
+										<motion.div 
+											className='absolute inset-0 bg-gradient-to-br from-[#FF5A5F]/20 to-[#FC642D]/20 rounded-3xl transform rotate-2'
+											whileHover={{ rotate: 4, scale: 1.02 }}
+											transition={{ duration: 0.3 }}
+										></motion.div>
+										<motion.img
 											src={getFeatureImage(index)}
 											alt={t(`landing.features.${feature.key}.title`)}
-											className='relative rounded-3xl shadow-xl group-hover:shadow-2xl transition-shadow duration-300'
+											className='relative rounded-3xl shadow-xl'
+											whileHover={{ scale: 1.05, rotate: 1 }}
+											transition={{ duration: 0.3 }}
 											onError={e => {
 												e.currentTarget.src = `https://via.placeholder.com/500x300/FF5A5F/ffffff?text=Feature+${
 													index + 1
@@ -114,11 +183,11 @@ const Features: React.FC = () => {
 											}}
 										/>
 									</div>
-								</div>
-							</div>
+								</motion.div>
+							</motion.div>
 						);
 					})}
-				</div>
+				</motion.div>
 			</div>
 		</section>
 	);
