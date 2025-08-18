@@ -183,7 +183,7 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
             script {
                 try {
                     // Use Jenkins Workspace Cleanup to fully clean workspace (including node_modules) after each run
-                    cleanWs(cleanWhenAborted: true, deleteDirs: true)
+                    cleanWs()
                 } catch (Exception e) {
                     echo "Workspace cleanup failed: ${e.getMessage()}"
                 }
