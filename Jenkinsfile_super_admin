@@ -6,9 +6,9 @@ pipeline {
         APP_NAME = 'survey-super-admin'
         NODE_VERSION = '18'
 
-        // S3 Configuration - these should be set in Jenkins credentials
-        S3_BUCKET_NAME = credentials('S3_BUCKET_NAME')
-        AWS_REGION = credentials('AWS_REGION')
+        // S3 Configuration - these are hardcoded since AWS creds come from Vault
+        S3_BUCKET_NAME = 'jr-sigma-survey-prod'
+        AWS_REGION = 'ap-southeast-2'
     }
 
     stages {
@@ -23,7 +23,7 @@ pipeline {
         stage('Prepare S3 Bucket') {
             steps {
                 echo 'Ensuring S3 bucket exists and is configured (temporary stage)...'
-                withAWS(region: env.AWS_REGION, credentials: 'aws-credentials') {
+                withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
                     sh '''
 set -e
 
@@ -180,7 +180,8 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
     post {
         always {
             echo 'Pipeline completed'
-            cleanWs()
+            // Skip cleanWs due to Jenkins environment context issues
+            echo 'Workspace cleanup skipped due to environment limitations'
         }
         success {
             echo '🎉 Super Admin deployment successful!'
