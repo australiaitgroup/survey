@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PublicBank, Question, QuestionForm } from '../../types/publicBanks';
 import QuestionDrawer from './QuestionDrawer';
-import ImportCSVModal from '../../../../client/src/components/modals/ImportCSVModal';
+import ImportCSVModal from '../modals/ImportCSVModal';
 import ImportResultModal from './ImportResultModal';
 
 interface PublicBankDetailViewProps {

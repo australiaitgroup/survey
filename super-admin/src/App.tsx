@@ -197,8 +197,11 @@ function Layout({ children }: { children: React.ReactNode }) {
 
 // Main App Component
 function App() {
+  // Get the base URL for router - in production it will be '/super-admin'
+  const basename = process.env.NODE_ENV === 'production' ? '/super-admin' : ''
+
   return (
-    <Router>
+    <Router basename={basename}>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/overview" element={
