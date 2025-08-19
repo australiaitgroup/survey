@@ -422,6 +422,27 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 												getSortedResponses().length
 											)}
 										</div>
+										<div className='flex items-center gap-2'>
+											<button
+												className='btn-secondary btn-small'
+												onClick={() => setResponsePage(prev => Math.max(1, prev - 1))}
+												disabled={responsePage === 1}
+												type='button'
+											>
+												← Previous
+											</button>
+											<span className='text-xs text-gray-500'>
+												Page {responsePage} of {Math.ceil(getSortedResponses().length / pageSize)}
+											</span>
+											<button
+												className='btn-secondary btn-small'
+												onClick={() => setResponsePage(prev => prev + 1)}
+												disabled={responsePage * pageSize >= getSortedResponses().length}
+												type='button'
+											>
+												Next →
+											</button>
+										</div>
 									</div>
 									{getSortedResponses()
 										.slice(
