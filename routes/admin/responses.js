@@ -288,6 +288,37 @@ router.get(
 
 		let responses = await Response.find(responseFilter).sort({ createdAt: -1 }).lean();
 
+		// Filter out incomplete responses (no answers and no question snapshots)
+		responses = responses.filter(response => {
+			// Check if response has valid answers
+			let hasAnswers = false;
+			if (response.answers) {
+				if (response.answers instanceof Map) {
+					hasAnswers = response.answers.size > 0;
+				} else if (typeof response.answers === 'object') {
+					// For lean() queries, Map becomes a plain object with $numberLong keys
+					// Check if it has any meaningful keys
+					const keys = Object.keys(response.answers);
+					hasAnswers = keys.length > 0 && keys.some(key => 
+						response.answers[key] !== null && 
+						response.answers[key] !== undefined &&
+						response.answers[key] !== ''
+					);
+				}
+			}
+			
+			// Check if response has valid question snapshots
+			const hasSnapshots = response.questionSnapshots && 
+				response.questionSnapshots.length > 0 &&
+				response.questionSnapshots.some(snapshot => 
+					snapshot.userAnswer !== null && 
+					snapshot.userAnswer !== undefined &&
+					snapshot.userAnswer !== ''
+				);
+			
+			return hasAnswers || hasSnapshots;
+		});
+
 		// Filter incomplete responses if needed (post-processing)
 		if (status === 'incomplete') {
 			responses = responses.filter(response => {
@@ -453,10 +484,6 @@ router.get(
 						}
 					}
 
-					// Debug: Print answer processing
-					console.log(
-						`Response ${r._id}, Question ${questionIndex}: raw answer = ${ans}, type = ${typeof ans}`
-					);
 
 					if (ans !== undefined && ans !== null) {
 						// Handle different answer value formats
@@ -468,11 +495,6 @@ router.get(
 							if (idx >= 0 && idx < (q.options || []).length) {
 								const key = normalizeOptionText(q.options[idx]);
 								counts[key] += 1;
-								console.log(`  -> Counted: ${key} (index ${idx})`);
-							} else {
-								console.log(
-									`  -> Invalid index: ${idx}, options length: ${(q.options || []).length}`
-								);
 							}
 						} else if (Array.isArray(ans)) {
 							// Multiple choice: ans is array of option indices
@@ -491,8 +513,6 @@ router.get(
 							const key = normalizeOptionText(ans);
 							if (counts.hasOwnProperty(key)) counts[key] += 1;
 						}
-					} else {
-						console.log(`  -> No answer found`);
 					}
 				}
 			});
