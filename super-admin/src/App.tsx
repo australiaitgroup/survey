@@ -43,8 +43,8 @@ function Login() {
 				throw new Error(data.error || 'Login failed');
 			}
 
-			// Check if user has admin or superAdmin role
-			if (data.user?.role !== 'superAdmin' && data.user?.role !== 'admin') {
+			// Check if user has superAdmin role
+			if (data.user?.role !== 'superAdmin') {
 				throw new Error('Super Admin access required');
 			}
 
@@ -215,7 +215,7 @@ function AuthenticatedRoot() {
 			if (token && userData) {
 				try {
 					const parsedUser = JSON.parse(userData);
-					if (parsedUser.role === 'superAdmin' || parsedUser.role === 'admin') {
+					if (parsedUser.role === 'superAdmin') {
 						setIsAuthenticated(true);
 						return;
 					}
