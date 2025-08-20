@@ -16,6 +16,8 @@ import TermsPage from './components/landing/TermsPage';
 import CaseStudiesPage from './components/landing/CaseStudiesPage';
 import PricingPage from './components/landing/PricingPage';
 import ResponsiveLayoutDemo from './components/survey/ResponsiveLayoutDemo';
+import JoinLive from './components/live/JoinLive';
+import LiveSession from './components/live/LiveSession';
 import './styles.css';
 import './styles/markdown.css';
 import './i18n';
@@ -78,6 +80,9 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 					<Route path='/:companySlug/survey/:slug' element={<TakeSurvey />} />
 					<Route path='/:companySlug/assessment/:slug' element={<TakeAssessment />} />
 					<Route path='/legacy' element={<Survey />} />
+					{/* Live quiz participant routes */}
+					<Route path='/live/join' element={<JoinLive />} />
+					<Route path='/live/session/:sessionId' element={<LiveSession />} />
 				</Routes>
 			</AnalyticsProvider>
 		</BrowserRouter>
