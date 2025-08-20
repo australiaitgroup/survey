@@ -9,7 +9,7 @@ pipeline {
         // S3 Configuration - using existing bucket
         S3_BUCKET_NAME = 'uat-sigma.jiangren.com.au'
         AWS_REGION = 'ap-southeast-2'
-        
+
         // S3 Static Website URL
         S3_WEBSITE_URL = "http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com"
     }
@@ -81,9 +81,21 @@ echo "  - Super Admin path: arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
                 echo 'Installing main frontend dependencies...'
                 dir('client') {
                     sh '''
-                        # Clean install to ensure consistency
+                        # Clean install with platform-specific options
                         rm -rf node_modules package-lock.json
-                        npm install
+
+                        # Backup PostCSS config and use fallback for Jenkins
+                        if [ -f "postcss.config.js" ]; then
+                            cp postcss.config.js postcss.config.js.original
+                            cp postcss.config.fallback.js postcss.config.js
+                            echo "🔄 Using fallback PostCSS config for Jenkins build"
+                        fi
+
+                        # Install with legacy peer deps to avoid conflicts
+                        npm install --legacy-peer-deps
+
+                        # If lightningcss still fails, try rebuilding native modules
+                        npm rebuild || echo "Rebuild failed, continuing..."
                     '''
                 }
             }
@@ -95,6 +107,7 @@ echo "  - Super Admin path: arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
                 dir('client') {
                     sh '''
                         # Build for production
+                        echo "🔨 Building with fallback PostCSS config..."
                         NODE_ENV=production npm run build
 
                         # Verify build output
@@ -106,6 +119,12 @@ echo "  - Super Admin path: arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
                         echo "✅ Build completed successfully"
                         echo "Build contents:"
                         ls -la dist/
+
+                        # Restore original PostCSS config
+                        if [ -f "postcss.config.js.original" ]; then
+                            mv postcss.config.js.original postcss.config.js
+                            echo "🔄 Restored original PostCSS config"
+                        fi
                     '''
                 }
             }
@@ -121,7 +140,7 @@ echo "  - Super Admin path: arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
 
                             # Create exclusion patterns to avoid overwriting super-admin
                             echo "⚠️  Excluding super-admin directory from deployment..."
-                            
+
                             # Sync files to S3 root with proper cache headers, excluding super-admin
                             echo "Uploading static assets to root path..."
                             aws s3 sync dist/ s3://${S3_BUCKET_NAME}/ \
