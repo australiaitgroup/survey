@@ -71,7 +71,8 @@
       "Bash(npm:*)",
       "Bash(json -c:*)",
       "Bash(echo:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(NODE_ENV=production npm start)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
