@@ -3,23 +3,15 @@ pipeline {
 
     environment {
         // Application configuration
-        APP_NAME = 'sigma-main-frontend-prod'
+        APP_NAME = 'sigma-main-frontend'
         NODE_VERSION = '18'
 
-        // S3 Configuration - Production environment
-        S3_BUCKET_NAME = 'sigma.jiangren.com.au'
+        // S3 Configuration - using existing bucket
+        S3_BUCKET_NAME = 'uat-sigma.jiangren.com.au'
         AWS_REGION = 'ap-southeast-2'
 
         // S3 Static Website URL
         S3_WEBSITE_URL = "http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com"
-
-        // NPM and Node configuration for better compatibility
-        npm_config_optional = 'true'
-        npm_config_legacy_peer_deps = 'true'
-
-        // Tailwind/PostCSS configuration for Alpine Linux compatibility
-        TAILWIND_DISABLE_TOUCH = '1'
-        TAILWIND_MODE = 'compat'
     }
 
     stages {
@@ -41,53 +33,26 @@ pipeline {
             }
         }
 
-        // COMMENTED OUT: S3 bucket creation - buckets already exist
-        /*
-        stage('Prepare Production S3 Bucket') {
-            steps {
-                echo 'Ensuring production S3 bucket exists and is configured...'
-                withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
-                    sh '''
-set -e
-
-echo "🔍 Checking if production bucket ${S3_BUCKET_NAME} exists..."
-if aws s3api head-bucket --bucket ${S3_BUCKET_NAME} 2>/dev/null; then
-    echo "✅ Production bucket already exists"
-else
-    echo "🪣 Creating production bucket ${S3_BUCKET_NAME} in ${AWS_REGION}..."
-    aws s3api create-bucket --bucket ${S3_BUCKET_NAME} --region ${AWS_REGION} --create-bucket-configuration LocationConstraint=${AWS_REGION}
-    echo "✅ Production bucket created"
-fi
-
-echo "🔐 Configuring public access block (allow policy usage)..."
-aws s3api put-public-access-block --bucket ${S3_BUCKET_NAME} \
-    --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
-
-echo "🌐 Configuring static website hosting..."
-aws s3 website s3://${S3_BUCKET_NAME}/ --index-document index.html --error-document index.html
-
-echo "📄 Production bucket website endpoint: http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/"
-'''
-                }
-            }
-        }
-        */
-
-        // COMMENTED OUT: S3 bucket policy update - buckets already configured
-        /*
         stage('Update S3 Bucket Policy') {
             steps {
-                echo 'Updating S3 bucket policy for production main frontend...'
+                echo 'Updating S3 bucket policy to support both main app and super-admin...'
                 withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
                     sh '''
 set -e
 
-echo "📝 Applying production bucket policy for main frontend..."
+echo "📝 Applying expanded bucket policy for main app and super-admin..."
 POLICY_FILE=$(mktemp)
 cat > $POLICY_FILE <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
+    {
+      "Sid": "PublicReadSuperAdmin",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
+    },
     {
       "Sid": "PublicReadMainApp",
       "Effect": "Allow",
@@ -102,57 +67,23 @@ EOF
 aws s3api put-bucket-policy --bucket ${S3_BUCKET_NAME} --policy file://$POLICY_FILE
 rm -f $POLICY_FILE
 
-echo "✅ Production bucket policy updated successfully"
-echo "Supports main frontend access: arn:aws:s3:::${S3_BUCKET_NAME}/*"
-echo "Note: Super Admin is deployed separately to UAT bucket"
+echo "✅ Bucket policy updated successfully"
+echo "Now supports:"
+echo "  - Root path access: arn:aws:s3:::${S3_BUCKET_NAME}/*"
+echo "  - Super Admin path: arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
 '''
                 }
             }
         }
-        */
 
         stage('Install Dependencies') {
             steps {
                 echo 'Installing main frontend dependencies...'
                 dir('client') {
                     sh '''
-                        # Clean install with platform-specific options
+                        # Clean install to ensure consistency
                         rm -rf node_modules package-lock.json
-
-                        # Backup PostCSS config and use simple config for Jenkins
-                        if [ -f "postcss.config.js" ]; then
-                            cp postcss.config.js postcss.config.js.original
-                            cp postcss.config.simple.js postcss.config.js
-                            echo "🔄 Using simple PostCSS config for Jenkins build (avoids lightningcss)"
-                        fi
-
-                        # Install with legacy peer deps to avoid conflicts
-                        echo "📦 Installing dependencies..."
-                        npm install --legacy-peer-deps
-
-                        # Ensure platform-specific rollup modules are installed
-                        echo "🔧 Ensuring Rollup native modules are available..."
-                        if ! npm list @rollup/rollup-linux-x64-gnu > /dev/null 2>&1; then
-                            echo "Installing missing Rollup native module..."
-                            npm install @rollup/rollup-linux-x64-gnu --legacy-peer-deps || {
-                                echo "Direct install failed, trying with force..."
-                                npm install @rollup/rollup-linux-x64-gnu --force --legacy-peer-deps
-                            }
-                        fi
-
-                        # Install lightningcss platform-specific modules for Alpine Linux (musl)
-                        echo "🔧 Installing lightningcss for Alpine Linux..."
-                        npm install lightningcss-linux-x64-musl --legacy-peer-deps || {
-                            echo "lightningcss-linux-x64-musl not available, trying alternative..."
-                            npm install lightningcss --force --legacy-peer-deps || echo "lightningcss installation failed"
-                        }
-
-                        # Try to fix any potential native module issues
-                        npm rebuild || echo "Rebuild failed, continuing..."
-
-                        # Final verification
-                        echo "🔍 Final package verification:"
-                        npm list @tailwindcss/postcss autoprefixer postcss @rollup/rollup-linux-x64-gnu || echo "Some packages may have issues"
+                        npm install
                     '''
                 }
             }
@@ -164,26 +95,7 @@ echo "Note: Super Admin is deployed separately to UAT bucket"
                 dir('client') {
                     sh '''
                         # Build for production
-                        echo "🔨 Building with simple PostCSS config..."
-
-                        # Check current PostCSS config
-                        echo "Current PostCSS config:"
-                        cat postcss.config.js
-
-                        # Check if rollup native module exists before building
-                        if npm list @rollup/rollup-linux-x64-gnu > /dev/null 2>&1; then
-                            echo "✅ Rollup native module found"
-                        else
-                            echo "⚠️  Rollup native module missing, attempting to install..."
-                            npm install @rollup/rollup-linux-x64-gnu --legacy-peer-deps || echo "Failed to install rollup native module"
-                        fi
-
-                        # Set environment variables to avoid lightningcss issues
-                        export TAILWIND_DISABLE_TOUCH=1
-                        export NODE_ENV=production
-
-                        # Try building
-                        npm run build
+                        NODE_ENV=production npm run build
 
                         # Verify build output
                         if [ ! -d "dist" ]; then
@@ -194,12 +106,6 @@ echo "Note: Super Admin is deployed separately to UAT bucket"
                         echo "✅ Build completed successfully"
                         echo "Build contents:"
                         ls -la dist/
-
-                        # Restore original PostCSS config
-                        if [ -f "postcss.config.js.original" ]; then
-                            mv postcss.config.js.original postcss.config.js
-                            echo "🔄 Restored original PostCSS config"
-                        fi
                     '''
                 }
             }
@@ -211,44 +117,41 @@ echo "Note: Super Admin is deployed separately to UAT bucket"
                 withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
                     dir('client') {
                         sh '''
-                            echo "🚀 Starting main frontend S3 deployment to production bucket..."
+                            echo "🚀 Starting main frontend S3 deployment..."
 
-                            # Sync static assets to S3 root with proper cache headers
-                            echo "Uploading static assets to production bucket..."
-                            # SAFETY: Commented out for testing - uncomment after verification
-                            # aws s3 sync dist/ s3://${S3_BUCKET_NAME}/ \
-                            #     --region ${AWS_REGION} \
-                            #     --delete \
-                            #     --cache-control "public, max-age=31536000" \
-                            #     --exclude "*.html" \
-                            #     --exclude "*.json" \
-                            #     --exclude "super-admin/*"
-                            echo "🚨 S3 sync skipped for safety testing"
+                            # Create exclusion patterns to avoid overwriting super-admin
+                            echo "⚠️  Excluding super-admin directory from deployment..."
+
+                            # Sync files to S3 root with proper cache headers, excluding super-admin
+                            echo "Uploading static assets to root path..."
+                            aws s3 sync dist/ s3://${S3_BUCKET_NAME}/ \
+                                --region ${AWS_REGION} \
+                                --delete \
+                                --exclude "super-admin/*" \
+                                --cache-control "public, max-age=31536000" \
+                                --exclude "*.html" \
+                                --exclude "*.json"
 
                             # Upload HTML and JSON files with no-cache headers
-                            echo "Uploading HTML and JSON files to production bucket..."
-                            # SAFETY: Commented out for testing - uncomment after verification
-                            # aws s3 sync dist/ s3://${S3_BUCKET_NAME}/ \
-                            #     --region ${AWS_REGION} \
-                            #     --include "*.html" \
-                            #     --include "*.json" \
-                            #     --cache-control "no-cache, no-store, must-revalidate" \
-                            #     --exclude "super-admin/*"
-                            echo "🚨 S3 sync skipped for safety testing"
+                            echo "Uploading HTML and JSON files to root path..."
+                            aws s3 sync dist/ s3://${S3_BUCKET_NAME}/ \
+                                --region ${AWS_REGION} \
+                                --exclude "super-admin/*" \
+                                --include "*.html" \
+                                --include "*.json" \
+                                --cache-control "no-cache, no-store, must-revalidate"
 
                             # Set specific content type for index.html
-                            # SAFETY: Commented out for testing - uncomment after verification
-                            # aws s3 cp s3://${S3_BUCKET_NAME}/index.html \
-                            #     s3://${S3_BUCKET_NAME}/index.html \
-                            #     --region ${AWS_REGION} \
-                            #     --content-type "text/html" \
-                            #     --cache-control "no-cache, no-store, must-revalidate" \
-                            #     --metadata-directive REPLACE
-                            echo "🚨 S3 operations skipped for safety testing"
+                            aws s3 cp s3://${S3_BUCKET_NAME}/index.html \
+                                s3://${S3_BUCKET_NAME}/index.html \
+                                --region ${AWS_REGION} \
+                                --content-type "text/html" \
+                                --cache-control "no-cache, no-store, must-revalidate" \
+                                --metadata-directive REPLACE
 
-                            echo "✅ Main frontend S3 deployment to production bucket completed!"
-                            echo "📄 Production bucket contents:"
-                            aws s3 ls s3://${S3_BUCKET_NAME}/ --recursive | head -10
+                            echo "✅ Main frontend S3 deployment completed!"
+                            echo "📄 Verifying super-admin directory was not affected..."
+                            aws s3 ls s3://${S3_BUCKET_NAME}/super-admin/ --recursive | head -5 || echo "Super-admin directory check complete"
                         '''
                     }
                 }
@@ -264,9 +167,8 @@ echo "Note: Super Admin is deployed separately to UAT bucket"
 
                     sh '''
                         echo "✅ Main frontend deployment health check completed"
-                        echo "Production main frontend available at: ${S3_WEBSITE_URL}"
-                        echo "Domain access: https://sigma.jiangren.com.au"
-                        echo "Note: Super Admin is deployed separately to UAT environment"
+                        echo "Main frontend should be available at: ${S3_WEBSITE_URL}"
+                        echo "Super Admin should still be available at: ${S3_WEBSITE_URL}/super-admin"
                     '''
                 }
             }
@@ -276,13 +178,12 @@ echo "Note: Super Admin is deployed separately to UAT bucket"
     post {
         always {
             echo 'Main frontend pipeline completed'
-            echo 'Pipeline completed'
-            cleanWs()
+            echo 'Workspace cleanup skipped due to environment limitations'
         }
         success {
             echo '🎉 Main frontend deployment successful!'
-            echo 'Production main frontend deployed to: ${S3_WEBSITE_URL}'
-            echo 'Domain access: https://sigma.jiangren.com.au'
+            echo 'Main application deployed to: ${S3_WEBSITE_URL}'
+            echo 'Super Admin remains at: ${S3_WEBSITE_URL}/super-admin'
         }
         failure {
             echo '❌ Main frontend deployment failed!'

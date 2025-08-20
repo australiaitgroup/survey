@@ -19,7 +19,8 @@ pipeline {
             }
         }
 
-        // TEMP STAGE: Bucket bootstrap (remove after first successful run)
+        // TEMP STAGE: Bucket bootstrap (COMMENTED OUT - bucket already exists)
+        /*
         stage('Prepare S3 Bucket') {
             steps {
                 echo 'Ensuring S3 bucket exists and is configured (temporary stage)...'
@@ -74,6 +75,7 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
                 }
             }
         }
+        */
 
         stage('Setup Node.js') {
             steps {
