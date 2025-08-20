@@ -82,7 +82,7 @@ router.post(
 		try {
 			const user = await User.findOne({
 				email: username.toLowerCase(),
-				role: 'superAdmin',
+				$or: [{ role: 'admin' }, { role: 'superAdmin' }],
 			}).select('+password');
 
 			if (!user) {
@@ -94,7 +94,7 @@ router.post(
 				if (userWithDifferentRole) {
 					return res.status(HTTP_STATUS.UNAUTHORIZED).json({
 						success: false,
-						error: 'Account found but not authorized for super admin access',
+						error: 'Account found but not authorized for admin access',
 						errorType: 'unauthorized_role',
 					});
 				}

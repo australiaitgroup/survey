@@ -25,7 +25,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
 					</p>
 				</div>
 				<form className='mt-8 space-y-6' onSubmit={login}>
-					<div className='rounded-md shadow-sm space-y-4'>
+					<div className='rounded-md space-y-4'>
 						<div>
 							<label
 								htmlFor='username'
