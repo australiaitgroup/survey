@@ -47,7 +47,10 @@ pipeline {
 		stage('Stop Old Containers') {
 			steps {
 				echo 'Stopping old survey containers...'
-				sh 'cat /etc/nginx/sites-available/default'
+				sh '''
+				   cd /etc/nginx/
+                   ls -al
+				   '''
 				// sh '''
 				// 	echo "=== Current Working Directory ==="
 				// 	pwd
