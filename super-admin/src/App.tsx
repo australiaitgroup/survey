@@ -239,6 +239,7 @@ function App() {
             <Layout><Audit /></Layout>
           </ProtectedRoute>
         } />
+        <Route path="/login" element={<Login />} />
         <Route path="/" element={
           <ProtectedRoute>
             <Layout><Overview /></Layout>
