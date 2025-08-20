@@ -130,7 +130,8 @@ function Layout({ children }: { children: React.ReactNode }) {
   const handleLogout = () => {
     localStorage.removeItem('sa_token')
     localStorage.removeItem('sa_user')
-    navigate('/')
+    // Reload the page to trigger ProtectedRoute re-check and show login form
+    window.location.reload()
   }
 
   const navigation = [
@@ -203,7 +204,6 @@ function App() {
   return (
     <Router basename={basename}>
       <Routes>
-        <Route path="/login" element={<Login />} />
         <Route path="/overview" element={
           <ProtectedRoute>
             <Layout><Overview /></Layout>
@@ -239,7 +239,11 @@ function App() {
             <Layout><Audit /></Layout>
           </ProtectedRoute>
         } />
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={
+          <ProtectedRoute>
+            <Layout><Overview /></Layout>
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   )

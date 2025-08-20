@@ -46,13 +46,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  // If authenticated, render children
-  if (isAuthenticated) {
-    return <>{children}</>;
+  // If not authenticated, return null (already navigated)
+  if (!isAuthenticated) {
+    return null;
   }
 
-  // Not authenticated, return null (navigation to login is handled in useEffect)
-  return null;
+  // If authenticated, render children
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;
