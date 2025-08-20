@@ -6,7 +6,7 @@ pipeline {
         APP_NAME = 'survey-super-admin'
         NODE_VERSION = '18'
 
-        // S3 Configuration - these are hardcoded since AWS creds come from Vault
+        // S3 Configuration - Keep in UAT environment
         S3_BUCKET_NAME = 'uat-sigma.jiangren.com.au'
         AWS_REGION = 'ap-southeast-2'
     }
@@ -183,8 +183,7 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
     post {
         always {
             echo 'Pipeline completed'
-            // Skip cleanWs due to Jenkins environment context issues
-            echo 'Workspace cleanup skipped due to environment limitations'
+            cleanWs()
         }
         success {
             echo '🎉 Super Admin deployment successful!'
