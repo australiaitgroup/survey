@@ -9,27 +9,27 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 	const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 	const navigate = useNavigate();
 
-	useEffect(() => {
-		const checkAuth = () => {
-			const token = localStorage.getItem('sa_token');
-			const userData = localStorage.getItem('sa_user');
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('sa_token');
+      const userData = localStorage.getItem('sa_user');
 
-			if (token && userData) {
-				try {
-					const parsedUser = JSON.parse(userData);
-					if (parsedUser.role === 'superAdmin') {
-						setIsAuthenticated(true);
-						return;
-					}
-				} catch (e) {
-					// Invalid user data
-				}
-			}
+      if (token && userData) {
+        try {
+          const parsedUser = JSON.parse(userData);
+          if (parsedUser.role === 'superAdmin' || parsedUser.role === 'admin') {
+            setIsAuthenticated(true);
+            return;
+          }
+        } catch (e) {
+          // Invalid user data
+        }
+      }
 
-			// Not authenticated, redirect to login
-			setIsAuthenticated(false);
-			navigate('/login');
-		};
+      // Not authenticated, redirect to login
+      setIsAuthenticated(false);
+      navigate('/login');
+    };
 
 		checkAuth();
 	}, [navigate]);
