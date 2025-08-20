@@ -28,11 +28,14 @@ const serviceContainer = require('./services/ServiceContainer');
 const app = express();
 const PORT = process.env.PORT || 5050;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/survey';
+const { initializeApp } = require('./utils/initializeApp');
 
 mongoose
 	.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-	.then(() => {
+	.then(async () => {
 		console.log('✓ Connected to MongoDB');
+		// Initialize app with super admin account
+		await initializeApp();
 	})
 	.catch(err => {
 		console.error('✗ MongoDB connection failed:', err.message);

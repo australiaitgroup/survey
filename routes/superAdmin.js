@@ -968,7 +968,7 @@ router.get(
 router.post(
 	'/public-banks',
 	asyncHandler(async (req, res) => {
-		const { title, description, type, priceOneTime, tags, locales, isActive = true } = req.body;
+		const { title, description, type, priceOneTime, tags, locales, isActive = true, isPublished = true } = req.body;
 
 		// Validation
 		if (!title || !description) {
@@ -987,6 +987,7 @@ router.post(
 			tags: tags || [],
 			locales: locales || ['en'],
 			isActive,
+			isPublished,
 			createdBy: req.user.id,
 		});
 
@@ -1022,7 +1023,7 @@ router.post(
 router.put(
 	'/public-banks/:id',
 	asyncHandler(async (req, res) => {
-		const { title, description, type, priceOneTime, tags, locales, isActive } = req.body;
+		const { title, description, type, priceOneTime, tags, locales, isActive, isPublished } = req.body;
 
 		const bank = await PublicBank.findById(req.params.id);
 
@@ -1039,6 +1040,7 @@ router.put(
 			type: bank.type,
 			priceOneTime: bank.priceOneTime,
 			isActive: bank.isActive,
+			isPublished: bank.isPublished,
 		};
 
 		// Update fields
@@ -1049,6 +1051,7 @@ router.put(
 		if (tags) bank.tags = tags;
 		if (locales) bank.locales = locales;
 		if (isActive !== undefined) bank.isActive = isActive;
+		if (isPublished !== undefined) bank.isPublished = isPublished;
 		bank.updatedBy = req.user.id;
 
 		await bank.save();
@@ -1067,6 +1070,7 @@ router.put(
 					type: bank.type,
 					priceOneTime: bank.priceOneTime,
 					isActive: bank.isActive,
+					isPublished: bank.isPublished,
 				},
 			},
 			req
