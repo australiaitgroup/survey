@@ -16,6 +16,10 @@ pipeline {
         // NPM and Node configuration for better compatibility
         npm_config_optional = 'true'
         npm_config_legacy_peer_deps = 'true'
+        
+        // Tailwind/PostCSS configuration for Alpine Linux compatibility
+        TAILWIND_DISABLE_TOUCH = '1'
+        TAILWIND_MODE = 'compat'
     }
 
     stages {
@@ -88,11 +92,11 @@ echo "  - Super Admin path: arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
                         # Clean install with platform-specific options
                         rm -rf node_modules package-lock.json
 
-                        # Backup PostCSS config and use fallback for Jenkins
+                        # Backup PostCSS config and use simple config for Jenkins
                         if [ -f "postcss.config.js" ]; then
                             cp postcss.config.js postcss.config.js.original
-                            cp postcss.config.fallback.js postcss.config.js
-                            echo "🔄 Using fallback PostCSS config for Jenkins build"
+                            cp postcss.config.simple.js postcss.config.js
+                            echo "🔄 Using simple PostCSS config for Jenkins build (avoids lightningcss)"
                         fi
 
                         # Install with legacy peer deps to avoid conflicts
@@ -108,6 +112,13 @@ echo "  - Super Admin path: arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
                                 npm install @rollup/rollup-linux-x64-gnu --force --legacy-peer-deps
                             }
                         fi
+
+                        # Install lightningcss platform-specific modules for Alpine Linux (musl)
+                        echo "🔧 Installing lightningcss for Alpine Linux..."
+                        npm install lightningcss-linux-x64-musl --legacy-peer-deps || {
+                            echo "lightningcss-linux-x64-musl not available, trying alternative..."
+                            npm install lightningcss --force --legacy-peer-deps || echo "lightningcss installation failed"
+                        }
 
                         # Try to fix any potential native module issues
                         npm rebuild || echo "Rebuild failed, continuing..."
@@ -126,7 +137,11 @@ echo "  - Super Admin path: arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
                 dir('client') {
                     sh '''
                         # Build for production
-                        echo "🔨 Building with fallback PostCSS config..."
+                        echo "🔨 Building with simple PostCSS config..."
+                        
+                        # Check current PostCSS config
+                        echo "Current PostCSS config:"
+                        cat postcss.config.js
                         
                         # Check if rollup native module exists before building
                         if npm list @rollup/rollup-linux-x64-gnu > /dev/null 2>&1; then
@@ -136,8 +151,12 @@ echo "  - Super Admin path: arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
                             npm install @rollup/rollup-linux-x64-gnu --legacy-peer-deps || echo "Failed to install rollup native module"
                         fi
                         
+                        # Set environment variables to avoid lightningcss issues
+                        export TAILWIND_DISABLE_TOUCH=1
+                        export NODE_ENV=production
+                        
                         # Try building
-                        NODE_ENV=production npm run build
+                        npm run build
 
                         # Verify build output
                         if [ ! -d "dist" ]; then
