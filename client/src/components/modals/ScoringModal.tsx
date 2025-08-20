@@ -409,7 +409,7 @@ const ScoringModal: React.FC = () => {
 						<div className='ml-3'>
 							<p className='font-medium'>Important:</p>
 							<p className='mt-1'>
-								Changing these settings will automatically recalculate scores for all existing responses. 
+								Changing these settings will automatically recalculate scores for all existing responses.
 								This may take a moment for surveys with many responses.
 							</p>
 						</div>

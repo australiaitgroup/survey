@@ -501,28 +501,28 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 													</div>
 													{survey.type !== 'survey' &&
 														(response as any).score && (
-															<div className='flex items-center gap-2'>
-																<span
-																	className={`px-2 py-1 text-xs rounded-full ${
-																		(response as any).score
-																			.passed
-																			? 'bg-green-100 text-green-700'
-																			: 'bg-red-100 text-red-700'
-																	}`}
-																>
-																	{(response as any).score.passed
-																		? 'Passed'
-																		: 'Failed'}
-																</span>
-																<span className='text-sm text-gray-700'>
-																	{(response as any).score
-																		.scoringMode ===
+														<div className='flex items-center gap-2'>
+															<span
+																className={`px-2 py-1 text-xs rounded-full ${
+																	(response as any).score
+																		.passed
+																		? 'bg-green-100 text-green-700'
+																		: 'bg-red-100 text-red-700'
+																}`}
+															>
+																{(response as any).score.passed
+																	? 'Passed'
+																	: 'Failed'}
+															</span>
+															<span className='text-sm text-gray-700'>
+																{(response as any).score
+																	.scoringMode ===
 																	'percentage'
-																		? `${(response as any).score.percentage}%`
-																		: `${(response as any).score.totalPoints}/${(response as any).score.maxPossiblePoints}`}
-																</span>
-															</div>
-														)}
+																	? `${(response as any).score.percentage}%`
+																	: `${(response as any).score.totalPoints}/${(response as any).score.maxPossiblePoints}`}
+															</span>
+														</div>
+													)}
 												</div>
 												<div className='text-sm text-gray-600'>
 													<div>
