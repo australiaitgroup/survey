@@ -41,6 +41,8 @@ pipeline {
             }
         }
 
+        // COMMENTED OUT: S3 bucket creation - buckets already exist
+        /*
         stage('Prepare Production S3 Bucket') {
             steps {
                 echo 'Ensuring production S3 bucket exists and is configured...'
@@ -69,7 +71,10 @@ echo "📄 Production bucket website endpoint: http://${S3_BUCKET_NAME}.s3-websi
                 }
             }
         }
+        */
 
+        // COMMENTED OUT: S3 bucket policy update - buckets already configured
+        /*
         stage('Update S3 Bucket Policy') {
             steps {
                 echo 'Updating S3 bucket policy for production main frontend...'
@@ -104,6 +109,7 @@ echo "Note: Super Admin is deployed separately to UAT bucket"
                 }
             }
         }
+        */
 
         stage('Install Dependencies') {
             steps {
