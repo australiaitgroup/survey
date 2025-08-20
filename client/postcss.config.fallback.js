@@ -1,6 +1,6 @@
 export default {
 	plugins: {
-		// 使用 @tailwindcss/postcss 插件，与主配置保持一致
+		// Tailwind CSS v4 需要使用 @tailwindcss/postcss 插件，而非 tailwindcss 主包
 		'@tailwindcss/postcss': {},
 		autoprefixer: {},
 	},
