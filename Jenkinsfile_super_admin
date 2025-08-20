@@ -7,7 +7,7 @@ pipeline {
         NODE_VERSION = '18'
 
         // S3 Configuration - these are hardcoded since AWS creds come from Vault
-        S3_BUCKET_NAME = 'jr-sigma-survey-prod'
+        S3_BUCKET_NAME = 'sigma.jiangren.com.au'
         AWS_REGION = 'ap-southeast-2'
     }
 
