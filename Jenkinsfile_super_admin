@@ -26,7 +26,7 @@ pipeline {
                 withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
                     sh '''
 set -e
-
+aws s3 rb s3://jr-sigma-survey-prod --force
 echo "🔍 Checking if bucket ${S3_BUCKET_NAME} exists..."
 if aws s3api head-bucket --bucket ${S3_BUCKET_NAME} 2>/dev/null; then
   echo "✅ Bucket already exists"
