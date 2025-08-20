@@ -9,7 +9,7 @@ import TimeSpentChart from './TimeSpentChart';
 import DeviceChart from './DeviceChart';
 import CalendarHeatmap, { HeatmapDatum } from './CalendarHeatmap';
 import IndividualStatsPanel from './IndividualStatsPanel';
-import axios from 'axios';
+ 
 
 type Filters = {
 	name?: string;
@@ -153,16 +153,6 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 		? (details as any)[selectedResponseId] || null
 		: null;
 
-	const fetchIpGeo = async (ip?: string) => {
-		if (!ip) return null;
-		try {
-			const res = await axios.get(`https://ipapi.co/${encodeURIComponent(ip)}/json/`);
-			return { city: res.data?.city, country: res.data?.country_name, org: res.data?.org };
-		} catch {
-			return null;
-		}
-	};
-
 	const toggleExpand = async (responseId: string): Promise<void> => {
 		const isOpen = expanded[responseId];
 		const next = { ...expanded, [responseId]: !isOpen };
@@ -171,19 +161,7 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 			try {
 				setLoadingDetail(prev => ({ ...prev, [responseId]: true }));
 				const res = await api.get(`/admin/responses/${responseId}`);
-				let enriched = res.data as any;
-				const ip = enriched?.candidateInfo?.metadata?.ipAddress;
-				const geo = await fetchIpGeo(ip);
-				if (geo) {
-					enriched = {
-						...enriched,
-						candidateInfo: {
-							...enriched.candidateInfo,
-							metadata: { ...enriched.candidateInfo?.metadata, geo },
-						},
-					};
-				}
-				setDetails(prev => ({ ...prev, [responseId]: enriched }));
+				setDetails(prev => ({ ...prev, [responseId]: res.data }));
 			} catch {
 				// noop
 			} finally {
@@ -765,99 +743,7 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 																	})}
 																</div>
 
-																{/* Device Information */}
-																{(
-																	details[
-																		(response as any)._id
-																	] as any
-																)?.candidateInfo?.metadata && (
-																	<div className='p-3 text-sm bg-gray-50'>
-																		<div className='font-semibold text-gray-800 mb-2'>
-																			Device Information
-																		</div>
-																		<div className='grid grid-cols-1 md:grid-cols-3 gap-2'>
-																			<div>
-																				<span className='text-gray-600'>
-																					IP Address:{' '}
-																				</span>
-																				<span className='font-medium'>
-																					{(
-																						details[
-																							(
-																								response as any
-																							)._id
-																						] as any
-																					).candidateInfo
-																						.metadata
-																						.ipAddress ||
-																						'—'}
-																				</span>
-																			</div>
-																			<div>
-																				<span className='text-gray-600'>
-																					Device:{' '}
-																				</span>
-																				<span className='font-medium'>
-																					{(
-																						details[
-																							(
-																								response as any
-																							)._id
-																						] as any
-																					).candidateInfo
-																						.metadata
-																						.deviceType ||
-																						'—'}
-																				</span>
-																			</div>
-																			{(() => {
-																				const info = (
-																					details[
-																						(
-																							response as any
-																						)._id
-																					] as any
-																				)?.candidateInfo;
-																				const geo =
-																					info?.metadata
-																						?.geo;
-																				if (!geo)
-																					return null;
-																				return (
-																					<div>
-																						<span className='text-gray-600'>
-																							Location:{' '}
-																						</span>
-																						<span className='font-medium'>
-																							{(geo.city ||
-																								'-') +
-																								', ' +
-																								(geo.country ||
-																									'-')}
-																						</span>
-																					</div>
-																				);
-																			})()}
-																			<div className='md:col-span-3'>
-																				<span className='text-gray-600'>
-																					User Agent:{' '}
-																				</span>
-																				<span className='font-medium break-all'>
-																					{(
-																						details[
-																							(
-																								response as any
-																							)._id
-																						] as any
-																					).candidateInfo
-																						.metadata
-																						.userAgent ||
-																						'—'}
-																				</span>
-																			</div>
-																		</div>
-																	</div>
-																)}
+																{/* Device info moved to CandidateDetailView */}
 															</>
 														)}
 													</div>
