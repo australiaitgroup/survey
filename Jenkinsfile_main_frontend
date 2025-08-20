@@ -12,6 +12,10 @@ pipeline {
 
         // S3 Static Website URL
         S3_WEBSITE_URL = "http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com"
+        
+        // NPM and Node configuration for better compatibility
+        npm_config_optional = 'true'
+        npm_config_legacy_peer_deps = 'true'
     }
 
     stages {
@@ -92,14 +96,25 @@ echo "  - Super Admin path: arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
                         fi
 
                         # Install with legacy peer deps to avoid conflicts
-                        npm install --legacy-peer-deps --no-optional
+                        echo "📦 Installing dependencies..."
+                        npm install --legacy-peer-deps
 
-                        # Try to fix any potential lightningcss issues
+                        # Ensure platform-specific rollup modules are installed
+                        echo "🔧 Ensuring Rollup native modules are available..."
+                        if ! npm list @rollup/rollup-linux-x64-gnu > /dev/null 2>&1; then
+                            echo "Installing missing Rollup native module..."
+                            npm install @rollup/rollup-linux-x64-gnu --legacy-peer-deps || {
+                                echo "Direct install failed, trying with force..."
+                                npm install @rollup/rollup-linux-x64-gnu --force --legacy-peer-deps
+                            }
+                        fi
+
+                        # Try to fix any potential native module issues
                         npm rebuild || echo "Rebuild failed, continuing..."
                         
-                        # List critical packages to verify installation
-                        echo "Checking PostCSS and Tailwind packages:"
-                        npm list @tailwindcss/postcss autoprefixer postcss || echo "Some packages may have issues"
+                        # Final verification
+                        echo "🔍 Final package verification:"
+                        npm list @tailwindcss/postcss autoprefixer postcss @rollup/rollup-linux-x64-gnu || echo "Some packages may have issues"
                     '''
                 }
             }
@@ -112,6 +127,16 @@ echo "  - Super Admin path: arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
                     sh '''
                         # Build for production
                         echo "🔨 Building with fallback PostCSS config..."
+                        
+                        # Check if rollup native module exists before building
+                        if npm list @rollup/rollup-linux-x64-gnu > /dev/null 2>&1; then
+                            echo "✅ Rollup native module found"
+                        else
+                            echo "⚠️  Rollup native module missing, attempting to install..."
+                            npm install @rollup/rollup-linux-x64-gnu --legacy-peer-deps || echo "Failed to install rollup native module"
+                        fi
+                        
+                        # Try building
                         NODE_ENV=production npm run build
 
                         # Verify build output
@@ -201,7 +226,8 @@ echo "  - Super Admin path: arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
     post {
         always {
             echo 'Main frontend pipeline completed'
-            echo 'Workspace cleanup skipped due to environment limitations'
+            echo 'Pipeline completed'
+            cleanWs()
         }
         success {
             echo '🎉 Main frontend deployment successful!'
