@@ -1,6 +1,6 @@
 # 主前端 S3 迁移 - 完整文件更改总结
 
-## 📁 新增文件 (7个)
+## 📁 新增文件 (6个)
 
 ### 1. 主要配置文件
 | 文件路径 | 描述 | 作用 |
@@ -8,19 +8,14 @@
 | `Jenkinsfile_main_frontend` | 主前端自动化部署流水线 | Jenkins 构建、测试、部署到 S3 |
 | `nginx-s3-proxy.conf` | Nginx 反向代理配置 | 实现域名根路径访问和 API 代理 |
 
-### 2. 兼容性配置文件
-| 文件路径 | 描述 | 作用 |
-|---------|------|------|
-| `client/postcss.config.jenkins.js` | Jenkins 专用 PostCSS 配置 | 解决 CI/CD 环境兼容性问题 |
-
-### 3. 实用脚本
+### 2. 实用脚本
 | 文件路径 | 描述 | 作用 |
 |---------|------|------|
 | `check-s3-bucket-status.sh` | S3 桶状态检查脚本 | 验证桶存在性和权限配置 |
 | `update-s3-bucket-policy.sh` | S3 桶策略更新脚本 | 手动更新桶策略支持新路径 |
 | `test-jenkins-build.sh` | 本地构建兼容性测试脚本 | 模拟 Jenkins 环境进行构建测试 |
 
-### 4. 文档
+### 3. 文档
 | 文件路径 | 描述 | 作用 |
 |---------|------|------|
 | `docs/MAIN_FRONTEND_S3_MIGRATION_STEPS.md` | 迁移执行清单 | 详细的迁移步骤和验证指南 |
@@ -38,8 +33,8 @@
 | 文件路径 | 修改内容 | 原因 |
 |---------|----------|------|
 | `client/index.html` | 静态资源路径从绝对路径改为相对路径 | 适配 S3 静态托管环境 |
-| `client/.env.production` | 新增构建优化和兼容性参数 | 确保 Jenkins 构建稳定性 |
-| `client/postcss.config.fallback.js` | 统一使用 `@tailwindcss/postcss` 插件 | 修复插件不一致导致的构建问题 |
+| `client/.env.production` | 简化生产环境配置，移除过度优化参数 | 避免复杂配置导致的兼容性问题 |
+| `client/postcss.config.fallback.js` | 修正使用 `@tailwindcss/postcss` 插件 | 确保与Tailwind CSS v4.1.11兼容 |
 
 ## 🏗️ 关键技术实现
 
@@ -56,14 +51,14 @@
   - `/` → S3 根路径 (主前端)
 
 ### 3. PostCSS/Tailwind 兼容性
-- **配置统一**: 所有环境都使用 `@tailwindcss/postcss` v4.1.11
-- **Jenkins 适配**: 使用 CommonJS 语法提高 CI/CD 兼容性
-- **错误处理**: 详细日志输出，便于问题诊断
+- **配置统一**: 所有环境都使用 `@tailwindcss/postcss` v4.1.11 (回滚到正确版本)
+- **简化配置**: 移除复杂的Jenkins专用配置，使用统一的fallback配置
+- **依赖优化**: 使用 `--no-optional` 标志避免可选依赖冲突
 
 ### 4. 构建优化
-- **内存管理**: 设置 Node.js 内存限制为 4GB
-- **依赖管理**: 使用 `npm ci --legacy-peer-deps` 确保稳定性
-- **环境变量**: 优化生产构建参数
+- **依赖管理**: 使用 `npm install --legacy-peer-deps --no-optional` 避免冲突
+- **配置回滚**: 自动备份和恢复PostCSS配置确保本地环境不受影响
+- **简化流程**: 移除过度复杂的Jenkins配置，专注于核心构建
 
 ## 📊 部署架构对比
 
@@ -132,7 +127,7 @@
 
 ---
 
-**总计**: 11个文件变更 (7新增 + 4修改)
+**总计**: 10个文件变更 (6新增 + 4修改)
 **影响范围**: 前端构建、部署流程、代理配置
 **迁移类型**: EC2 Docker → S3 静态托管 + Nginx 反向代理
 **预期停机时间**: < 5分钟 (仅 Nginx 配置更新)
