@@ -28,7 +28,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       
       // Not authenticated, redirect to login
       setIsAuthenticated(false);
-      navigate('/login');
+      navigate('/');
     };
 
     checkAuth();
