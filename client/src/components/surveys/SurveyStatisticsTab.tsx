@@ -9,6 +9,7 @@ import TimeSpentChart from './TimeSpentChart';
 import DeviceChart from './DeviceChart';
 import CalendarHeatmap, { HeatmapDatum } from './CalendarHeatmap';
 import IndividualStatsPanel from './IndividualStatsPanel';
+import axios from 'axios';
 
 type Filters = {
 	name?: string;
@@ -152,6 +153,16 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 		? (details as any)[selectedResponseId] || null
 		: null;
 
+	const fetchIpGeo = async (ip?: string) => {
+		if (!ip) return null;
+		try {
+			const res = await axios.get(`https://ipapi.co/${encodeURIComponent(ip)}/json/`);
+			return { city: res.data?.city, country: res.data?.country_name, org: res.data?.org };
+		} catch {
+			return null;
+		}
+	};
+
 	const toggleExpand = async (responseId: string): Promise<void> => {
 		const isOpen = expanded[responseId];
 		const next = { ...expanded, [responseId]: !isOpen };
@@ -160,7 +171,19 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 			try {
 				setLoadingDetail(prev => ({ ...prev, [responseId]: true }));
 				const res = await api.get(`/admin/responses/${responseId}`);
-				setDetails(prev => ({ ...prev, [responseId]: res.data }));
+				let enriched = res.data as any;
+				const ip = enriched?.candidateInfo?.metadata?.ipAddress;
+				const geo = await fetchIpGeo(ip);
+				if (geo) {
+					enriched = {
+						...enriched,
+						candidateInfo: {
+							...enriched.candidateInfo,
+							metadata: { ...enriched.candidateInfo?.metadata, geo },
+						},
+					};
+				}
+				setDetails(prev => ({ ...prev, [responseId]: enriched }));
 			} catch {
 				// noop
 			} finally {
@@ -425,19 +448,25 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 										<div className='flex items-center gap-2'>
 											<button
 												className='btn-secondary btn-small'
-												onClick={() => setResponsePage(prev => Math.max(1, prev - 1))}
+												onClick={() =>
+													setResponsePage(prev => Math.max(1, prev - 1))
+												}
 												disabled={responsePage === 1}
 												type='button'
 											>
 												← Previous
 											</button>
 											<span className='text-xs text-gray-500'>
-												Page {responsePage} of {Math.ceil(getSortedResponses().length / pageSize)}
+												Page {responsePage} of{' '}
+												{Math.ceil(getSortedResponses().length / pageSize)}
 											</span>
 											<button
 												className='btn-secondary btn-small'
 												onClick={() => setResponsePage(prev => prev + 1)}
-												disabled={responsePage * pageSize >= getSortedResponses().length}
+												disabled={
+													responsePage * pageSize >=
+													getSortedResponses().length
+												}
 												type='button'
 											>
 												Next →
@@ -472,28 +501,28 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 													</div>
 													{survey.type !== 'survey' &&
 														(response as any).score && (
-														<div className='flex items-center gap-2'>
-															<span
-																className={`px-2 py-1 text-xs rounded-full ${
-																	(response as any).score
-																		.passed
-																		? 'bg-green-100 text-green-700'
-																		: 'bg-red-100 text-red-700'
-																}`}
-															>
-																{(response as any).score.passed
-																	? 'Passed'
-																	: 'Failed'}
-															</span>
-															<span className='text-sm text-gray-700'>
-																{(response as any).score
-																	.scoringMode ===
+															<div className='flex items-center gap-2'>
+																<span
+																	className={`px-2 py-1 text-xs rounded-full ${
+																		(response as any).score
+																			.passed
+																			? 'bg-green-100 text-green-700'
+																			: 'bg-red-100 text-red-700'
+																	}`}
+																>
+																	{(response as any).score.passed
+																		? 'Passed'
+																		: 'Failed'}
+																</span>
+																<span className='text-sm text-gray-700'>
+																	{(response as any).score
+																		.scoringMode ===
 																	'percentage'
-																	? `${(response as any).score.percentage}%`
-																	: `${(response as any).score.totalPoints}/${(response as any).score.maxPossiblePoints}`}
-															</span>
-														</div>
-													)}
+																		? `${(response as any).score.percentage}%`
+																		: `${(response as any).score.totalPoints}/${(response as any).score.maxPossiblePoints}`}
+																</span>
+															</div>
+														)}
 												</div>
 												<div className='text-sm text-gray-600'>
 													<div>
@@ -781,6 +810,34 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 																						'—'}
 																				</span>
 																			</div>
+																			{(() => {
+																				const info = (
+																					details[
+																						(
+																							response as any
+																						)._id
+																					] as any
+																				)?.candidateInfo;
+																				const geo =
+																					info?.metadata
+																						?.geo;
+																				if (!geo)
+																					return null;
+																				return (
+																					<div>
+																						<span className='text-gray-600'>
+																							Location:{' '}
+																						</span>
+																						<span className='font-medium'>
+																							{(geo.city ||
+																								'-') +
+																								', ' +
+																								(geo.country ||
+																									'-')}
+																						</span>
+																					</div>
+																				);
+																			})()}
 																			<div className='md:col-span-3'>
 																				<span className='text-gray-600'>
 																					User Agent:{' '}
