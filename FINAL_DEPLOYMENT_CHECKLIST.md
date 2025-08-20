@@ -13,7 +13,7 @@
 ### 📁 关键文件状态
 ```
 ✅ Jenkinsfile_main_frontend        (生产环境 - sigma.jiangren.com.au)
-✅ Jenkinsfile_main_frontend_uat    (UAT测试 - uat-sigma.jiangren.com.au)  
+✅ Jenkinsfile_main_frontend_uat    (UAT测试 - uat-sigma.jiangren.com.au)
 ✅ Jenkinsfile_super_admin          (UAT环境 - uat-sigma.jiangren.com.au)
 ✅ nginx-sigma-domain.conf          (域名代理配置)
 ✅ client/postcss.config.simple.js  (Jenkins兼容配置)
@@ -60,7 +60,7 @@ location / {
     proxy_pass http://sigma.jiangren.com.au.s3-website-ap-southeast-2.amazonaws.com/;
 }
 
-# Super Admin - 代理到UAT S3  
+# Super Admin - 代理到UAT S3
 location /super-admin/ {
     proxy_pass http://uat-sigma.jiangren.com.au.s3-website-ap-southeast-2.amazonaws.com/super-admin/;
 }
@@ -91,7 +91,7 @@ location /super-admin/ {
 
 ### 访问层级
 1. **API请求** → EC2后端 (localhost:5050)
-2. **Super Admin** → UAT S3桶 (/super-admin/)  
+2. **Super Admin** → UAT S3桶 (/super-admin/)
 3. **主前端** → 生产S3桶 (/)
 
 ### 缓存策略
@@ -128,7 +128,7 @@ location /super-admin/ {
 3. 确认静态网站托管已启用
 4. 检查文件是否正确上传
 
-### 如果域名不可访问  
+### 如果域名不可访问
 1. 检查Nginx配置是否正确
 2. 验证SSL证书是否有效
 3. 确认DNS解析指向正确IP
@@ -141,7 +141,7 @@ location /super-admin/ {
 
 ---
 
-**最后更新**: $(date)  
-**状态**: 准备部署  
-**配置**: 生产环境就绪  
+**最后更新**: $(date)
+**状态**: 准备部署
+**配置**: 生产环境就绪
 **验证**: 脚本已准备

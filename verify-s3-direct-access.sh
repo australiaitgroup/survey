@@ -26,7 +26,7 @@ echo "1️⃣ 检查生产 S3 桶状态..."
 echo "🔍 检查生产桶 ${PROD_BUCKET}..."
 if aws s3api head-bucket --bucket ${PROD_BUCKET} 2>/dev/null; then
     echo "✅ 生产桶存在"
-    
+
     # 检查静态网站配置
     echo "🌐 检查静态网站托管配置..."
     WEBSITE_CONFIG=$(aws s3api get-bucket-website --bucket ${PROD_BUCKET} 2>/dev/null || echo "未配置")
@@ -38,7 +38,7 @@ if aws s3api head-bucket --bucket ${PROD_BUCKET} 2>/dev/null; then
         echo "❌ 静态网站托管未配置"
         echo "❗ 需要运行 Jenkins 部署来配置静态网站托管"
     fi
-    
+
     # 检查桶策略
     echo "🔐 检查桶策略..."
     BUCKET_POLICY=$(aws s3api get-bucket-policy --bucket ${PROD_BUCKET} 2>/dev/null || echo "未配置")
@@ -49,12 +49,12 @@ if aws s3api head-bucket --bucket ${PROD_BUCKET} 2>/dev/null; then
         echo "❌ 桶策略未配置"
         echo "❗ 需要运行 Jenkins 部署来配置公共访问策略"
     fi
-    
+
     # 检查桶内容
     echo "📁 检查主前端文件..."
     FILE_COUNT=$(aws s3 ls s3://${PROD_BUCKET}/ --recursive | wc -l)
     echo "生产桶文件数量: ${FILE_COUNT}"
-    
+
     if [[ $FILE_COUNT -gt 0 ]]; then
         echo "✅ 桶中有文件"
         echo "主要文件:"
@@ -63,7 +63,7 @@ if aws s3api head-bucket --bucket ${PROD_BUCKET} 2>/dev/null; then
         echo "❌ 桶为空"
         echo "❗ 需要运行 Jenkins 部署来上传主前端文件"
     fi
-    
+
     # 检查 index.html
     if aws s3api head-object --bucket ${PROD_BUCKET} --key index.html >/dev/null 2>&1; then
         echo "✅ index.html 存在"
@@ -71,7 +71,7 @@ if aws s3api head-bucket --bucket ${PROD_BUCKET} 2>/dev/null; then
         echo "❌ index.html 不存在"
         echo "❗ 需要运行 Jenkins 部署来上传主前端应用"
     fi
-    
+
 else
     echo "❌ 生产桶不存在"
     echo "❗ 需要运行 Jenkins 部署来创建和配置生产桶"
@@ -87,7 +87,7 @@ echo "URL: ${PROD_S3_URL}"
 HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${PROD_S3_URL} || echo "000")
 if [[ "$HTTP_STATUS" == "200" ]]; then
     echo "✅ S3 直接访问正常 (HTTP ${HTTP_STATUS})"
-    
+
     # 检查响应内容
     echo "📄 检查响应内容..."
     RESPONSE=$(curl -s ${PROD_S3_URL} | head -5)
@@ -98,7 +98,7 @@ if [[ "$HTTP_STATUS" == "200" ]]; then
         echo "前5行内容:"
         echo "$RESPONSE"
     fi
-    
+
 elif [[ "$HTTP_STATUS" == "403" ]]; then
     echo "❌ S3 直接访问被拒绝 (HTTP ${HTTP_STATUS})"
     echo "❗ 可能原因："

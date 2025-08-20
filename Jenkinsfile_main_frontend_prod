@@ -3,11 +3,11 @@ pipeline {
 
     environment {
         // Application configuration
-        APP_NAME = 'sigma-main-frontend-uat'
+        APP_NAME = 'sigma-main-frontend-prod'
         NODE_VERSION = '18'
 
-        // S3 Configuration - UAT environment
-        S3_BUCKET_NAME = 'uat-sigma.jiangren.com.au'
+        // S3 Configuration - Production environment
+        S3_BUCKET_NAME = 'sigma.jiangren.com.au'
         AWS_REGION = 'ap-southeast-2'
 
         // S3 Static Website URL
@@ -44,7 +44,7 @@ pipeline {
         stage('Update S3 Bucket Policy') {
             steps {
                 echo 'Updating S3 bucket policy to support both main app and super-admin...'
-                withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_uat', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
+                withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
                     sh '''
 set -e
 
@@ -181,7 +181,7 @@ echo "  - Super Admin path: arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
         stage('Deploy Main Frontend to S3') {
             steps {
                 echo 'Deploying main frontend to S3 root path...'
-                withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_uat', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
+                withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
                     dir('client') {
                         sh '''
                             echo "🚀 Starting main frontend S3 deployment..."

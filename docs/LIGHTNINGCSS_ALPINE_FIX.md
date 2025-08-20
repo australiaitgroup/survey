@@ -48,12 +48,12 @@ export NODE_ENV=production
 ## 🔧 完整实施方案
 
 ### 修改文件列表
-1. `Jenkinsfile_main_frontend`: 
+1. `Jenkinsfile_main_frontend`:
    - 添加Alpine Linux兼容性环境变量
    - 使用simple PostCSS配置
    - 尝试安装musl版本的lightningcss
 
-2. `client/postcss.config.simple.js`: 
+2. `client/postcss.config.simple.js`:
    - 新建Jenkins专用配置
    - 禁用lightningcss
    - 保持Tailwind CSS v4兼容性

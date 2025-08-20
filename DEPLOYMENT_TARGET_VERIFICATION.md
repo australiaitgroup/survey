@@ -34,7 +34,7 @@ Jenkinsfile_main_frontend        → 生产 S3 桶 (sigma.jiangren.com.au)
 nginx-sigma-domain.conf          → 生产域名代理配置
 ```
 
-### UAT 环境文件  
+### UAT 环境文件
 ```
 Jenkinsfile_super_admin          → UAT S3 桶 (uat-sigma.jiangren.com.au)
 nginx-uat-domain.conf           → UAT 域名代理配置 (新增)
@@ -103,10 +103,10 @@ nslookup uat-sigma.jiangren.com.au
 ```
 生产桶: sigma.jiangren.com.au
 ├── 静态网站托管: 启用
-├── 公共读取策略: 仅主前端 (/*) 
+├── 公共读取策略: 仅主前端 (/*)
 └── 域名访问: 通过 Nginx 代理到生产桶
 
-UAT桶: uat-sigma.jiangren.com.au  
+UAT桶: uat-sigma.jiangren.com.au
 ├── 静态网站托管: 启用
 ├── 公共读取策略: Super Admin (/super-admin/*)
 └── 域名访问: 通过 UAT Nginx 代理到 UAT 桶
@@ -156,6 +156,6 @@ UAT Nginx (nginx-uat-domain.conf):
 
 ---
 
-**准备状态**: ✅ 配置完成，可以开始部署验证  
-**关键目标**: 确保两个特定 URL 可以正常访问  
+**准备状态**: ✅ 配置完成，可以开始部署验证
+**关键目标**: 确保两个特定 URL 可以正常访问
 **下一步**: 执行生产主前端部署并验证 S3 直接访问

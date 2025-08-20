@@ -7,7 +7,7 @@
 - **UAT S3桶**: `uat-sigma.jiangren.com.au` (Super Admin保持不变)
 - **主前端**: 部署到生产桶根路径 `/`
 - **Super Admin**: 继续在UAT环境的 `/super-admin/` 路径
-- **访问地址**: 
+- **访问地址**:
   - 主前端: `http://sigma.jiangren.com.au.s3-website-ap-southeast-2.amazonaws.com/`
   - Super Admin: `http://uat-sigma.jiangren.com.au.s3-website-ap-southeast-2.amazonaws.com/super-admin/`
 
@@ -45,7 +45,7 @@
 - ✅ 新增桶创建和配置阶段
 - ✅ 保持使用 `secret_aws/aws_prod` 凭证
 
-### Jenkinsfile_super_admin  
+### Jenkinsfile_super_admin
 - ✅ S3桶名保持: `uat-sigma.jiangren.com.au` (无变更)
 - ✅ 继续部署到UAT环境的 `/super-admin/` 子路径
 - ✅ 保持使用 `secret_aws/aws_prod` 凭证
@@ -67,7 +67,7 @@
     {
       "Sid": "PublicReadMainApp",
       "Effect": "Allow",
-      "Principal": "*", 
+      "Principal": "*",
       "Action": "s3:GetObject",
       "Resource": "arn:aws:s3:::sigma.jiangren.com.au/*"
     }
@@ -136,7 +136,7 @@ aws s3 ls s3://uat-sigma.jiangren.com.au/super-admin/
 
 ---
 
-**创建时间**: $(date)  
+**创建时间**: $(date)
 **主前端**: 生产环境 (sigma.jiangren.com.au)
 **Super Admin**: UAT环境 (uat-sigma.jiangren.com.au)
 **AWS凭证**: secret_aws/aws_prod
