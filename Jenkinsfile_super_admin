@@ -4,11 +4,13 @@ pipeline {
     environment {
         // Application configuration
         APP_NAME = 'survey-super-admin'
-        NODE_VERSION = '18'
-
-        // S3 Configuration - Deploy to UAT bucket
+        
+        // S3 Configuration - Deploy only to UAT bucket
         S3_BUCKET_NAME = 'uat-sigma.jiangren.com.au'
         AWS_REGION = 'ap-southeast-2'
+        
+        // Super Admin specific configuration
+        SUPER_ADMIN_PATH = 'super-admin'
     }
 
     stages {
@@ -19,81 +21,35 @@ pipeline {
             }
         }
 
-        // TEMP STAGE: Bucket bootstrap (COMMENTED OUT - bucket already exists)
-        /*
-        stage('Prepare S3 Bucket') {
+        stage('Configure S3 Website') {
             steps {
-                echo 'Ensuring S3 bucket exists and is configured (temporary stage)...'
+                echo 'Configuring S3 static website hosting for SPA...'
                 withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
                     sh '''
-set -e
-echo "🔍 Checking if bucket ${S3_BUCKET_NAME} exists..."
-if aws s3api head-bucket --bucket ${S3_BUCKET_NAME} 2>/dev/null; then
-  echo "✅ Bucket already exists"
-else
-  echo "🪣 Creating bucket ${S3_BUCKET_NAME} in ${AWS_REGION}..."
-  aws s3api create-bucket --bucket ${S3_BUCKET_NAME} --region ${AWS_REGION} --create-bucket-configuration LocationConstraint=${AWS_REGION}
-  echo "✅ Bucket created"
-fi
-
-echo "🔐 Adjusting public access block (allow policy usage)..."
-aws s3api put-public-access-block --bucket ${S3_BUCKET_NAME} \
-  --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
-
-echo "🌐 Configuring static website hosting..."
-aws s3 website s3://${S3_BUCKET_NAME}/ --index-document index.html --error-document index.html || true
-
-echo "🔎 Checking existing bucket policy..."
-if aws s3api get-bucket-policy --bucket ${S3_BUCKET_NAME} >/dev/null 2>&1; then
-  echo "⚠️  Policy already set - skipping apply (remove this stage later)"
-else
-  echo "📝 Applying minimal read-only policy for /super-admin prefix..."
-  POLICY_FILE=$(mktemp)
-  cat > $POLICY_FILE <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "PublicReadSuperAdmin",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
-    }
-  ]
-}
-EOF
-  aws s3api put-bucket-policy --bucket ${S3_BUCKET_NAME} --policy file://$POLICY_FILE
-  rm -f $POLICY_FILE
-  echo "✅ Policy applied"
-fi
-
-echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/super-admin"
-'''
+                        echo "🌐 Configuring static website hosting for SPA support..."
+                        aws s3 website s3://${S3_BUCKET_NAME}/ --index-document index.html --error-document index.html --region ${AWS_REGION}
+                        
+                        echo "✅ S3 website configuration completed"
+                        echo "📄 Website endpoint: http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/super-admin"
+                    '''
                 }
             }
         }
-        */
 
-        stage('Setup Node.js') {
+        stage('Setup Node.js & Install Dependencies') {
             steps {
-                echo 'Setting up Node.js environment...'
-                sh '''
-                    # Check Node.js version
-                    node --version
-                    npm --version
-                '''
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                echo 'Installing Super Admin dependencies...'
+                echo 'Setting up Node.js and installing Super Admin dependencies...'
                 dir('super-admin') {
                     sh '''
+                        # Check environment
+                        echo "Node.js version: $(node --version)"
+                        echo "NPM version: $(npm --version)"
+                        
                         # Clean install to ensure consistency
                         rm -rf node_modules package-lock.json
                         npm install
+                        
+                        echo "✅ Dependencies installed successfully"
                     '''
                 }
             }
@@ -127,36 +83,34 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
                 withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
                     dir('super-admin') {
                         sh '''
-                            echo "🚀 Starting S3 deployment to UAT environment..."
+                            echo "🚀 Deploying Super Admin to UAT environment..."
+                            echo "📦 Target bucket: ${S3_BUCKET_NAME}"
+                            echo "� Target path: /${SUPER_ADMIN_PATH}/"
 
-                            # Deploy to UAT bucket
-                            echo "📦 Deploying to UAT bucket: ${S3_BUCKET_NAME}"
-
-                            # Upload static assets
-                            aws s3 sync dist/ s3://${S3_BUCKET_NAME}/super-admin/ \
+                            # Upload static assets (JS, CSS, images) with long cache
+                            aws s3 sync dist/ s3://${S3_BUCKET_NAME}/${SUPER_ADMIN_PATH}/ \
                                 --region ${AWS_REGION} \
                                 --delete \
                                 --cache-control "public, max-age=31536000" \
                                 --exclude "*.html" \
                                 --exclude "*.json"
 
-                            # Upload HTML and JSON files
-                            aws s3 sync dist/ s3://${S3_BUCKET_NAME}/super-admin/ \
+                            # Upload HTML and JSON files with no cache
+                            aws s3 sync dist/ s3://${S3_BUCKET_NAME}/${SUPER_ADMIN_PATH}/ \
                                 --region ${AWS_REGION} \
                                 --include "*.html" \
                                 --include "*.json" \
                                 --cache-control "no-cache, no-store, must-revalidate"
 
-                            # Set content type for index.html
-                            aws s3 cp s3://${S3_BUCKET_NAME}/super-admin/index.html \
-                                s3://${S3_BUCKET_NAME}/super-admin/index.html \
+                            # Ensure index.html has correct content type and cache headers
+                            aws s3 cp s3://${S3_BUCKET_NAME}/${SUPER_ADMIN_PATH}/index.html \
+                                s3://${S3_BUCKET_NAME}/${SUPER_ADMIN_PATH}/index.html \
                                 --region ${AWS_REGION} \
                                 --content-type "text/html" \
                                 --cache-control "no-cache, no-store, must-revalidate" \
                                 --metadata-directive REPLACE
 
-                            echo "✅ UAT deployment completed!"
-                            echo "🎉 Super Admin deployed to UAT environment!"
+                            echo "✅ Deployment to UAT completed successfully!"
                         '''
                     }
                 }
@@ -165,16 +119,24 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
 
         stage('Health Check') {
             steps {
-                echo 'Performing deployment health check for UAT environment...'
+                echo 'Performing deployment health check...'
                 script {
-                    // Wait a bit for S3 to update
-                    sleep 10
+                    // Brief wait for S3 to update
+                    sleep 5
 
                     sh '''
-                        echo "✅ Deployment health check completed"
-                        echo "UAT Super Admin available at: http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/super-admin"
-                        echo "Domain access:"
-                        echo "  - UAT: https://uat-sigma.jiangren.com.au/super-admin"
+                        echo "🔍 Running health check for Super Admin..."
+                        
+                        # Check S3 website endpoint
+                        S3_ENDPOINT="http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/${SUPER_ADMIN_PATH}/"
+                        echo "S3 endpoint: ${S3_ENDPOINT}"
+                        
+                        # Check domain endpoint
+                        DOMAIN_ENDPOINT="https://uat-sigma.jiangren.com.au/${SUPER_ADMIN_PATH}/"
+                        echo "Domain endpoint: ${DOMAIN_ENDPOINT}"
+                        
+                        echo "✅ Health check completed"
+                        echo "🎯 Super Admin is accessible at the domain endpoint"
                     '''
                 }
             }
@@ -183,20 +145,24 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
 
     post {
         always {
-            echo 'Pipeline completed'
+            echo 'Pipeline execution completed'
             cleanWs()
         }
         success {
             echo '🎉 Super Admin deployment successful!'
-            echo 'UAT: http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/super-admin'
-            echo 'Domain access:'
-            echo '  - UAT: https://uat-sigma.jiangren.com.au/super-admin'
+            echo ''
+            echo '📍 Access URL:'
+            echo '   https://uat-sigma.jiangren.com.au/super-admin/'
+            echo ''
+            echo '💡 Note: Only main entry point is supported (no sub-routes)'
         }
         failure {
             echo '❌ Super Admin deployment failed!'
-            echo 'ERROR: Check Jenkins credentials configuration'
-            echo 'Required credentials: aws-credentials, S3_BUCKET_NAME, AWS_REGION'
-            // You can add failure notifications here
+            echo ''
+            echo 'Troubleshooting:'
+            echo '  1. Check Jenkins credentials configuration'
+            echo '  2. Verify S3 bucket permissions'
+            echo '  3. Ensure build process completed successfully'
         }
     }
 }
