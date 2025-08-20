@@ -24,35 +24,37 @@ pipeline {
         /*
         stage('Prepare S3 Bucket') {
             steps {
-                echo 'Ensuring S3 bucket exists and is configured (temporary stage)...'
+                echo 'Ensuring S3 buckets exist and are configured (temporary stage)...'
                 withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
                     sh '''
 set -e
-aws s3 rb s3://uat-sigma.jiangren.com.au --force
-aws s3 rb s3://sigma.jiangren.com.au --force
-echo "🔍 Checking if bucket ${S3_BUCKET_NAME} exists..."
-if aws s3api head-bucket --bucket ${S3_BUCKET_NAME} 2>/dev/null; then
-  echo "✅ Bucket already exists"
-else
-  echo "🪣 Creating bucket ${S3_BUCKET_NAME} in ${AWS_REGION}..."
-  aws s3api create-bucket --bucket ${S3_BUCKET_NAME} --region ${AWS_REGION} --create-bucket-configuration LocationConstraint=${AWS_REGION}
-  echo "✅ Bucket created"
-fi
 
-echo "🔐 Adjusting public access block (allow policy usage)..."
-aws s3api put-public-access-block --bucket ${S3_BUCKET_NAME} \
-  --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
+# Function to setup bucket
+setup_bucket() {
+    local BUCKET_NAME=$1
+    echo "🔍 Checking if bucket ${BUCKET_NAME} exists..."
+    if aws s3api head-bucket --bucket ${BUCKET_NAME} 2>/dev/null; then
+      echo "✅ Bucket ${BUCKET_NAME} already exists"
+    else
+      echo "🪣 Creating bucket ${BUCKET_NAME} in ${AWS_REGION}..."
+      aws s3api create-bucket --bucket ${BUCKET_NAME} --region ${AWS_REGION} --create-bucket-configuration LocationConstraint=${AWS_REGION}
+      echo "✅ Bucket ${BUCKET_NAME} created"
+    fi
 
-echo "🌐 Configuring static website hosting..."
-aws s3 website s3://${S3_BUCKET_NAME}/ --index-document index.html --error-document index.html || true
+    echo "🔐 Adjusting public access block for ${BUCKET_NAME}..."
+    aws s3api put-public-access-block --bucket ${BUCKET_NAME} \
+      --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
 
-echo "🔎 Checking existing bucket policy..."
-if aws s3api get-bucket-policy --bucket ${S3_BUCKET_NAME} >/dev/null 2>&1; then
-  echo "⚠️  Policy already set - skipping apply (remove this stage later)"
-else
-  echo "📝 Applying minimal read-only policy for /super-admin prefix..."
-  POLICY_FILE=$(mktemp)
-  cat > $POLICY_FILE <<EOF
+    echo "🌐 Configuring static website hosting for ${BUCKET_NAME}..."
+    aws s3 website s3://${BUCKET_NAME}/ --index-document index.html --error-document index.html || true
+
+    echo "🔎 Checking existing bucket policy for ${BUCKET_NAME}..."
+    if aws s3api get-bucket-policy --bucket ${BUCKET_NAME} >/dev/null 2>&1; then
+      echo "⚠️  Policy already set for ${BUCKET_NAME} - skipping apply"
+    else
+      echo "📝 Applying minimal read-only policy for ${BUCKET_NAME}/super-admin prefix..."
+      POLICY_FILE=$(mktemp)
+      cat > $POLICY_FILE <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -61,17 +63,22 @@ else
       "Effect": "Allow",
       "Principal": "*",
       "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
+      "Resource": "arn:aws:s3:::${BUCKET_NAME}/super-admin/*"
     }
   ]
 }
 EOF
-  aws s3api put-bucket-policy --bucket ${S3_BUCKET_NAME} --policy file://$POLICY_FILE
-  rm -f $POLICY_FILE
-  echo "✅ Policy applied"
-fi
+      aws s3api put-bucket-policy --bucket ${BUCKET_NAME} --policy file://$POLICY_FILE
+      rm -f $POLICY_FILE
+      echo "✅ Policy applied for ${BUCKET_NAME}"
+    fi
 
-echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/super-admin"
+    echo "📄 Bucket website endpoint: http://${BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/super-admin"
+}
+
+# Setup both buckets
+setup_bucket "${S3_BUCKET_UAT}"
+setup_bucket "${S3_BUCKET_PROD}"
 '''
                 }
             }
@@ -230,7 +237,7 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
         failure {
             echo '❌ Super Admin deployment failed!'
             echo 'ERROR: Check Jenkins credentials configuration'
-            echo 'Required credentials: aws-credentials, S3_BUCKET_NAME, AWS_REGION'
+            echo 'Required credentials: aws-credentials, S3_BUCKET_UAT, S3_BUCKET_PROD, AWS_REGION'
             // You can add failure notifications here
         }
     }
