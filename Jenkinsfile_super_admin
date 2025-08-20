@@ -6,8 +6,9 @@ pipeline {
         APP_NAME = 'survey-super-admin'
         NODE_VERSION = '18'
 
-        // S3 Configuration - Keep in UAT environment
-        S3_BUCKET_NAME = 'uat-sigma.jiangren.com.au'
+        // S3 Configuration - Deploy to both UAT and Production
+        S3_BUCKET_UAT = 'uat-sigma.jiangren.com.au'
+        S3_BUCKET_PROD = 'sigma.jiangren.com.au'
         AWS_REGION = 'ap-southeast-2'
     }
 
@@ -125,38 +126,68 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
 
         stage('Deploy to S3') {
             steps {
-                echo 'Deploying Super Admin to S3...'
+                echo 'Deploying Super Admin to both UAT and Production S3 buckets...'
                 withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
                     dir('super-admin') {
                         sh '''
-                            echo "🚀 Starting S3 deployment..."
+                            echo "🚀 Starting S3 deployment to both environments..."
 
-                            # Sync files to S3 with proper cache headers
-                            echo "Uploading static assets..."
-                            aws s3 sync dist/ s3://${S3_BUCKET_NAME}/super-admin/ \
+                            # Deploy to UAT bucket
+                            echo "📦 Deploying to UAT bucket: ${S3_BUCKET_UAT}"
+                            
+                            # Upload static assets to UAT
+                            aws s3 sync dist/ s3://${S3_BUCKET_UAT}/super-admin/ \
                                 --region ${AWS_REGION} \
                                 --delete \
                                 --cache-control "public, max-age=31536000" \
                                 --exclude "*.html" \
                                 --exclude "*.json"
 
-                            # Upload HTML and JSON files with no-cache headers
-                            echo "Uploading HTML and JSON files..."
-                            aws s3 sync dist/ s3://${S3_BUCKET_NAME}/super-admin/ \
+                            # Upload HTML and JSON files to UAT
+                            aws s3 sync dist/ s3://${S3_BUCKET_UAT}/super-admin/ \
                                 --region ${AWS_REGION} \
                                 --include "*.html" \
                                 --include "*.json" \
                                 --cache-control "no-cache, no-store, must-revalidate"
 
-                            # Set specific content type for index.html
-                            aws s3 cp s3://${S3_BUCKET_NAME}/super-admin/index.html \
-                                s3://${S3_BUCKET_NAME}/super-admin/index.html \
+                            # Set content type for UAT index.html
+                            aws s3 cp s3://${S3_BUCKET_UAT}/super-admin/index.html \
+                                s3://${S3_BUCKET_UAT}/super-admin/index.html \
                                 --region ${AWS_REGION} \
                                 --content-type "text/html" \
                                 --cache-control "no-cache, no-store, must-revalidate" \
                                 --metadata-directive REPLACE
 
-                            echo "✅ S3 deployment completed!"
+                            echo "✅ UAT deployment completed!"
+
+                            # Deploy to Production bucket
+                            echo "🚀 Deploying to Production bucket: ${S3_BUCKET_PROD}"
+                            
+                            # Upload static assets to Production
+                            aws s3 sync dist/ s3://${S3_BUCKET_PROD}/super-admin/ \
+                                --region ${AWS_REGION} \
+                                --delete \
+                                --cache-control "public, max-age=31536000" \
+                                --exclude "*.html" \
+                                --exclude "*.json"
+
+                            # Upload HTML and JSON files to Production
+                            aws s3 sync dist/ s3://${S3_BUCKET_PROD}/super-admin/ \
+                                --region ${AWS_REGION} \
+                                --include "*.html" \
+                                --include "*.json" \
+                                --cache-control "no-cache, no-store, must-revalidate"
+
+                            # Set content type for Production index.html
+                            aws s3 cp s3://${S3_BUCKET_PROD}/super-admin/index.html \
+                                s3://${S3_BUCKET_PROD}/super-admin/index.html \
+                                --region ${AWS_REGION} \
+                                --content-type "text/html" \
+                                --cache-control "no-cache, no-store, must-revalidate" \
+                                --metadata-directive REPLACE
+
+                            echo "✅ Production deployment completed!"
+                            echo "🎉 Super Admin deployed to both environments!"
                         '''
                     }
                 }
@@ -165,15 +196,18 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
 
         stage('Health Check') {
             steps {
-                echo 'Performing deployment health check...'
+                echo 'Performing deployment health check for both environments...'
                 script {
                     // Wait a bit for S3 to update
                     sleep 10
 
                     sh '''
-                        # You can add health checks here if you have a specific endpoint
                         echo "✅ Deployment health check completed"
-                        echo "Super Admin should be available at: http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/super-admin"
+                        echo "UAT Super Admin available at: http://${S3_BUCKET_UAT}.s3-website-${AWS_REGION}.amazonaws.com/super-admin"
+                        echo "Production Super Admin available at: http://${S3_BUCKET_PROD}.s3-website-${AWS_REGION}.amazonaws.com/super-admin"
+                        echo "Domain access:"
+                        echo "  - UAT: https://uat-sigma.jiangren.com.au/super-admin"
+                        echo "  - Production: https://sigma.jiangren.com.au/super-admin"
                     '''
                 }
             }
@@ -187,8 +221,11 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
         }
         success {
             echo '🎉 Super Admin deployment successful!'
-            echo 'Application deployed to: http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/super-admin'
-            // You can add success notifications here (Slack, email, etc.)
+            echo 'UAT: http://${S3_BUCKET_UAT}.s3-website-${AWS_REGION}.amazonaws.com/super-admin'
+            echo 'Production: http://${S3_BUCKET_PROD}.s3-website-${AWS_REGION}.amazonaws.com/super-admin'
+            echo 'Domain access:'
+            echo '  - UAT: https://uat-sigma.jiangren.com.au/super-admin'
+            echo '  - Production: https://sigma.jiangren.com.au/super-admin'
         }
         failure {
             echo '❌ Super Admin deployment failed!'
