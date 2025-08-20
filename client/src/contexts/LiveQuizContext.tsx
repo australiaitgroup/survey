@@ -25,6 +25,7 @@ export interface LiveQuizState {
 	serverNow: number | null; // server epoch ms at last sync
 	lastAnswer: string | null;
 	score: number;
+	submitted: boolean;
 }
 
 export type LiveEventType =
@@ -56,6 +57,7 @@ export interface LiveQuizContextValue extends LiveQuizState {
 	connectToSession: (sessionId: string, name: string) => void;
 	disconnect: () => void;
 	selectAnswer: (optionKey: string) => void;
+	submitAnswer: () => void;
 	remainingMs: number;
 	remainingPct: number; // 0..1
 }
@@ -72,6 +74,7 @@ const initialState: LiveQuizState = {
 	serverNow: null,
 	lastAnswer: null,
 	score: 0,
+	submitted: false,
 };
 
 type Action =
@@ -81,6 +84,7 @@ type Action =
 	| { type: 'QUESTION'; question: LiveQuestion; endsAt: number; serverNow: number }
 	| { type: 'LOCK'; serverNow: number }
 	| { type: 'ANSWER'; optionKey: string }
+	| { type: 'SUBMIT_ANSWER' }
 	| { type: 'RESULT'; scoreDelta: number }
 	| { type: 'END' };
 
@@ -108,11 +112,14 @@ function reducer(state: LiveQuizState, action: Action): LiveQuizState {
 				endsAt: action.endsAt,
 				serverNow: action.serverNow,
 				lastAnswer: null,
+				submitted: false,
 			};
 		case 'LOCK':
 			return { ...state, currentView: 'locked', serverNow: action.serverNow };
 		case 'ANSWER':
 			return { ...state, lastAnswer: action.optionKey };
+		case 'SUBMIT_ANSWER':
+			return { ...state, submitted: true };
 		case 'RESULT':
 			return { ...state, currentView: 'feedback', score: state.score + action.scoreDelta };
 		case 'END':
@@ -134,6 +141,7 @@ export const LiveQuizProvider: React.FC<{ children: React.ReactNode; clientFacto
 	const questionStartLocalTimeRef = useRef<number | null>(null);
 	const lastServerNowAtQuestionRef = useRef<number | null>(null);
     const rafRef = useRef<number | null>(null);
+    const reconnectTimerRef = useRef<number | null>(null);
 
 	const connectToSession = useCallback(
 		(sessionId: string, name: string) => {
@@ -169,6 +177,16 @@ export const LiveQuizProvider: React.FC<{ children: React.ReactNode; clientFacto
 			client.on('question_lock', handleLock);
 			client.on('question_result', handleResult);
 			client.on('session_end', handleEnd);
+
+			// Mock reconnection status flips if client is simulating drops
+			if (reconnectTimerRef.current) window.clearInterval(reconnectTimerRef.current);
+			reconnectTimerRef.current = window.setInterval(() => {
+				// We cannot inspect client state here. Simulate occasional retrying->connected transitions.
+				if (Math.random() < 0.05) {
+					dispatch({ type: 'SET_CONNECTION', connected: false, status: 'retrying' });
+					setTimeout(() => dispatch({ type: 'SET_CONNECTION', connected: true, status: 'connected' }), 800);
+				}
+			}, 1000);
 		},
 		[clientFactory]
 	);
@@ -183,9 +201,17 @@ export const LiveQuizProvider: React.FC<{ children: React.ReactNode; clientFacto
 	const selectAnswer = useCallback((optionKey: string) => {
 		dispatch({ type: 'ANSWER', optionKey });
 		if (clientRef.current?.sendAnswer) {
-			clientRef.current.sendAnswer(optionKey);
+			// do not auto-send; wait for submit
 		}
 	}, []);
+
+	const submitAnswer = useCallback(() => {
+		if (state.submitted || !state.lastAnswer) return;
+		dispatch({ type: 'SUBMIT_ANSWER' });
+		if (clientRef.current?.sendAnswer) {
+			clientRef.current.sendAnswer(state.lastAnswer);
+		}
+	}, [state.submitted, state.lastAnswer]);
 
 	// Time sync: compute remaining based on serverNow and local high-res elapsed
 
@@ -233,6 +259,7 @@ export const LiveQuizProvider: React.FC<{ children: React.ReactNode; clientFacto
 		connectToSession,
 		disconnect,
 		selectAnswer,
+		submitAnswer,
 		remainingMs,
 		remainingPct,
 	};

@@ -7,6 +7,8 @@ type HandlerMap = {
 export function createMockLiveClient(): LiveClientLike {
 	let handlers: HandlerMap = {};
 	let intervalId: number | null = null;
+	let connected = true;
+	let simulateDrops = true;
 
 	function emit<K extends LiveEventType>(event: K, payload: LiveEventPayloads[K]) {
 		handlers[event]?.forEach((h) => h(payload));
@@ -40,6 +42,20 @@ export function createMockLiveClient(): LiveClientLike {
 				}, 800);
 			}, 11000);
 		}, 1000);
+
+		// Simulate temporary disconnect and auto-reconnect to test UI banner
+		if (simulateDrops) {
+			let dropped = false;
+			window.setTimeout(() => {
+				if (dropped) return;
+				dropped = true;
+				connected = false;
+				// Reconnect shortly after
+				window.setTimeout(() => {
+					connected = true;
+				}, 1200);
+			}, 2000);
+		}
 	}
 
 	function disconnect() {
@@ -58,6 +74,9 @@ export function createMockLiveClient(): LiveClientLike {
 		handlers[event] = (handlers[event] || []).filter((h) => h !== handler);
 	}
 
-	return { connect, disconnect, on, off };
-}
+	function sendAnswer(_optionKey: string) {
+		// no-op for now in mock; could emit ack
+	}
 
+	return { connect, disconnect, on, off, sendAnswer };
+}
