@@ -138,7 +138,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   const handleLogout = () => {
     localStorage.removeItem('sa_token')
     localStorage.removeItem('sa_user')
-    navigate('/login')
+    navigate('/')
   }
 
 	const navigation = [
@@ -252,7 +252,6 @@ function App() {
   return (
     <Router basename={basename}>
       <Routes>
-        <Route path="/login" element={<Login />} />
         <Route path="/overview" element={
           <ProtectedRoute>
             <Layout><Overview /></Layout>
@@ -288,7 +287,7 @@ function App() {
             <Layout><Audit /></Layout>
           </ProtectedRoute>
         } />
-        <Route path="/" element={<Navigate to="/overview" replace />} />
+        <Route path="/" element={<Login />} />
       </Routes>
     </Router>
   )
