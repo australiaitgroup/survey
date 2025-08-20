@@ -6,9 +6,8 @@ pipeline {
         APP_NAME = 'survey-super-admin'
         NODE_VERSION = '18'
 
-        // S3 Configuration - Deploy to both UAT and Production
-        S3_BUCKET_UAT = 'uat-sigma.jiangren.com.au'
-        S3_BUCKET_PROD = 'sigma.jiangren.com.au'
+        // S3 Configuration - Deploy to UAT bucket
+        S3_BUCKET_NAME = 'uat-sigma.jiangren.com.au'
         AWS_REGION = 'ap-southeast-2'
     }
 
@@ -24,37 +23,33 @@ pipeline {
         /*
         stage('Prepare S3 Bucket') {
             steps {
-                echo 'Ensuring S3 buckets exist and are configured (temporary stage)...'
+                echo 'Ensuring S3 bucket exists and is configured (temporary stage)...'
                 withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
                     sh '''
 set -e
+echo "🔍 Checking if bucket ${S3_BUCKET_NAME} exists..."
+if aws s3api head-bucket --bucket ${S3_BUCKET_NAME} 2>/dev/null; then
+  echo "✅ Bucket already exists"
+else
+  echo "🪣 Creating bucket ${S3_BUCKET_NAME} in ${AWS_REGION}..."
+  aws s3api create-bucket --bucket ${S3_BUCKET_NAME} --region ${AWS_REGION} --create-bucket-configuration LocationConstraint=${AWS_REGION}
+  echo "✅ Bucket created"
+fi
 
-# Function to setup bucket
-setup_bucket() {
-    local BUCKET_NAME=$1
-    echo "🔍 Checking if bucket ${BUCKET_NAME} exists..."
-    if aws s3api head-bucket --bucket ${BUCKET_NAME} 2>/dev/null; then
-      echo "✅ Bucket ${BUCKET_NAME} already exists"
-    else
-      echo "🪣 Creating bucket ${BUCKET_NAME} in ${AWS_REGION}..."
-      aws s3api create-bucket --bucket ${BUCKET_NAME} --region ${AWS_REGION} --create-bucket-configuration LocationConstraint=${AWS_REGION}
-      echo "✅ Bucket ${BUCKET_NAME} created"
-    fi
+echo "🔐 Adjusting public access block (allow policy usage)..."
+aws s3api put-public-access-block --bucket ${S3_BUCKET_NAME} \
+  --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
 
-    echo "🔐 Adjusting public access block for ${BUCKET_NAME}..."
-    aws s3api put-public-access-block --bucket ${BUCKET_NAME} \
-      --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
+echo "🌐 Configuring static website hosting..."
+aws s3 website s3://${S3_BUCKET_NAME}/ --index-document index.html --error-document index.html || true
 
-    echo "🌐 Configuring static website hosting for ${BUCKET_NAME}..."
-    aws s3 website s3://${BUCKET_NAME}/ --index-document index.html --error-document index.html || true
-
-    echo "🔎 Checking existing bucket policy for ${BUCKET_NAME}..."
-    if aws s3api get-bucket-policy --bucket ${BUCKET_NAME} >/dev/null 2>&1; then
-      echo "⚠️  Policy already set for ${BUCKET_NAME} - skipping apply"
-    else
-      echo "📝 Applying minimal read-only policy for ${BUCKET_NAME}/super-admin prefix..."
-      POLICY_FILE=$(mktemp)
-      cat > $POLICY_FILE <<EOF
+echo "🔎 Checking existing bucket policy..."
+if aws s3api get-bucket-policy --bucket ${S3_BUCKET_NAME} >/dev/null 2>&1; then
+  echo "⚠️  Policy already set - skipping apply (remove this stage later)"
+else
+  echo "📝 Applying minimal read-only policy for /super-admin prefix..."
+  POLICY_FILE=$(mktemp)
+  cat > $POLICY_FILE <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -63,22 +58,17 @@ setup_bucket() {
       "Effect": "Allow",
       "Principal": "*",
       "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::${BUCKET_NAME}/super-admin/*"
+      "Resource": "arn:aws:s3:::${S3_BUCKET_NAME}/super-admin/*"
     }
   ]
 }
 EOF
-      aws s3api put-bucket-policy --bucket ${BUCKET_NAME} --policy file://$POLICY_FILE
-      rm -f $POLICY_FILE
-      echo "✅ Policy applied for ${BUCKET_NAME}"
-    fi
+  aws s3api put-bucket-policy --bucket ${S3_BUCKET_NAME} --policy file://$POLICY_FILE
+  rm -f $POLICY_FILE
+  echo "✅ Policy applied"
+fi
 
-    echo "📄 Bucket website endpoint: http://${BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/super-admin"
-}
-
-# Setup both buckets
-setup_bucket "${S3_BUCKET_UAT}"
-setup_bucket "${S3_BUCKET_PROD}"
+echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/super-admin"
 '''
                 }
             }
@@ -133,68 +123,40 @@ setup_bucket "${S3_BUCKET_PROD}"
 
         stage('Deploy to S3') {
             steps {
-                echo 'Deploying Super Admin to both UAT and Production S3 buckets...'
+                echo 'Deploying Super Admin to UAT S3 bucket...'
                 withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
                     dir('super-admin') {
                         sh '''
-                            echo "🚀 Starting S3 deployment to both environments..."
+                            echo "🚀 Starting S3 deployment to UAT environment..."
 
                             # Deploy to UAT bucket
-                            echo "📦 Deploying to UAT bucket: ${S3_BUCKET_UAT}"
+                            echo "📦 Deploying to UAT bucket: ${S3_BUCKET_NAME}"
 
-                            # Upload static assets to UAT
-                            aws s3 sync dist/ s3://${S3_BUCKET_UAT}/super-admin/ \
+                            # Upload static assets
+                            aws s3 sync dist/ s3://${S3_BUCKET_NAME}/super-admin/ \
                                 --region ${AWS_REGION} \
                                 --delete \
                                 --cache-control "public, max-age=31536000" \
                                 --exclude "*.html" \
                                 --exclude "*.json"
 
-                            # Upload HTML and JSON files to UAT
-                            aws s3 sync dist/ s3://${S3_BUCKET_UAT}/super-admin/ \
+                            # Upload HTML and JSON files
+                            aws s3 sync dist/ s3://${S3_BUCKET_NAME}/super-admin/ \
                                 --region ${AWS_REGION} \
                                 --include "*.html" \
                                 --include "*.json" \
                                 --cache-control "no-cache, no-store, must-revalidate"
 
-                            # Set content type for UAT index.html
-                            aws s3 cp s3://${S3_BUCKET_UAT}/super-admin/index.html \
-                                s3://${S3_BUCKET_UAT}/super-admin/index.html \
+                            # Set content type for index.html
+                            aws s3 cp s3://${S3_BUCKET_NAME}/super-admin/index.html \
+                                s3://${S3_BUCKET_NAME}/super-admin/index.html \
                                 --region ${AWS_REGION} \
                                 --content-type "text/html" \
                                 --cache-control "no-cache, no-store, must-revalidate" \
                                 --metadata-directive REPLACE
 
                             echo "✅ UAT deployment completed!"
-
-                            # Deploy to Production bucket
-                            echo "🚀 Deploying to Production bucket: ${S3_BUCKET_PROD}"
-
-                            # Upload static assets to Production
-                            aws s3 sync dist/ s3://${S3_BUCKET_PROD}/super-admin/ \
-                                --region ${AWS_REGION} \
-                                --delete \
-                                --cache-control "public, max-age=31536000" \
-                                --exclude "*.html" \
-                                --exclude "*.json"
-
-                            # Upload HTML and JSON files to Production
-                            aws s3 sync dist/ s3://${S3_BUCKET_PROD}/super-admin/ \
-                                --region ${AWS_REGION} \
-                                --include "*.html" \
-                                --include "*.json" \
-                                --cache-control "no-cache, no-store, must-revalidate"
-
-                            # Set content type for Production index.html
-                            aws s3 cp s3://${S3_BUCKET_PROD}/super-admin/index.html \
-                                s3://${S3_BUCKET_PROD}/super-admin/index.html \
-                                --region ${AWS_REGION} \
-                                --content-type "text/html" \
-                                --cache-control "no-cache, no-store, must-revalidate" \
-                                --metadata-directive REPLACE
-
-                            echo "✅ Production deployment completed!"
-                            echo "🎉 Super Admin deployed to both environments!"
+                            echo "🎉 Super Admin deployed to UAT environment!"
                         '''
                     }
                 }
@@ -203,18 +165,16 @@ setup_bucket "${S3_BUCKET_PROD}"
 
         stage('Health Check') {
             steps {
-                echo 'Performing deployment health check for both environments...'
+                echo 'Performing deployment health check for UAT environment...'
                 script {
                     // Wait a bit for S3 to update
                     sleep 10
 
                     sh '''
                         echo "✅ Deployment health check completed"
-                        echo "UAT Super Admin available at: http://${S3_BUCKET_UAT}.s3-website-${AWS_REGION}.amazonaws.com/super-admin"
-                        echo "Production Super Admin available at: http://${S3_BUCKET_PROD}.s3-website-${AWS_REGION}.amazonaws.com/super-admin"
+                        echo "UAT Super Admin available at: http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/super-admin"
                         echo "Domain access:"
                         echo "  - UAT: https://uat-sigma.jiangren.com.au/super-admin"
-                        echo "  - Production: https://sigma.jiangren.com.au/super-admin"
                     '''
                 }
             }
@@ -228,16 +188,14 @@ setup_bucket "${S3_BUCKET_PROD}"
         }
         success {
             echo '🎉 Super Admin deployment successful!'
-            echo 'UAT: http://${S3_BUCKET_UAT}.s3-website-${AWS_REGION}.amazonaws.com/super-admin'
-            echo 'Production: http://${S3_BUCKET_PROD}.s3-website-${AWS_REGION}.amazonaws.com/super-admin'
+            echo 'UAT: http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/super-admin'
             echo 'Domain access:'
             echo '  - UAT: https://uat-sigma.jiangren.com.au/super-admin'
-            echo '  - Production: https://sigma.jiangren.com.au/super-admin'
         }
         failure {
             echo '❌ Super Admin deployment failed!'
             echo 'ERROR: Check Jenkins credentials configuration'
-            echo 'Required credentials: aws-credentials, S3_BUCKET_UAT, S3_BUCKET_PROD, AWS_REGION'
+            echo 'Required credentials: aws-credentials, S3_BUCKET_NAME, AWS_REGION'
             // You can add failure notifications here
         }
     }
