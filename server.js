@@ -92,20 +92,18 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // In development: Super Admin runs on port 3000 (npm run dev)
 // In production: Serve built static files
 if (process.env.NODE_ENV === 'production') {
-	app.get('/super-admin', (req, res) => {
-		res.redirect('/super-admin/login');
-	});
-
-	app.get('/super-admin/login', (req, res) => {
-		res.sendFile(path.join(__dirname, 'super-admin', 'public', 'pages', 'login.html'));
-	});
-
+	// Serve Super Admin static files first (JS, CSS, etc)
+	app.use('/super-admin', express.static(path.join(__dirname, 'super-admin', 'dist')));
+	
+	// Handle all Super Admin routes - return the SPA index.html for client-side routing
 	app.get('/super-admin/*', (req, res) => {
 		res.sendFile(path.join(__dirname, 'super-admin', 'dist', 'index.html'));
 	});
-
-	// Serve Super Admin static files (JS, CSS, etc)
-	app.use('/super-admin', express.static(path.join(__dirname, 'super-admin', 'dist')));
+	
+	// Handle root super-admin path
+	app.get('/super-admin', (req, res) => {
+		res.sendFile(path.join(__dirname, 'super-admin', 'dist', 'index.html'));
+	});
 } else {
 	// In development, redirect to the dev server
 	app.get('/super-admin*', (req, res) => {
