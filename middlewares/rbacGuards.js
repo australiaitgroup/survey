@@ -121,7 +121,7 @@ const requireSuperAdmin = (req, res, next) => {
 		});
 	}
 
-	if (req.user.role !== 'superAdmin' && req.user.role !== 'admin') {
+	if (req.user.role !== 'superAdmin') {
 		return res.status(HTTP_STATUS.FORBIDDEN).json({
 			error: 'SuperAdmin access required',
 			code: 'SUPER_ADMIN_REQUIRED',

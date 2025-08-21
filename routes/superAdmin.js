@@ -968,7 +968,7 @@ router.get(
 router.post(
 	'/public-banks',
 	asyncHandler(async (req, res) => {
-		const { title, description, type, priceOneTime, tags, locales, isActive = true } = req.body;
+		const { title, description, type, priceOneTime, tags, locales, isActive = true, isPublished = true } = req.body;
 
 		// Validation
 		if (!title || !description) {
@@ -987,6 +987,7 @@ router.post(
 			tags: tags || [],
 			locales: locales || ['en'],
 			isActive,
+			isPublished,
 			createdBy: req.user.id,
 		});
 
@@ -1022,7 +1023,7 @@ router.post(
 router.put(
 	'/public-banks/:id',
 	asyncHandler(async (req, res) => {
-		const { title, description, type, priceOneTime, tags, locales, isActive } = req.body;
+		const { title, description, type, priceOneTime, tags, locales, isActive, isPublished } = req.body;
 
 		const bank = await PublicBank.findById(req.params.id);
 
@@ -1039,6 +1040,7 @@ router.put(
 			type: bank.type,
 			priceOneTime: bank.priceOneTime,
 			isActive: bank.isActive,
+			isPublished: bank.isPublished,
 		};
 
 		// Update fields
@@ -1049,6 +1051,7 @@ router.put(
 		if (tags) bank.tags = tags;
 		if (locales) bank.locales = locales;
 		if (isActive !== undefined) bank.isActive = isActive;
+		if (isPublished !== undefined) bank.isPublished = isPublished;
 		bank.updatedBy = req.user.id;
 
 		await bank.save();
@@ -1067,6 +1070,7 @@ router.put(
 					type: bank.type,
 					priceOneTime: bank.priceOneTime,
 					isActive: bank.isActive,
+					isPublished: bank.isPublished,
 				},
 			},
 			req
@@ -1282,6 +1286,94 @@ router.get(
 		res.setHeader('Content-Type', 'text/csv');
 		res.setHeader('Content-Disposition', 'attachment; filename="purchases-export.csv"');
 		res.send(csvContent);
+	})
+);
+
+/**
+ * @route   GET /sa/transactions
+ * @desc    Get all transactions (purchases formatted as transactions)
+ * @access  SuperAdmin only
+ */
+router.get(
+	'/transactions',
+	asyncHandler(async (req, res) => {
+		const {
+			page = 1,
+			limit = 50,
+			companyId,
+			type,
+			status,
+			startDate,
+			endDate,
+			sortBy = 'purchasedAt',
+			sortOrder = 'desc',
+		} = req.query;
+
+		// Build query for purchases
+		const query = {};
+
+		if (companyId) {
+			query.companyId = companyId;
+		}
+
+		if (status) {
+			query.status = status;
+		}
+
+		if (startDate || endDate) {
+			query.purchasedAt = {};
+			if (startDate) query.purchasedAt.$gte = new Date(startDate);
+			if (endDate) query.purchasedAt.$lte = new Date(endDate);
+		}
+
+		// Execute query
+		const skip = (page - 1) * limit;
+		const purchases = await BankPurchase.find(query)
+			.populate('companyId', 'name')
+			.populate('purchasedBy', 'name email')
+			.populate('bankId', 'title priceOneTime')
+			.sort({ [sortBy]: sortOrder === 'desc' ? -1 : 1 })
+			.limit(parseInt(limit))
+			.skip(skip)
+			.lean();
+
+		const totalCount = await BankPurchase.countDocuments(query);
+		const totalPages = Math.ceil(totalCount / limit);
+
+		// Transform purchases to transactions format
+		const transactions = purchases.map(purchase => ({
+			_id: purchase._id,
+			companyId: purchase.companyId?._id || purchase.companyId,
+			companyName: purchase.companyId?.name || 'Unknown Company',
+			userId: purchase.purchasedBy?._id || purchase.purchasedBy,
+			userName: purchase.purchasedBy?.name || 'Unknown User',
+			userEmail: purchase.purchasedBy?.email || 'unknown@example.com',
+			type: 'purchase',
+			status: purchase.status === 'active' ? 'completed' : purchase.status,
+			amount: purchase.price || purchase.bankId?.priceOneTime || 0,
+			currency: 'USD',
+			description: `Purchase of ${purchase.bankId?.title || 'Question Bank'}`,
+			stripePaymentIntentId: purchase.stripePaymentIntentId,
+			stripeChargeId: purchase.stripeChargeId,
+			metadata: {
+				bankId: purchase.bankId?._id,
+				bankTitle: purchase.bankId?.title,
+				accessType: purchase.accessType,
+			},
+			createdAt: purchase.purchasedAt || purchase.createdAt,
+			updatedAt: purchase.updatedAt,
+		}));
+
+		res.json({
+			success: true,
+			data: transactions,
+			pagination: {
+				page: parseInt(page),
+				pages: totalPages,
+				limit: parseInt(limit),
+				total: totalCount,
+			},
+		});
 	})
 );
 

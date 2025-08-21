@@ -49,9 +49,6 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 		correctAnswer: undefined,
 		points: 1,
 	});
-	// Pagination state
-	const [currentPage, setCurrentPage] = useState(1);
-	const pageSize = 10;
 	// Removed local edit question bank state; rely on context state instead
 	// Local state for CSV import
 	const [showImportCSVModal, setShowImportCSVModal] = useState(false);
@@ -65,19 +62,6 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 	} | null>(null);
 
 	const qb = questionBank;
-
-	// Derived pagination values
-	const totalQuestions = qb.questions?.length || 0;
-	const totalPages = Math.ceil(totalQuestions / pageSize) || 1;
-	const startIndex = (currentPage - 1) * pageSize;
-	const paginatedQuestions = qb.questions?.slice(startIndex, startIndex + pageSize) || [];
-
-	// Ensure current page remains within range when questions change
-	React.useEffect(() => {
-		if (currentPage > totalPages) {
-			setCurrentPage(totalPages);
-		}
-	}, [totalPages, currentPage]);
 	const currentForm = questionBankQuestionForms[qb._id] || {
 		text: '',
 		description: '',
@@ -337,8 +321,6 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 			const data = await response.json();
 
 			if (response.ok) {
-				// Reset pagination to the first page after a successful import
-				setCurrentPage(1);
 				// Update the question bank data
 				if (data.questionBank) {
 					// Trigger a refresh of the question bank data
@@ -461,15 +443,14 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 					{/* Questions List */}
 					<div className='pt-4 mt-4'>
 						{qb.questions && qb.questions.length > 0 ? (
-							<>
 							<div className='space-y-4'>
-								{paginatedQuestions.map((q, idx) => (
+								{qb.questions.map((q, idx) => (
 									<div key={idx} className='bg-gray-50 rounded-lg p-4'>
 										<div className='flex justify-between items-start mb-2'>
 											<div className='flex-1'>
 												<div className='mb-1'>
 													<span className='font-medium text-gray-800'>
-														{startIndex + idx + 1}. {q.text}
+														{idx + 1}. {q.text}
 													</span>
 												</div>
 												<div className='flex items-center gap-2 flex-wrap'>
@@ -534,7 +515,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 												<button
 													className='btn-secondary text-sm px-3 py-1'
 													onClick={() =>
-														startEditQuestionBankQuestion(qb._id, startIndex + idx)
+														startEditQuestionBankQuestion(qb._id, idx)
 													}
 												>
 													{t('buttons.edit', {
@@ -545,7 +526,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 												<button
 													className='px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors'
 													onClick={() =>
-														deleteQuestionBankQuestion(qb._id, startIndex + idx)
+														deleteQuestionBankQuestion(qb._id, idx)
 													}
 												>
 													{t('buttons.delete', {
@@ -655,23 +636,6 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 									</div>
 								))}
 							</div>
-							{/* Pagination Controls */}
-							{totalPages > 1 && (
-								<nav className='flex items-center justify-center gap-2 pt-2' aria-label='Pagination'>
-									<button className={`px-3 py-1 text-sm rounded border transition-colors ${currentPage === 1 ? 'text-gray-400 border-gray-200 cursor-not-allowed' : 'text-gray-700 border-gray-300 hover:bg-gray-100'}`} onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
-										Previous
-									</button>
-									{Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-										<button key={page} className={`w-8 h-8 text-sm rounded-full transition-colors border ${page === currentPage ? 'bg-blue-600 text-white border-blue-600' : 'text-gray-700 border-gray-300 hover:bg-gray-100'}`} onClick={() => setCurrentPage(page)}>
-											{page}
-										</button>
-									))}
-									<button className={`px-3 py-1 text-sm rounded border transition-colors ${currentPage === totalPages ? 'text-gray-400 border-gray-200 cursor-not-allowed' : 'text-gray-700 border-gray-300 hover:bg-gray-100'}`} onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>
-										Next
-									</button>
-								</nav>
-							)}
-							</>
 						) : (
 							<p className='text-gray-500 text-sm'>
 								{t('questionBanks.noQuestions', 'No questions added yet.')}

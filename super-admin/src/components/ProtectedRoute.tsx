@@ -17,7 +17,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 			if (token && userData) {
 				try {
 					const parsedUser = JSON.parse(userData);
-					if (parsedUser.role === 'superAdmin' || parsedUser.role === 'admin') {
+					if (parsedUser.role === 'superAdmin') {
 						setIsAuthenticated(true);
 						return;
 					}
