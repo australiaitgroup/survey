@@ -289,25 +289,6 @@ const surveySchema = new mongoose.Schema({
 				default: 1,
 			},
 		},
-		// Multiple choice scoring settings
-		multipleChoiceScoring: {
-			// Enable partial scoring for multiple choice questions
-			enablePartialScoring: {
-				type: Boolean,
-				default: false,
-			},
-			// Partial scoring mode: 'proportional' or 'all_or_nothing'
-			partialScoringMode: {
-				type: String,
-				enum: ['proportional', 'all_or_nothing'],
-				default: 'proportional',
-			},
-		},
-		// Whether to include short text questions in score calculation
-		includeShortTextInScore: {
-			type: Boolean,
-			default: false,
-		},
 	},
 	createdBy: {
 		type: String,

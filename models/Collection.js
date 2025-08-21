@@ -6,12 +6,6 @@ const collectionSchema = new mongoose.Schema(
 		description: { type: String, default: '' },
 		surveyIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Survey' }],
 		tags: [{ type: String }],
-		companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', index: true },
-		createdBy: { 
-			type: mongoose.Schema.Types.Mixed, // Allow both ObjectId and String for legacy admin
-			required: true,
-			index: true 
-		},
 	},
 	{ timestamps: true }
 );

@@ -116,7 +116,7 @@ const LandingNavbar: React.FC = () => {
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
 						>
-							<Link to='/admin/register' className='btn-primary whitespace-nowrap'>
+							<Link to='/admin/register' className='btn-primary'>
 								{t('landing.hero.startFreeTrial')}
 							</Link>
 						</motion.div>

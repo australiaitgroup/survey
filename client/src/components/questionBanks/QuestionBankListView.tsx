@@ -32,10 +32,8 @@ const QuestionBankListView: React.FC = () => {
 		entitlement: bank.accessType || 'Locked',
 	});
 
-	// Get purchased banks (owned/subscription only) and recommended banks (locked ones)
-	const purchasedBanks = authorized
-		.filter((b: any) => b.accessType === 'Owned' || b.accessType === 'Subscription')
-		.map(convertToPublicQuestionBank);
+	// Get purchased banks (authorized ones) and recommended banks (locked ones)
+	const purchasedBanks = authorized.map(convertToPublicQuestionBank);
 	const recommendedBanks = locked.slice(0, 3).map(convertToPublicQuestionBank);
 
 	const handleGoToMarketplace = () => {

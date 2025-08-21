@@ -84,7 +84,7 @@ const Hero: React.FC = () => {
 							<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
 								<Link
 									to='/admin/register'
-									className='btn-primary btn-large w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap'
+									className='btn-primary btn-large inline-flex items-center justify-center'
 								>
 									{t('landing.hero.startFreeTrial')}
 								</Link>
@@ -92,7 +92,7 @@ const Hero: React.FC = () => {
 							<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
 								<Link
 									to='/demo'
-									className='btn-secondary btn-large w-full sm:w-auto inline-flex items-center justify-center whitespace-nowrap'
+									className='btn-secondary btn-large inline-flex items-center justify-center'
 								>
 									{t('landing.hero.seeLiveDemo')}
 								</Link>
