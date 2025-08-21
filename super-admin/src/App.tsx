@@ -43,8 +43,8 @@ function Login() {
 				throw new Error(data.error || 'Login failed');
 			}
 
-			// Check if user has superAdmin role
-			if (data.user?.role !== 'superAdmin') {
+			// Check if user has admin or superAdmin role
+			if (data.user?.role !== 'superAdmin' && data.user?.role !== 'admin') {
 				throw new Error('Super Admin access required');
 			}
 
@@ -203,47 +203,6 @@ function Layout({ children }: { children: React.ReactNode }) {
 	);
 }
 
-// Root component that handles authentication-based routing
-function AuthenticatedRoot() {
-	const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-
-	useEffect(() => {
-		const checkAuth = () => {
-			const token = localStorage.getItem('sa_token');
-			const userData = localStorage.getItem('sa_user');
-
-			if (token && userData) {
-				try {
-					const parsedUser = JSON.parse(userData);
-					if (parsedUser.role === 'superAdmin') {
-						setIsAuthenticated(true);
-						return;
-					}
-				} catch (e) {
-					// Invalid user data
-				}
-			}
-
-			setIsAuthenticated(false);
-		};
-
-		checkAuth();
-	}, []);
-
-	if (isAuthenticated === null) {
-		return (
-			<div className="min-h-screen flex items-center justify-center">
-				<div className="text-center">
-					<div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-					<p className="text-gray-600">Loading...</p>
-				</div>
-			</div>
-		);
-	}
-
-	return isAuthenticated ? <Navigate to="/overview" replace /> : <Navigate to="/login" replace />;
-}
-
 // Main App Component
 function App() {
 	return (
@@ -320,7 +279,7 @@ function App() {
 						</ProtectedRoute>
 					}
 				/>
-				<Route path="/" element={<AuthenticatedRoot />} />
+				<Route path="/" element={<Navigate to="/overview" replace />} />
 			</Routes>
 		</Router>
 	);

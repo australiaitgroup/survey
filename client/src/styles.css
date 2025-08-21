@@ -54,7 +54,7 @@ button {
 	}
 
 	.btn-large {
-		@apply sm:py-3 sm:px-8 sm:text-base;
+		@apply py-3 px-8 text-base;
 	}
 
 	/* Airbnb-style inputs */

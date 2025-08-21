@@ -5,8 +5,6 @@ const Response = require('../models/Response');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/AppError');
 const { HTTP_STATUS, ERROR_MESSAGES } = require('../shared/constants');
-const { jwtAuth } = require('../middlewares/jwtAuth');
-const User = require('../models/User');
 const {
 	collectionCreateSchema,
 	collectionUpdateSchema,
@@ -18,11 +16,8 @@ const router = express.Router();
 // GET /api/collections
 router.get(
 	'/collections',
-	jwtAuth,
 	asyncHandler(async (req, res) => {
-		const user = await User.findById(req.user.id).select('companyId');
-		const companyId = user?.companyId || null;
-		const items = await Collection.find(companyId ? { companyId } : { createdBy: req.user.id }).lean();
+		const items = await Collection.find({}).lean();
 		res.json({ success: true, data: items });
 	})
 );
@@ -30,15 +25,9 @@ router.get(
 // POST /api/collections
 router.post(
 	'/collections',
-	jwtAuth,
 	asyncHandler(async (req, res) => {
 		const data = collectionCreateSchema.parse(req.body);
-		const user = await User.findById(req.user.id).select('companyId');
-		const created = await Collection.create({
-			...data,
-			companyId: user?.companyId || undefined,
-			createdBy: req.user.id,
-		});
+		const created = await Collection.create(data);
 		res.status(HTTP_STATUS.CREATED).json({ success: true, data: created });
 	})
 );
@@ -46,13 +35,8 @@ router.post(
 // GET /api/collections/:id
 router.get(
 	'/collections/:id',
-	jwtAuth,
 	asyncHandler(async (req, res) => {
-		const user = await User.findById(req.user.id).select('companyId');
-		const item = await Collection.findOne({
-			_id: req.params.id,
-			$or: [{ companyId: user?.companyId }, { createdBy: req.user.id }],
-		}).lean();
+		const item = await Collection.findById(req.params.id).lean();
 		if (!item)
 			throw new AppError(
 				ERROR_MESSAGES.COLLECTION_NOT_FOUND,
@@ -66,15 +50,9 @@ router.get(
 // PATCH /api/collections/:id
 router.patch(
 	'/collections/:id',
-	jwtAuth,
 	asyncHandler(async (req, res) => {
 		const data = collectionUpdateSchema.parse(req.body);
-		const user = await User.findById(req.user.id).select('companyId');
-		const updated = await Collection.findOneAndUpdate(
-			{ _id: req.params.id, $or: [{ companyId: user?.companyId }, { createdBy: req.user.id }] },
-			data,
-			{ new: true }
-		);
+		const updated = await Collection.findByIdAndUpdate(req.params.id, data, { new: true });
 		if (!updated)
 			throw new AppError(
 				ERROR_MESSAGES.COLLECTION_NOT_FOUND,
@@ -88,13 +66,8 @@ router.patch(
 // DELETE /api/collections/:id
 router.delete(
 	'/collections/:id',
-	jwtAuth,
 	asyncHandler(async (req, res) => {
-		const user = await User.findById(req.user.id).select('companyId');
-		const deleted = await Collection.findOneAndDelete({
-			_id: req.params.id,
-			$or: [{ companyId: user?.companyId }, { createdBy: req.user.id }],
-		});
+		const deleted = await Collection.findByIdAndDelete(req.params.id);
 		if (!deleted)
 			throw new AppError(
 				ERROR_MESSAGES.COLLECTION_NOT_FOUND,
@@ -110,12 +83,10 @@ module.exports = router;
 // PATCH /api/collections/:id/surveys - update surveyIds
 router.patch(
 	'/collections/:id/surveys',
-	jwtAuth,
 	asyncHandler(async (req, res) => {
 		const { surveyIds } = collectionSurveysUpdateSchema.parse(req.body);
-		const user = await User.findById(req.user.id).select('companyId');
-		const updated = await Collection.findOneAndUpdate(
-			{ _id: req.params.id, $or: [{ companyId: user?.companyId }, { createdBy: req.user.id }] },
+		const updated = await Collection.findByIdAndUpdate(
+			req.params.id,
 			{ surveyIds },
 			{ new: true }
 		);
@@ -132,13 +103,8 @@ router.patch(
 // GET /api/collections/:id/stats - basic aggregated stats
 router.get(
 	'/collections/:id/stats',
-	jwtAuth,
 	asyncHandler(async (req, res) => {
-		const user = await User.findById(req.user.id).select('companyId');
-		const item = await Collection.findOne({
-			_id: req.params.id,
-			$or: [{ companyId: user?.companyId }, { createdBy: req.user.id }],
-		}).lean();
+		const item = await Collection.findById(req.params.id).lean();
 		if (!item)
 			throw new AppError(
 				ERROR_MESSAGES.COLLECTION_NOT_FOUND,

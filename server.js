@@ -28,14 +28,11 @@ const serviceContainer = require('./services/ServiceContainer');
 const app = express();
 const PORT = process.env.PORT || 5050;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/survey';
-const { initializeApp } = require('./utils/initializeApp');
 
 mongoose
 	.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-	.then(async () => {
+	.then(() => {
 		console.log('✓ Connected to MongoDB');
-		// Initialize app with super admin account
-		await initializeApp();
 	})
 	.catch(err => {
 		console.error('✗ MongoDB connection failed:', err.message);
@@ -95,22 +92,20 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // In development: Super Admin runs on port 3000 (npm run dev)
 // In production: Serve built static files
 if (process.env.NODE_ENV === 'production') {
-	// Serve Super Admin static files (JS, CSS, etc) FIRST - before SPA routing
-	app.use('/super-admin', express.static(path.join(__dirname, 'super-admin', 'dist')));
-
-	// All super-admin routes (including root and login) serve the React SPA
 	app.get('/super-admin', (req, res) => {
-		res.sendFile(path.join(__dirname, 'super-admin', 'dist', 'index.html'));
+		res.redirect('/super-admin/login');
 	});
 
 	app.get('/super-admin/login', (req, res) => {
-		res.sendFile(path.join(__dirname, 'super-admin', 'dist', 'index.html'));
+		res.sendFile(path.join(__dirname, 'super-admin', 'public', 'pages', 'login.html'));
 	});
 
-	// SPA fallback - catch all other super-admin routes and serve the SPA
 	app.get('/super-admin/*', (req, res) => {
 		res.sendFile(path.join(__dirname, 'super-admin', 'dist', 'index.html'));
 	});
+
+	// Serve Super Admin static files (JS, CSS, etc)
+	app.use('/super-admin', express.static(path.join(__dirname, 'super-admin', 'dist')));
 } else {
 	// In development, redirect to the dev server
 	app.get('/super-admin*', (req, res) => {

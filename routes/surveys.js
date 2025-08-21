@@ -25,53 +25,32 @@ router.get(
 			status: SURVEY_STATUS.ACTIVE,
 			isPublic: true,
 		})
-			.select('title description slug createdAt status type createdBy')
+			.select('title description slug createdAt status type')
 			.lean();
 
-		// Get company information from survey creators
+		// Get company information from admin user
 		let companyInfo = null;
-		const surveysWithCompany = [];
-		
-		for (const survey of surveys) {
-			let surveyCompanyInfo = null;
-			
-			try {
-				if (survey.createdBy) {
-					const surveyCreator = await User.findById(survey.createdBy).populate('companyId');
-					if (surveyCreator && surveyCreator.companyId) {
-						surveyCompanyInfo = {
-							name: surveyCreator.companyId.name,
-							logoUrl: surveyCreator.companyId.logoUrl,
-							industry: surveyCreator.companyId.industry,
-							website: surveyCreator.companyId.website,
-							description: surveyCreator.companyId.description,
-						};
-					}
-				}
-				
-				// Fallback to any admin user if survey creator not found or no company
-				if (!surveyCompanyInfo && !companyInfo) {
-					const adminUser = await User.findOne({ role: 'admin' }).populate('companyId');
-					if (adminUser && adminUser.companyId) {
-						companyInfo = {
-							name: adminUser.companyId.name,
-							logoUrl: adminUser.companyId.logoUrl,
-							industry: adminUser.companyId.industry,
-							website: adminUser.companyId.website,
-							description: adminUser.companyId.description,
-						};
-					}
-				}
-			} catch (error) {
-				console.error('Error fetching company info:', error);
-				// Continue without company info if there's an error
+		try {
+			const adminUser = await User.findOne({ role: 'admin' }).populate('companyId');
+			if (adminUser && adminUser.companyId) {
+				companyInfo = {
+					name: adminUser.companyId.name,
+					logoUrl: adminUser.companyId.logoUrl,
+					industry: adminUser.companyId.industry,
+					website: adminUser.companyId.website,
+					description: adminUser.companyId.description,
+				};
 			}
-			
-			surveysWithCompany.push({
-				...survey,
-				company: surveyCompanyInfo || companyInfo,
-			});
+		} catch (error) {
+			console.error('Error fetching company info:', error);
+			// Continue without company info if there's an error
 		}
+
+		// Add company information to each survey
+		const surveysWithCompany = surveys.map(survey => ({
+			...survey,
+			company: companyInfo,
+		}));
 
 		res.json(surveysWithCompany);
 	})
@@ -84,34 +63,18 @@ router.get(
 		const survey = await Survey.findById(req.params.id).lean();
 		if (!survey) throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
 
-		// Get company information from survey creator
+		// Get company information from admin user
 		let companyInfo = null;
 		try {
-			if (survey.createdBy) {
-				const surveyCreator = await User.findById(survey.createdBy).populate('companyId');
-				if (surveyCreator && surveyCreator.companyId) {
-					companyInfo = {
-						name: surveyCreator.companyId.name,
-						logoUrl: surveyCreator.companyId.logoUrl,
-						industry: surveyCreator.companyId.industry,
-						website: surveyCreator.companyId.website,
-						description: surveyCreator.companyId.description,
-					};
-				}
-			}
-			
-			// Fallback to any admin user if survey creator not found or no company
-			if (!companyInfo) {
-				const adminUser = await User.findOne({ role: 'admin' }).populate('companyId');
-				if (adminUser && adminUser.companyId) {
-					companyInfo = {
-						name: adminUser.companyId.name,
-						logoUrl: adminUser.companyId.logoUrl,
-						industry: adminUser.companyId.industry,
-						website: adminUser.companyId.website,
-						description: adminUser.companyId.description,
-					};
-				}
+			const adminUser = await User.findOne({ role: 'admin' }).populate('companyId');
+			if (adminUser && adminUser.companyId) {
+				companyInfo = {
+					name: adminUser.companyId.name,
+					logoUrl: adminUser.companyId.logoUrl,
+					industry: adminUser.companyId.industry,
+					website: adminUser.companyId.website,
+					description: adminUser.companyId.description,
+				};
 			}
 		} catch (error) {
 			console.error('Error fetching company info:', error);
@@ -143,34 +106,18 @@ router.get(
 
 		if (!survey) throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
 
-		// Get company information from survey creator
+		// Get company information from admin user
 		let companyInfo = null;
 		try {
-			if (survey.createdBy) {
-				const surveyCreator = await User.findById(survey.createdBy).populate('companyId');
-				if (surveyCreator && surveyCreator.companyId) {
-					companyInfo = {
-						name: surveyCreator.companyId.name,
-						logoUrl: surveyCreator.companyId.logoUrl,
-						industry: surveyCreator.companyId.industry,
-						website: surveyCreator.companyId.website,
-						description: surveyCreator.companyId.description,
-					};
-				}
-			}
-			
-			// Fallback to any admin user if survey creator not found or no company
-			if (!companyInfo) {
-				const adminUser = await User.findOne({ role: 'admin' }).populate('companyId');
-				if (adminUser && adminUser.companyId) {
-					companyInfo = {
-						name: adminUser.companyId.name,
-						logoUrl: adminUser.companyId.logoUrl,
-						industry: adminUser.companyId.industry,
-						website: adminUser.companyId.website,
-						description: adminUser.companyId.description,
-					};
-				}
+			const adminUser = await User.findOne({ role: 'admin' }).populate('companyId');
+			if (adminUser && adminUser.companyId) {
+				companyInfo = {
+					name: adminUser.companyId.name,
+					logoUrl: adminUser.companyId.logoUrl,
+					industry: adminUser.companyId.industry,
+					website: adminUser.companyId.website,
+					description: adminUser.companyId.description,
+				};
 			}
 		} catch (error) {
 			console.error('Error fetching company info:', error);
