@@ -29,7 +29,7 @@ jobs:
                   npm run build
 
             - name: Install server dependencies
-              working-directory: ./server
+              working-directory: .
               run: npm install
 
             - name: Setup SSH
@@ -40,7 +40,7 @@ jobs:
             - name: Upload files to server
               run: |
                   rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./client/dist/ ${{ env.USERNAME }}@${{ env.HOST }}:${{ env.DEPLOY_PATH }}/client/
-                  rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./server/ ${{ env.USERNAME }}@${{ env.HOST }}:${{ env.DEPLOY_PATH }}/server/
+                  rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" --exclude=client --exclude=.git --exclude=node_modules ./ ${{ env.USERNAME }}@${{ env.HOST }}:${{ env.DEPLOY_PATH }}/
 
             - name: Restart remote services
               run: |
