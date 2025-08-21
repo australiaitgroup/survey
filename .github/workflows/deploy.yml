@@ -1,0 +1,47 @@
+name: Build and Deploy
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        env:
+            HOST: ${{ secrets.HOST }}
+            USERNAME: ${{ secrets.USERNAME }}
+            PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+            DEPLOY_PATH: /var/www/survey-app
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+
+            - name: Install and build client
+              working-directory: ./client
+              run: |
+                  npm install
+                  npm run build
+
+            - name: Install server dependencies
+              working-directory: ./server
+              run: npm install
+
+            - name: Setup SSH
+              uses: webfactory/ssh-agent@v0.7.0
+              with:
+                  ssh-private-key: ${{ env.PRIVATE_KEY }}
+
+            - name: Upload files to server
+              run: |
+                  rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./client/dist/ ${{ env.USERNAME }}@${{ env.HOST }}:${{ env.DEPLOY_PATH }}/client/
+                  rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./server/ ${{ env.USERNAME }}@${{ env.HOST }}:${{ env.DEPLOY_PATH }}/server/
+
+            - name: Restart remote services
+              run: |
+                  ssh -o StrictHostKeyChecking=no ${{ env.USERNAME }}@${{ env.HOST }} "pm2 restart all"

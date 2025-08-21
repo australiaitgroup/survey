@@ -1,0 +1,240 @@
+@import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Cereal:wght@300;400;500;600;700&display=swap'),
+	url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Airbnb-inspired design system */
+:root {
+	/* Airbnb Color Palette */
+	--airbnb-rausch: #ff5a5f;
+	--airbnb-babu: #00a699;
+	--airbnb-arches: #fc642d;
+	--airbnb-hof: #484848;
+	--airbnb-foggy: #767676;
+	--airbnb-pearl: #ebebeb;
+	--airbnb-white: #ffffff;
+	--airbnb-light-gray: #f7f7f7;
+	--airbnb-medium-gray: #dddddd;
+}
+
+/* Global font family */
+body {
+	font-family:
+		'Inter',
+		-apple-system,
+		BlinkMacSystemFont,
+		'Segoe UI',
+		Roboto,
+		sans-serif;
+	color: var(--airbnb-hof);
+}
+
+/* Global button cursor rule */
+button {
+	cursor: pointer;
+}
+
+/* Custom styles */
+@layer components {
+	/* Airbnb-style buttons - Properly sized */
+	.btn-primary {
+		@apply bg-[#FF5A5F] hover:bg-[#E00007] text-white font-medium py-2.5 px-5 rounded-xl transition-all duration-200 text-sm shadow-sm hover:shadow-md transform hover:-translate-y-0.5;
+	}
+
+	.btn-secondary {
+		@apply bg-white hover:bg-gray-50 text-[#484848] font-medium py-2 px-6 rounded-xl transition-all duration-200 text-sm border border-[#DDDDDD] hover:border-[#484848] shadow-sm hover:shadow-md;
+	}
+
+	.btn-outline {
+		@apply bg-transparent hover:bg-[#FF5A5F] text-[#FF5A5F] hover:text-white font-medium py-2 px-5 rounded-xl transition-all duration-200 text-sm border border-[#FF5A5F] hover:shadow-sm;
+	}
+
+	/* Additional button sizes */
+	.btn-small {
+		@apply py-1.5 px-3 text-xs;
+	}
+
+	.btn-large {
+		@apply py-3 px-8 text-base;
+	}
+
+	/* Airbnb-style inputs */
+	.input-field {
+		@apply w-full px-4 py-3 border border-[#DDDDDD] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5A5F] focus:border-[#FF5A5F] text-[#484848] placeholder-[#767676];
+	}
+
+	/* Airbnb-style cards */
+	.card {
+		@apply bg-white rounded-2xl border border-[#EBEBEB] p-6;
+	}
+
+	.card-hover {
+		@apply bg-white rounded-2xl border border-[#EBEBEB] p-6 transition-all duration-300;
+	}
+
+	/* Typography styles - Airbnb inspired, more refined */
+	.heading-xl {
+		@apply text-3xl md:text-4xl lg:text-5xl font-bold text-[#484848] leading-tight tracking-tight;
+	}
+
+	.heading-lg {
+		@apply text-2xl md:text-3xl lg:text-4xl font-bold text-[#484848] leading-tight;
+	}
+
+	.heading-md {
+		@apply text-xl md:text-2xl font-semibold text-[#484848] leading-tight;
+	}
+
+	.heading-sm {
+		@apply text-lg md:text-xl font-semibold text-[#484848] leading-snug;
+	}
+
+	.body-xl {
+		@apply text-xl text-[#767676] leading-relaxed;
+	}
+
+	.body-lg {
+		@apply text-lg text-[#767676] leading-relaxed;
+	}
+
+	.body-md {
+		@apply text-base text-[#767676] leading-relaxed;
+	}
+
+	.body-sm {
+		@apply text-sm text-[#767676] leading-normal;
+	}
+}
+
+/* Custom animations and utilities */
+@layer utilities {
+	.animate-fade-in {
+		animation: fadeIn 0.6s ease-out;
+	}
+
+	.animate-float {
+		animation: float 6s ease-in-out infinite;
+	}
+
+	.animate-pulse-slow {
+		animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	}
+
+	.animate-slide-up {
+		animation: slideUp 0.3s ease-out;
+	}
+
+	/* Added for Typeform-like UX */
+	.animate-slide-down {
+		animation: slideDown 0.3s ease-out;
+	}
+
+	.animate-fade-out {
+		animation: fadeOut 0.4s ease-in forwards;
+	}
+
+	.animate-pop {
+		animation: pop 0.2s ease-out;
+	}
+
+	/* Subtle appear animation */
+	.animate-question-in {
+		animation: questionIn 260ms ease-out;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(20px) scale(0.95);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
+
+	@keyframes slideUp {
+		from {
+			transform: translateY(100%);
+		}
+		to {
+			transform: translateY(0);
+		}
+	}
+
+	@keyframes slideDown {
+		from {
+			transform: translateY(-8%);
+			opacity: 0.95;
+		}
+		to {
+			transform: translateY(0);
+			opacity: 1;
+		}
+	}
+
+	@keyframes fadeOut {
+		from {
+			opacity: 1;
+		}
+		to {
+			opacity: 0;
+		}
+	}
+
+	@keyframes pop {
+		0% {
+			transform: scale(1);
+		}
+		50% {
+			transform: scale(1.12);
+		}
+		100% {
+			transform: scale(1);
+		}
+	}
+
+	@keyframes questionIn {
+		from {
+			opacity: 0;
+			transform: translateY(14px) scale(0.98);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
+
+	@keyframes float {
+		0%,
+		100% {
+			transform: translateY(0px);
+		}
+		50% {
+			transform: translateY(-20px);
+		}
+	}
+
+	.line-clamp-3 {
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	/* Gradient text */
+	.gradient-text {
+		background: linear-gradient(135deg, #ff5a5f 0%, #fc642d 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+	}
+
+	/* Enhanced shadows */
+	.shadow-airbnb {
+		box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+	}
+
+	.shadow-airbnb-hover {
+		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+	}
+}

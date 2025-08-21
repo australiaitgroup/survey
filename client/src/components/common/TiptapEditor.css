@@ -1,0 +1,49 @@
+/* Tiptap editor content styles (applies inside editor during editing)
+   We reuse Tailwind Typography defaults via prose classes, but ensure lists and code blocks are visible. */
+
+.tiptap-editor {
+	/* Ensure lists have bullets/numbers and indent */
+}
+
+.tiptap-editor ul,
+.tiptap-editor ol {
+	margin: 0.5rem 0 0.75rem 1.25rem;
+	padding-left: 1.25rem; /* extra safety for bullet visibility */
+}
+
+.tiptap-editor ul {
+	list-style-type: disc;
+}
+
+.tiptap-editor ol {
+	list-style-type: decimal;
+}
+
+.tiptap-editor li {
+	margin: 0.25rem 0;
+}
+
+/* Headings spacing */
+.tiptap-editor h1,
+.tiptap-editor h2,
+.tiptap-editor h3,
+.tiptap-editor h4,
+.tiptap-editor h5,
+.tiptap-editor h6 {
+	margin: 0.5rem 0 0.5rem;
+}
+
+/* Code block styling inside editor */
+.tiptap-editor pre {
+	background-color: #f8fafc; /* tailwind slate-50 */
+	border: 1px solid #e5e7eb; /* tailwind gray-200 */
+	border-radius: 0.375rem; /* rounded-md */
+	padding: 0.75rem 1rem;
+	overflow-x: auto;
+}
+
+.tiptap-editor code {
+	background-color: #f1f5f9; /* slate-100 */
+	padding: 0.1rem 0.3rem;
+	border-radius: 0.25rem;
+}

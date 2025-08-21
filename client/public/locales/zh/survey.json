@@ -1,0 +1,120 @@
+{
+	"form": {
+		"title": "问卷表单",
+		"nameRequired": "姓名不能为空",
+		"emailRequired": "邮箱不能为空",
+		"emailInvalid": "邮箱格式不正确",
+		"pleaseSelectOption": "请选择一项",
+		"enterAnswerHere": "请在此输入您的答案..."
+	},
+	"assessment": {
+		"title": "测评",
+		"notFound": "测评未找到",
+		"invalidCode": "邀请码无效或已过期",
+		"information": "测评信息",
+		"rules": "规则说明",
+		"detailedInstructions": "详细说明",
+		"numberOfQuestions": "题目数量",
+		"questions": "题",
+		"random": "随机",
+		"multipleQuestionBanks": "多题库",
+		"selected": "已选",
+		"estimatedTime": "预计耗时",
+		"maximumAttempts": "可尝试次数",
+		"times": "次",
+		"questionType": "题目类型",
+		"singleChoice": "单选",
+		"multipleChoice": "多选",
+		"mixedQuestionTypes": "混合题型",
+		"timeLimit": "时间限制",
+		"start": "开始",
+		"question": "题目 {{number}} / {{total}}",
+		"previousQuestion": "上一题",
+		"nextQuestion": "下一题",
+		"submitAnswer": "提交答案",
+		"submitting": "提交中...",
+		"thankyou": "感谢您的参与！",
+		"surveySubmitted": "您的调研回答已成功提交，感谢您的宝贵意见。",
+		"results": "测评结果",
+		"totalScore": "总分",
+		"yourAnswer": "您的答案",
+		"notAnswered": "未作答",
+		"correctAnswer": "正确答案",
+		"explanation": "解释",
+		"rules": {
+			"surveyNoStandardAnswer": "这是一个调研问卷，没有标准答案",
+			"answerTruthfully": "请根据您的真实想法回答",
+			"thankYouPageAfterSubmit": "提交后将显示感谢页面",
+			"hasStandardAnswer": "这是一个{{type}}，有标准答案",
+			"readCarefully": "请仔细阅读每道题目后作答",
+			"scoresAfterSubmit": "提交后将显示成绩和正确答案",
+			"autoSubmitWhenTimeUp": "时间到将自动提交",
+			"allQuestionsRequired": "所有题目都是必答题",
+			"cannotModifyAfterSubmit": "提交后不能修改答案"
+		},
+		"placeholders": {
+			"enterName": "请输入您的姓名",
+			"enterEmail": "请输入您的邮箱"
+		},
+		"completed": {
+			"title": "测评已完成！",
+			"message": "感谢您完成测评。您的回答已成功提交。",
+			"success": "提交成功"
+		}
+	},
+	"responses": "回复",
+	"lastActivity": "最近活动",
+	"noActivity": "暂无活动",
+	"createSurvey": "创建问卷",
+	"questions": {
+		"title": "题目",
+		"add": "添加题目",
+		"edit": "编辑",
+		"delete": "删除",
+		"moveUp": "上移",
+		"moveDown": "下移",
+		"hasImage": "有图片",
+		"points": "分",
+		"options": "选项",
+		"expectedAnswer": "预期答案",
+		"dragInstructions": "提示：拖拽题目前的手柄（⋮⋮）来重新排序，修改会自动保存。",
+		"mobileInstructions": "在移动设备上使用上下箭头按钮来重新排序题目。",
+		"autoSaving": "正在保存排序...",
+		"reorderError": "重新排序失败，请重试。",
+		"empty": {
+			"title": "暂无题目",
+			"description": "添加您的第一个题目开始吧"
+		},
+		"type": {
+			"multipleChoice": "多选题",
+			"singleChoice": "单选题",
+			"shortText": "简答题",
+			"textResponse": "类型：文本回答"
+		}
+	},
+	"dragHandle": {
+		"tooltip": "拖拽重新排序"
+	},
+	"common": {
+		"loading": "加载中..."
+	},
+	"navigation": {
+		"previous": "上一题",
+		"next": "下一题",
+		"submit": "提交问卷",
+		"submitting": "提交中...",
+		"progress": "第 {{current}} 题，共 {{total}} 题"
+	},
+	"oneQuestionPerPage": {
+		"noQuestions": "暂无题目",
+		"noQuestionsDescription": "请稍后再试。",
+		"questionTitle": "第 {{number}} 题",
+		"progressText": "第 {{current}} 题，共 {{total}} 题",
+		"questionImage": "题目图片",
+		"descriptionImage": "题目说明图",
+		"textPlaceholder": "请在此分享您的想法...",
+		"optionImage": "选项 {{number}}",
+		"answerRequired": "请提供答案以继续。",
+		"keyboardHint": "提示：按 Enter 键进入下一题"
+	}
+}

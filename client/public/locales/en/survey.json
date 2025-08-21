@@ -1,0 +1,120 @@
+{
+	"form": {
+		"title": "Survey Form",
+		"nameRequired": "Name is required",
+		"emailRequired": "Email is required",
+		"emailInvalid": "Invalid email format",
+		"pleaseSelectOption": "Please select an option",
+		"enterAnswerHere": "Enter your answer here..."
+	},
+	"assessment": {
+		"title": "Assessment",
+		"notFound": "Assessment Not Found",
+		"invalidCode": "Invalid or expired invitation code",
+		"information": "Assessment Information",
+		"rules": "Rules Description",
+		"detailedInstructions": "Detailed Instructions",
+		"numberOfQuestions": "Number of Questions",
+		"questions": "questions",
+		"random": "random",
+		"multipleQuestionBanks": "Multiple Question Banks",
+		"selected": "selected",
+		"estimatedTime": "Estimated Time",
+		"maximumAttempts": "Maximum Attempts",
+		"times": "times",
+		"questionType": "Question Type",
+		"singleChoice": "Single Choice",
+		"multipleChoice": "Multiple Choice",
+		"mixedQuestionTypes": "Mixed Question Types",
+		"timeLimit": "Time Limit",
+		"start": "Start",
+		"question": "Question {{number}} / {{total}}",
+		"previousQuestion": "Previous Question",
+		"nextQuestion": "Next Question",
+		"submitAnswer": "Submit Answer",
+		"submitting": "Submitting...",
+		"thankyou": "Thank you for your participation!",
+		"surveySubmitted": "Your survey responses have been successfully submitted. Thank you for your valuable input.",
+		"results": "Assessment Results",
+		"totalScore": "Total Score",
+		"yourAnswer": "Your Answer",
+		"notAnswered": "Not answered",
+		"correctAnswer": "Correct Answer",
+		"explanation": "Explanation",
+		"rules": {
+			"surveyNoStandardAnswer": "This is a survey questionnaire with no standard answers",
+			"answerTruthfully": "Please answer based on your true thoughts",
+			"thankYouPageAfterSubmit": "Thank you page will be displayed after submission",
+			"hasStandardAnswer": "This is a {{type}} with standard answers",
+			"readCarefully": "Please read each question carefully before answering",
+			"scoresAfterSubmit": "Scores and correct answers will be displayed after submission",
+			"autoSubmitWhenTimeUp": "Will auto-submit when time is up",
+			"allQuestionsRequired": "All questions are required",
+			"cannotModifyAfterSubmit": "Cannot modify answers after submission"
+		},
+		"placeholders": {
+			"enterName": "Please enter your name",
+			"enterEmail": "Please enter your email"
+		},
+		"completed": {
+			"title": "Assessment Completed!",
+			"message": "Thank you for completing the assessment. Your responses have been submitted successfully.",
+			"success": "Submission Successful"
+		}
+	},
+	"responses": "Responses",
+	"lastActivity": "Last activity",
+	"noActivity": "No recent activity",
+	"createSurvey": "Create Survey",
+	"questions": {
+		"title": "Questions",
+		"add": "Add Question",
+		"edit": "Edit",
+		"delete": "Delete",
+		"moveUp": "Move up",
+		"moveDown": "Move down",
+		"hasImage": "Has Image",
+		"points": "pts",
+		"options": "Options",
+		"expectedAnswer": "Expected Answer",
+		"dragInstructions": "Tip: Drag questions by the handle (⋮⋮) to reorder them. Changes are saved automatically.",
+		"mobileInstructions": "Use the up/down arrow buttons to reorder questions on mobile devices.",
+		"autoSaving": "Saving order...",
+		"reorderError": "Failed to reorder questions. Please try again.",
+		"empty": {
+			"title": "No questions yet",
+			"description": "Add your first question to get started"
+		},
+		"type": {
+			"multipleChoice": "Multiple Choice",
+			"singleChoice": "Single Choice",
+			"shortText": "Short Text",
+			"textResponse": "Type: Text Response"
+		}
+	},
+	"dragHandle": {
+		"tooltip": "Drag to reorder"
+	},
+	"common": {
+		"loading": "Loading..."
+	},
+	"navigation": {
+		"previous": "Previous",
+		"next": "Next",
+		"submit": "Submit Survey",
+		"submitting": "Submitting...",
+		"progress": "Question {{current}} of {{total}}"
+	},
+	"oneQuestionPerPage": {
+		"noQuestions": "No questions available",
+		"noQuestionsDescription": "Please check back later.",
+		"questionTitle": "Question {{number}}",
+		"progressText": "{{current}} of {{total}} questions",
+		"questionImage": "Question image",
+		"descriptionImage": "Question illustration",
+		"textPlaceholder": "Share your thoughts here...",
+		"optionImage": "Option {{number}}",
+		"answerRequired": "Please provide an answer to continue.",
+		"keyboardHint": "Tip: Press Enter to proceed to the next question"
+	}
+}

@@ -1,0 +1,64 @@
+{
+	"editor.insertSpaces": false,
+	"editor.tabSize": 4,
+	"editor.detectIndentation": false,
+	"editor.renderWhitespace": "boundary",
+	"editor.trimAutoWhitespace": true,
+	"files.trimTrailingWhitespace": true,
+	"files.insertFinalNewline": true,
+	"files.trimFinalNewlines": true,
+	"editor.formatOnSave": true,
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"[javascript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.insertSpaces": false,
+		"editor.tabSize": 4
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.insertSpaces": false,
+		"editor.tabSize": 4
+	},
+	"[javascriptreact]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.insertSpaces": false,
+		"editor.tabSize": 4
+	},
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.insertSpaces": false,
+		"editor.tabSize": 4
+	},
+	"[json]": {
+		"editor.insertSpaces": false,
+		"editor.tabSize": 4
+	},
+	"[css]": {
+		"editor.insertSpaces": false,
+		"editor.tabSize": 4
+	},
+	"[scss]": {
+		"editor.insertSpaces": false,
+		"editor.tabSize": 4
+	},
+	"[html]": {
+		"editor.insertSpaces": false,
+		"editor.tabSize": 4
+	},
+	"[markdown]": {
+		"editor.insertSpaces": false,
+		"editor.tabSize": 4
+	},
+	"typescript.preferences.indentStyle": "tab",
+	"javascript.preferences.indentStyle": "tab",
+	"prettier.useTabs": true,
+	"prettier.tabWidth": 4,
+	"eslint.format.enable": false,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "explicit"
+	},
+	"emmet.syntaxProfiles": {
+		"javascript": "jsx",
+		"typescript": "tsx"
+	}
+}

@@ -1,0 +1,25 @@
+# Frontend Dockerfile for Survey AI
+FROM node:20-alpine AS base
+
+# Install dependencies
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install frontend dependencies
+COPY client/package.json client/package-lock.json* ./
+RUN npm ci
+
+# Production image
+FROM base AS runner
+WORKDIR /app
+
+# Copy dependencies and source code
+COPY --from=deps /app/node_modules ./node_modules
+COPY client/ ./
+
+EXPOSE 5051
+
+ENV PORT 5051
+
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

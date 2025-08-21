@@ -1,0 +1,12 @@
+[
+	{
+		"id": "q1",
+		"text": "How satisfied were you with the event?",
+		"options": ["Very satisfied", "Satisfied", "Neutral", "Dissatisfied"]
+	},
+	{
+		"id": "q2",
+		"text": "What could be improved?",
+		"options": ["Nothing", "Schedule", "Venue", "Other"]
+	}
+]
