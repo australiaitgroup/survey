@@ -1,0 +1,6 @@
+questionText,type,options,correctAnswers,tags,explanation,points,difficulty,descriptionImage
+What color is the sky?,single,Red;Blue;Green,1,"nature,basic",The sky appears blue due to light scattering,1,easy,
+Which are programming languages?,multiple,JavaScript;Python;Dog;Cat,0;1,"tech,programming",Only JavaScript and Python are programming languages,2,medium,
+Describe your favorite hobby,text,,,"personal,creativity",Please provide a brief description,1,easy,
+What is the capital of France?,single,London;Paris;Berlin;Madrid,1,"geography,world",Paris is the capital and largest city of France,1,medium,
+EOF < /dev/null

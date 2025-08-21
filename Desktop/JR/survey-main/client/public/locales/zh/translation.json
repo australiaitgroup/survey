@@ -1,0 +1,404 @@
+{
+	"appName": "SigmaQ 调研平台",
+	"language": {
+		"english": "English",
+		"chinese": "中文"
+	},
+	"navigation": {
+		"surveys": "问卷调研",
+		"collections": "合集",
+		"questionBanks": "题库管理",
+		"profile": "个人资料",
+		"billing": "账单管理",
+		"dashboard": "仪表盘",
+		"companyInfo": "公司信息"
+	},
+	"profile": {
+		"settings": "个人设置",
+		"manageInfo": "管理个人信息、公司信息和账单",
+		"dismiss": "关闭",
+		"personalInfo": "个人信息",
+		"companyInfo": "公司信息",
+		"updating": "更新中...",
+		"updatePersonalInfo": "更新个人信息",
+		"updatePassword": "更新密码",
+		"companyName": "公司名称",
+		"industry": "行业",
+		"website": "公司网站",
+		"updateCompanyInfo": "更新公司信息"
+	},
+	"buttons": {
+		"submit": "提交",
+		"cancel": "取消",
+		"save": "保存",
+		"delete": "删除",
+		"edit": "编辑",
+		"create": "创建",
+		"back": "返回",
+		"next": "下一步",
+		"previous": "上一步",
+		"close": "关闭",
+		"confirm": "确认",
+		"login": "登录",
+		"logout": "退出",
+		"register": "注册",
+		"refresh": "刷新",
+		"duplicate": "复制"
+	},
+	"common": {
+		"loading": "加载中...",
+		"error": "发生错误",
+		"success": "成功",
+		"warning": "警告",
+		"info": "信息",
+		"search": "搜索",
+		"filter": "筛选",
+		"sort": "排序",
+		"name": "姓名",
+		"email": "邮箱",
+		"title": "标题",
+		"description": "描述",
+		"status": "状态",
+		"actions": "操作",
+		"noData": "暂无数据",
+		"page": "页",
+		"of": "共",
+		"records": "条记录",
+		"showingPage": "显示第",
+		"total": "总计"
+	},
+	"errors": {
+		"collectionNotFound": "未找到合集"
+	},
+	"landing": {
+		"hero": {
+			"title": "创建更智能的调研与测评",
+			"subtitle": "使用我们直观的平台构建专业的调研、测评和测试。通过高级分析和报告获得有价值的洞察。",
+			"startFreeTrial": "免费试用",
+			"seeLiveDemo": "查看演示"
+		},
+		"howItWorks": {
+			"title": "工作原理",
+			"subtitle": "从创建到洞察，仅需几分钟",
+			"step1": { "title": "创建", "description": "使用模板与拖拽快速构建问卷" },
+			"step2": { "title": "自定义", "description": "品牌样式、逻辑、多语言与访问控制" },
+			"step3": { "title": "分析", "description": "可视化仪表盘、导出与AI洞察" },
+			"step4": { "title": "分享", "description": "发送链接、嵌入页面或邀请参与者" }
+		},
+		"about": {
+			"title": "关于SigmaQ",
+			"intro": "我们打造AI优先的工具，帮助组织创建更智能的调研与测评，并自信地做出数据驱动决策。",
+			"missionTitle": "我们的使命",
+			"mission": "以易用、安全、智能的工具，帮助团队衡量关键指标。",
+			"valuesTitle": "我们的价值观",
+			"values": ["以客户为中心", "简洁", "信任"],
+			"storyTitle": "我们的故事",
+			"story": "SigmaQ源于一个朴素想法：衡量技能与反馈不该复杂。如今我们帮助团队在规模化场景中开展高质量测评。",
+			"timelineTitle": "发展里程碑",
+			"timeline": [
+				{ "year": "2023", "text": "创立SigmaQ，致力于简化测评" },
+				{ "year": "2024", "text": "推出AI辅助创作与分析" },
+				{ "year": "2024", "text": "上线题库市场" },
+				{ "year": "2025", "text": "覆盖30+国家，累计1M+响应" }
+			],
+			"teamTitle": "核心团队",
+			"roles": {
+				"ceo": "首席执行官",
+				"cto": "首席技术官",
+				"headOfAI": "AI负责人",
+				"headOfDesign": "设计负责人"
+			},
+			"customersTitle": "全球团队的共同选择",
+			"stats": {
+				"companies": "合作企业",
+				"countries": "覆盖国家",
+				"responses": "累计响应",
+				"uptime": "服务可用性"
+			},
+			"ctaTitle": "准备好打造更好的测评了吗？",
+			"ctaSubtitle": "与我们的团队沟通您的场景与需求",
+			"ctaButton": "联系我们"
+		},
+		"contact": {
+			"title": "联系我们",
+			"subtitle": "欢迎与我们交流，简单说明您的场景，我们将尽快回复。",
+			"name": "您的姓名",
+			"email": "邮箱地址",
+			"message": "留言内容",
+			"send": "发送",
+			"channelsTitle": "直接联系",
+			"channels": {
+				"sales": "销售咨询",
+				"support": "技术支持",
+				"phone": "电话",
+				"hours": "周一至周五 9:00–18:00"
+			},
+			"officesTitle": "办公地点",
+			"offices": {
+				"hq": { "title": "总部", "address": "悉尼 Market St 123号 5层" },
+				"apac": { "title": "亚太区", "address": "新加坡 Innovation Rd 88号" }
+			},
+			"faqTitle": "常见问题",
+			"faq": ["通常多久可以完成上线？", "是否支持SSO与企业级安全？", "可以从其他平台迁移吗？"]
+		},
+		"privacy": {
+			"title": "隐私政策",
+			"intro": "我们重视您的隐私，并负责地处理您的数据。",
+			"dataTitle": "我们收集哪些数据",
+			"data": "我们仅收集提供服务所必需的数据。",
+			"securityTitle": "数据安全",
+			"security": "我们在传输与存储时采用加密，并遵循业界最佳实践。",
+			"contactTitle": "联系",
+			"contact": "隐私相关问题请联系 privacy@sigmaq.io"
+		},
+		"terms": {
+			"title": "服务条款",
+			"intro": "使用SigmaQ即表示您同意以下条款。",
+			"useTitle": "合理使用",
+			"use": "请合法使用服务并尊重知识产权。",
+			"liabilityTitle": "责任限制",
+			"liability": "在法律允许的范围内，SigmaQ按“现状”提供。"
+		},
+		"blog": {
+			"title": "博客",
+			"subtitle": "关于问卷、测评与学习的洞察"
+		},
+		"caseStudies": {
+			"title": "客户案例",
+			"subtitle": "了解团队如何借助SigmaQ取得成功"
+		},
+		"features": {
+			"title": "现代化测评的强大功能",
+			"feature1": {
+				"title": "智能问卷构建器",
+				"description": "拖拽构建 + AI模板与智能建议。多种题型、逻辑分支与实时预览。"
+			},
+			"feature2": {
+				"title": "高级数据分析",
+				"description": "AI摘要、异常检测、可视化与自动报告，获得更深入洞察。"
+			},
+			"feature3": {
+				"title": "AI 助手",
+				"description": "自动生成问题与评分标准、内容翻译与润色、自动洞察提炼。"
+			},
+			"feature4": {
+				"title": "自定义品牌",
+				"description": "使用自定义徽标、颜色和主题为您的问卷添加品牌元素，匹配您组织的身份。"
+			},
+			"feature5": {
+				"title": "多平台访问",
+				"description": "响应式设计让您随时随地访问问卷，在桌面、平板和手机上都有完美体验。"
+			},
+			"feature6": {
+				"title": "数据安全",
+				"description": "企业级安全保障，包括数据加密、GDPR合规和安全数据存储。"
+			}
+		},
+		"productSuite": {
+			"title": "产品矩阵",
+			"subtitle": "从问卷到现场测验，AI加持端到端",
+			"surveys": {
+				"title": "问卷 Survey",
+				"description": "AI辅助创作、翻译与质量检查，轻松设计与发布问卷。"
+			},
+			"assessments": {
+				"title": "测评 Assessment",
+				"description": "自动评分、AI评分标准建议与基于证据的反馈。"
+			},
+			"liveQuiz": {
+				"title": "现场测验 Live Quiz",
+				"description": "AI难度调节与诚信控制，支持实时限时测验。"
+			},
+			"onboarding": {
+				"title": "入职 Onboarding",
+				"description": "AI识别技能差距并个性化学习路径，规范入职流程。"
+			}
+		},
+		"questionBanks": {
+			"title": "题库 Question Banks",
+			"subtitle": "AI标注与精选题库，助力快速测试",
+			"readyMade": {
+				"title": "即用型题库",
+				"description": "覆盖常见岗位/主题/难度的AI标注预置题库。"
+			},
+			"quality": {
+				"title": "质量与一致性",
+				"description": "结合AI一致性检查的验证题目，确保评估可靠。"
+			},
+			"fasterHiring": {
+				"title": "加速招聘",
+				"description": "AI驱动的高效筛选与可解释评分，缩短招聘周期。"
+			}
+		},
+		"ai": {
+			"title": "AI 能力",
+			"subtitle": "AI辅助创建与分析，事半功倍",
+			"aiSurvey": {
+				"title": "AI问卷助手",
+				"description": "生成问题、翻译内容、统一语气与风格，并进行文案润色。"
+			},
+			"aiCandidateAnalysis": {
+				"title": "AI候选人分析",
+				"description": "自动分析开放式回答：主题、情感与风险点检测。"
+			},
+			"aiAutomation": {
+				"title": "自动化",
+				"description": "总结结果，提出下一步建议，并生成面向干系人的报告初稿。"
+			}
+		},
+		"useCases": {
+			"title": "适用于各行各业",
+			"education": {
+				"title": "教育行业",
+				"description": "创建测验、考试和课程评估"
+			},
+			"healthcare": {
+				"title": "医疗保健",
+				"description": "患者满意度和医疗评估"
+			},
+			"business": {
+				"title": "商业企业",
+				"description": "员工反馈和市场调研"
+			},
+			"nonprofit": {
+				"title": "非营利组织",
+				"description": "志愿者协调和影响力测量"
+			},
+			"training": {
+				"title": "培训教育",
+				"description": "技能评估和认证项目"
+			},
+			"hrTeams": {
+				"title": "人力资源团队",
+				"description": "员工满意度调研和绩效评估"
+			},
+			"startups": {
+				"title": "初创企业",
+				"description": "产品市场匹配度和客户验证调研"
+			},
+			"universities": {
+				"title": "高等院校",
+				"description": "学生反馈和学术研究调研"
+			},
+			"international": {
+				"title": "国际组织",
+				"description": "面向全球组织的多语言调研"
+			}
+		},
+		"pricing": {
+			"title": "选择您的方案",
+			"free": {
+				"title": "免费版",
+				"price": "¥0",
+				"period": "每月",
+				"description": "适合入门使用",
+				"features": [
+					"每月最多100个响应",
+					"基础问卷模板",
+					"邮件支持",
+					"标准分析",
+					"链接分享问卷",
+					"基础定制"
+				],
+				"button": "免费开始"
+			},
+			"professional": {
+				"title": "专业版",
+				"price": "¥199",
+				"period": "每月",
+				"description": "适合成长中的团队",
+				"features": [
+					"每月最多1,000个响应",
+					"高级模板",
+					"优先邮件支持",
+					"高级分析和报告",
+					"自定义品牌",
+					"团队协作",
+					"数据导出 (CSV, Excel)",
+					"API访问"
+				],
+				"button": "开始专业版",
+				"popular": "最受欢迎"
+			},
+			"business": {
+				"title": "企业版",
+				"price": "¥699",
+				"period": "每月",
+				"description": "适合大型组织",
+				"features": [
+					"无限响应",
+					"所有高级模板",
+					"24/7电话和邮件支持",
+					"企业级分析",
+					"白标解决方案",
+					"高级团队管理",
+					"高级集成",
+					"定制开发",
+					"SLA保证",
+					"专属客户经理"
+				],
+				"button": "联系销售"
+			}
+		},
+		"pricingPage": {
+			"title": "价格方案",
+			"intro": "简单透明的定价，适用于不同规模的团队。提供题库以加速测试。",
+			"banks": {
+				"title": "题库",
+				"subtitle": "使用AI标注精选题库快速起步"
+			},
+			"resale": {
+				"title": "测试变现",
+				"subtitle": "通过授权与计费集成，将测试售卖给您的用户",
+				"points": ["按用户或按响应授权", "集成Stripe并追踪用量", "基于角色与许可控制访问"],
+				"cta": "联系销售"
+			}
+		},
+		"testimonials": {
+			"title": "客户评价",
+			"testimonial1": {
+				"quote": "SigmaQ改变了我们收集反馈的方式。分析功能令人惊叹，平台使用起来非常简单。",
+				"content": "SigmaQ改变了我们收集反馈的方式。分析功能令人惊叹，平台使用起来非常简单。",
+				"author": "Sarah Johnson",
+				"role": "市场总监",
+				"company": "科技公司"
+			},
+			"testimonial2": {
+				"quote": "自从转换到SigmaQ后，我们的回应率提高了40%。移动端体验非常棒。",
+				"content": "自从转换到SigmaQ后，我们的回应率提高了40%。移动端体验非常棒。",
+				"author": "Michael Chen",
+				"role": "人力资源经理",
+				"company": "创新实验室"
+			},
+			"testimonial3": {
+				"quote": "自定义品牌功能帮助我们在收集有价值客户洞察的同时保持品牌身份。",
+				"content": "自定义品牌功能帮助我们在收集有价值客户洞察的同时保持品牌身份。",
+				"author": "Zoe",
+				"role": "产品经理",
+				"company": "初创企业"
+			}
+		},
+		"cta": {
+			"title": "准备开始了吗？",
+			"subtitle": "加入数千家组织，创建更好的测评",
+			"button": "开始免费试用",
+			"contactSales": "联系销售"
+		},
+		"footer": {
+			"features": "功能特性",
+			"pricing": "价格方案",
+			"integrations": "集成",
+			"caseStudies": "客户案例",
+			"about": "关于我们",
+			"contact": "联系我们",
+			"helpCenter": "帮助中心",
+			"privacy": "隐私政策",
+			"terms": "服务条款",
+			"copyright": "© 2025 SigmaQ. 保留所有权利。"
+		},
+		"featuresPage": {
+			"title": "全部功能",
+			"intro": "查看SigmaQ在AI创作、分析与自动化等方面的能力"
+		}
+	}
+}

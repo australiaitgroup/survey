@@ -1,0 +1,60 @@
+/* Anti-cheating styles */
+.anti-cheat-container {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+/* Disable drag and drop */
+.anti-cheat-container * {
+	-webkit-user-drag: none;
+	-moz-user-drag: none;
+	-ms-user-drag: none;
+	user-drag: none;
+}
+
+/* Disable image context menu */
+.anti-cheat-container img {
+	pointer-events: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+/* Allow text selection only in input and textarea elements */
+.anti-cheat-container input,
+.anti-cheat-container textarea {
+	-webkit-user-select: text;
+	-moz-user-select: text;
+	-ms-user-select: text;
+	user-select: text;
+}
+
+/* Hide text cursor except in input fields */
+.anti-cheat-container {
+	cursor: default;
+}
+
+.anti-cheat-container input,
+.anti-cheat-container textarea,
+.anti-cheat-container button {
+	cursor: pointer;
+}
+
+.anti-cheat-container input,
+.anti-cheat-container textarea {
+	cursor: text;
+}
+
+/* Prevent selection highlighting */
+.anti-cheat-container::selection {
+	background: transparent;
+}
+
+.anti-cheat-container ::-moz-selection {
+	background: transparent;
+}

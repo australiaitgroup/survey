@@ -1,0 +1,36 @@
+{
+	"title": "Question {{number}}",
+	"addQuestion": "Add Question",
+	"editQuestion": "Edit Question",
+	"deleteQuestion": "Delete Question",
+	"questionText": "Question Text",
+	"questionType": "Question Type",
+	"options": "Options",
+	"addOption": "Add Option",
+	"removeOption": "Remove Option",
+	"correctAnswer": "Correct Answer",
+	"points": "Points",
+	"required": "Required",
+	"optional": "Optional",
+	"types": {
+		"singleChoice": "Single Choice",
+		"multipleChoice": "Multiple Choice",
+		"shortText": "Short Text"
+	},
+	"validation": {
+		"questionTextRequired": "Question text is required",
+		"optionsRequired": "At least 2 options are required",
+		"correctAnswerRequired": "Please select the correct answer"
+	},
+	"placeholders": {
+		"enterQuestionText": "Enter your question text...",
+		"enterOptionText": "Enter option text...",
+		"enterShortAnswer": "Enter expected answer..."
+	},
+	"labels": {
+		"hasImage": "📷 Has Image",
+		"typeText": "Type: Text Response",
+		"expectedAnswer": "✓ Expected Answer: {{answer}}",
+		"correctAnswerSelected": "✓ Correct Answer Selected"
+	}
+}

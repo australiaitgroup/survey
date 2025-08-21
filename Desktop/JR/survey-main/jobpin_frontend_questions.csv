@@ -1,0 +1,14 @@
+questionText,type,options,correctAnswers,tags
+single,红色;绿色;蓝色,1,颜色,兴趣
+multiple,JavaScript;Python;Dog,0;1,技术,测试
+text,,,思辨,
+Which HTML tag is used to define an unordered list?,single,ul;ol;li;dl,0,HTML
+Which of the following are valid CSS units?,multiple,px;em;kg;rem,0;1;3,CSS
+What is the output of `typeof null` in JavaScript?,single,object;null;undefined;function,0,JavaScript
+Which of the following are array methods in JavaScript?,multiple,map;filter;reduce;parseInt,0;1;2,JavaScript
+What is the correct way to lift state up in React?,single,Use Redux;Move state to common ancestor;Use localStorage;Use setState in child,1,React
+Which of the following are lifecycle methods in class components?,multiple,componentDidMount;useEffect;componentWillUnmount;useState,0;2,React
+What does `flex: 1` mean in CSS Flexbox?,single,Element grows to fill space;Element does not shrink;Element is hidden;Element has fixed size,0,CSS
+Which of the following are valid event handlers in React?,multiple,onClick;onHover;onChange;onSubmit,0;2;3,React
+Which tag is used to insert JavaScript into an HTML page?,single,script;link;meta;style,0,JavaScript
+Which of the following are ways to declare a variable in JavaScript?,multiple,var;let;const;define,0;1;2,JavaScript

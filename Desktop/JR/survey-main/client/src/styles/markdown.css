@@ -1,0 +1,33 @@
+/* Global markdown rendering helpers for ReactMarkdown containers using Tailwind Typography's prose */
+
+.prose ul,
+.prose ol {
+	margin: 0.5rem 0 0.75rem 1.25rem;
+	padding-left: 1.25rem;
+}
+
+.prose ul {
+	list-style: disc;
+}
+
+.prose ol {
+	list-style: decimal;
+}
+
+.prose li {
+	margin: 0.25rem 0;
+}
+
+.prose pre {
+	background-color: #f8fafc; /* slate-50 */
+	border: 1px solid #e5e7eb; /* gray-200 */
+	border-radius: 0.375rem; /* rounded-md */
+	padding: 0.75rem 1rem;
+	overflow-x: auto;
+}
+
+.prose code {
+	background-color: #f1f5f9; /* slate-100 */
+	padding: 0.1rem 0.3rem;
+	border-radius: 0.25rem;
+}

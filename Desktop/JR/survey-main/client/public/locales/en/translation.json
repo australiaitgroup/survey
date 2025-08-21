@@ -1,0 +1,424 @@
+{
+	"appName": "SigmaQ Survey Platform",
+	"language": {
+		"english": "English",
+		"chinese": "中文"
+	},
+	"navigation": {
+		"surveys": "Surveys",
+		"collections": "Collections",
+		"questionBanks": "Question Banks",
+		"profile": "Profile",
+		"billing": "Billing",
+		"dashboard": "Dashboard",
+		"companyInfo": "Company Info"
+	},
+	"profile": {
+		"settings": "Profile Settings",
+		"manageInfo": "Manage your personal, company and billing information",
+		"dismiss": "Dismiss",
+		"personalInfo": "Personal Info",
+		"companyInfo": "Company Info",
+		"updating": "Updating...",
+		"updatePersonalInfo": "Update Profile",
+		"updatePassword": "Update Password",
+		"companyName": "Company Name",
+		"industry": "Industry",
+		"website": "Website",
+		"updateCompanyInfo": "Update Company Info"
+	},
+	"buttons": {
+		"submit": "Submit",
+		"cancel": "Cancel",
+		"save": "Save",
+		"delete": "Delete",
+		"edit": "Edit",
+		"create": "Create",
+		"back": "Back",
+		"next": "Next",
+		"previous": "Previous",
+		"close": "Close",
+		"confirm": "Confirm",
+		"login": "Login",
+		"logout": "Logout",
+		"register": "Register",
+		"refresh": "Refresh",
+		"duplicate": "Duplicate"
+	},
+	"common": {
+		"loading": "Loading...",
+		"error": "An error occurred",
+		"success": "Success",
+		"warning": "Warning",
+		"info": "Information",
+		"search": "Search",
+		"filter": "Filter",
+		"sort": "Sort",
+		"name": "Name",
+		"email": "Email",
+		"title": "Title",
+		"description": "Description",
+		"status": "Status",
+		"actions": "Actions",
+		"noData": "No data available",
+		"page": "Page",
+		"of": "of",
+		"records": "records",
+		"showingPage": "showing page",
+		"total": "Total"
+	},
+	"errors": {
+		"collectionNotFound": "Collection not found"
+	},
+	"landing": {
+		"hero": {
+			"title": "Create Smarter Surveys & Assessments",
+			"subtitle": "Build professional surveys, assessments, and quizzes with our intuitive platform. Get insights that matter with advanced analytics and reporting.",
+			"startFreeTrial": "Start Free Trial",
+			"seeLiveDemo": "See Live Demo"
+		},
+		"howItWorks": {
+			"title": "How It Works",
+			"subtitle": "From building to insights in minutes",
+			"step1": {
+				"title": "Build",
+				"description": "Create surveys with templates and drag-and-drop"
+			},
+			"step2": {
+				"title": "Customize",
+				"description": "Branding, logic, languages, and access control"
+			},
+			"step3": {
+				"title": "Analyze",
+				"description": "Visual dashboards, exports, and AI insights"
+			},
+			"step4": {
+				"title": "Share",
+				"description": "Send links, embed, or invite participants"
+			}
+		},
+		"about": {
+			"title": "About SigmaQ",
+			"intro": "We build AI-first tools that help organizations create smarter surveys and assessments, and make confident, data-driven decisions.",
+			"missionTitle": "Our Mission",
+			"mission": "Empower teams to measure what matters with delightful, secure, and intelligent tools.",
+			"valuesTitle": "Our Values",
+			"values": ["Customer-first", "Simplicity", "Trust"],
+			"storyTitle": "Our Story",
+			"story": "SigmaQ started with a simple idea: measuring skills and feedback shouldn't be hard. Today, we help teams run high-quality assessments at scale.",
+			"timelineTitle": "Milestones",
+			"timeline": [
+				{ "year": "2023", "text": "Founded SigmaQ with a mission to simplify assessments" },
+				{ "year": "2024", "text": "Launched AI-assisted authoring and analytics" },
+				{ "year": "2024", "text": "Introduced Question Banks marketplace" },
+				{ "year": "2025", "text": "Scaled to 1M+ responses and customers in 30+ countries" }
+			],
+			"teamTitle": "Leadership & Team",
+			"roles": {
+				"ceo": "CEO",
+				"cto": "CTO",
+				"headOfAI": "Head of AI",
+				"headOfDesign": "Head of Design"
+			},
+			"customersTitle": "Trusted by teams worldwide",
+			"stats": {
+				"companies": "Companies",
+				"countries": "Countries",
+				"responses": "Responses",
+				"uptime": "Uptime"
+			},
+			"ctaTitle": "Ready to build better assessments?",
+			"ctaSubtitle": "Talk to our team to explore your use cases and requirements",
+			"ctaButton": "Contact Us"
+		},
+		"contact": {
+			"title": "Contact Us",
+			"subtitle": "We'd love to hear from you. Tell us about your use case and we'll get back soon.",
+			"name": "Your Name",
+			"email": "Email Address",
+			"message": "Message",
+			"send": "Send Message",
+			"channelsTitle": "Reach us directly",
+			"channels": {
+				"sales": "Sales",
+				"support": "Support",
+				"phone": "Phone",
+				"hours": "Mon–Fri, 9am–6pm"
+			},
+			"officesTitle": "Our Offices",
+			"offices": {
+				"hq": { "title": "Headquarters", "address": "Level 5, 123 Market St, Sydney" },
+				"apac": { "title": "APAC", "address": "88 Innovation Rd, Singapore" }
+			},
+			"faqTitle": "FAQ",
+			"faq": [
+				"How long does it take to get onboarded?",
+				"Do you support SSO and enterprise security?",
+				"Can I migrate from another platform?"
+			]
+		},
+		"privacy": {
+			"title": "Privacy Policy",
+			"intro": "We care about your privacy and handle your data responsibly.",
+			"dataTitle": "What Data We Collect",
+			"data": "We collect only necessary data to provide our services.",
+			"securityTitle": "Data Security",
+			"security": "We use encryption in transit and at rest and follow industry best practices.",
+			"contactTitle": "Contact",
+			"contact": "For privacy questions, contact privacy@sigmaq.io"
+		},
+		"terms": {
+			"title": "Terms of Service",
+			"intro": "By using SigmaQ, you agree to the following terms.",
+			"useTitle": "Acceptable Use",
+			"use": "Use the service lawfully and respect intellectual property rights.",
+			"liabilityTitle": "Limitation of Liability",
+			"liability": "SigmaQ is provided as-is to the extent permitted by law."
+		},
+		"blog": {
+			"title": "Blog",
+			"subtitle": "Insights on surveys, assessments, and learning"
+		},
+		"caseStudies": {
+			"title": "Case Studies",
+			"subtitle": "See how teams succeed with SigmaQ"
+		},
+		"features": {
+			"title": "Powerful Features for Modern Assessment",
+			"feature1": {
+				"title": "Smart Survey Builder",
+				"description": "Create professional surveys with drag-and-drop, AI templates, and smart suggestions. Multiple question types, logic branching, and real-time preview."
+			},
+			"feature2": {
+				"title": "Advanced Analytics",
+				"description": "Get deep insights with AI summaries, anomaly detection, data visualization, and automated reporting."
+			},
+			"feature3": {
+				"title": "AI Assistance",
+				"description": "Generate questions and rubrics, translate content, and surface insights automatically with AI."
+			},
+			"feature4": {
+				"title": "Custom Branding",
+				"description": "Brand your surveys with custom logos, colors, and themes to match your organization's identity."
+			},
+			"feature5": {
+				"title": "Multi-Platform Access",
+				"description": "Access your surveys anywhere with responsive design that works perfectly on desktop, tablet, and mobile."
+			},
+			"feature6": {
+				"title": "Data Security",
+				"description": "Enterprise-grade security with data encryption, GDPR compliance, and secure data storage."
+			}
+		},
+		"productSuite": {
+			"title": "Product Suite",
+			"subtitle": "From surveys to live quizzes, AI-powered end to end",
+			"surveys": {
+				"title": "Surveys",
+				"description": "Design and distribute surveys with AI-assisted authoring, translation, and quality checks."
+			},
+			"assessments": {
+				"title": "Assessments",
+				"description": "Evaluate skills with auto-scoring, AI rubric suggestions, and evidence-based feedback."
+			},
+			"liveQuiz": {
+				"title": "Live Quiz",
+				"description": "Run timed quizzes with AI difficulty tuning and integrity controls for real-time sessions."
+			},
+			"onboarding": {
+				"title": "Onboarding",
+				"description": "Standardize new-hire journeys with AI skill-gap detection and personalized learning paths."
+			}
+		},
+		"questionBanks": {
+			"title": "Question Banks",
+			"subtitle": "AI-tagged, curated libraries to kickstart testing",
+			"readyMade": {
+				"title": "Ready-made Libraries",
+				"description": "Use pre-built, AI-tagged banks for common roles, topics, and difficulty levels."
+			},
+			"quality": {
+				"title": "Quality & Consistency",
+				"description": "Validated questions with AI consistency checks ensure reliable evaluation."
+			},
+			"fasterHiring": {
+				"title": "Faster Hiring",
+				"description": "Reduce time-to-hire with AI-powered screening and fair, explainable scoring."
+			}
+		},
+		"ai": {
+			"title": "AI Assistance",
+			"subtitle": "Work smarter with AI-powered authoring and analysis",
+			"aiSurvey": {
+				"title": "AI Survey Assistant",
+				"description": "Generate questions, translate content, enforce tone and style, and polish copy."
+			},
+			"aiCandidateAnalysis": {
+				"title": "AI Candidate Analysis",
+				"description": "Automatically analyze open-ended responses with themes, sentiment, and red-flag detection."
+			},
+			"aiAutomation": {
+				"title": "Automation",
+				"description": "Summarize results, propose next actions, and draft stakeholder-ready reports."
+			}
+		},
+		"useCases": {
+			"title": "Perfect for Every Industry",
+			"education": {
+				"title": "Education",
+				"description": "Create quizzes, exams, and course evaluations"
+			},
+			"healthcare": {
+				"title": "Healthcare",
+				"description": "Patient satisfaction and medical assessments"
+			},
+			"business": {
+				"title": "Business",
+				"description": "Employee feedback and market research"
+			},
+			"nonprofit": {
+				"title": "Non-Profit",
+				"description": "Volunteer coordination and impact measurement"
+			},
+			"training": {
+				"title": "Training",
+				"description": "Skills assessments and certification programs"
+			},
+			"hrTeams": {
+				"title": "HR Teams",
+				"description": "Employee satisfaction surveys and performance evaluations"
+			},
+			"startups": {
+				"title": "Startups",
+				"description": "Product-market fit and customer validation surveys"
+			},
+			"universities": {
+				"title": "Universities",
+				"description": "Student feedback and academic research surveys"
+			},
+			"international": {
+				"title": "International",
+				"description": "Multi-language surveys for global organizations"
+			}
+		},
+		"pricing": {
+			"title": "Choose Your Plan",
+			"free": {
+				"title": "Free",
+				"price": "$0",
+				"period": "per month",
+				"description": "Perfect for getting started",
+				"features": [
+					"Up to 100 responses per month",
+					"Basic survey templates",
+					"Email support",
+					"Standard analytics",
+					"Survey sharing via link",
+					"Basic customization"
+				],
+				"button": "Get Started Free"
+			},
+			"professional": {
+				"title": "Professional",
+				"price": "$29",
+				"period": "per month",
+				"description": "Best for growing teams",
+				"features": [
+					"Up to 1,000 responses per month",
+					"Advanced templates",
+					"Priority email support",
+					"Advanced analytics & reporting",
+					"Custom branding",
+					"Team collaboration",
+					"Data export (CSV, Excel)",
+					"API access"
+				],
+				"button": "Start Professional",
+				"popular": "Most Popular"
+			},
+			"business": {
+				"title": "Business",
+				"price": "$99",
+				"period": "per month",
+				"description": "For large organizations",
+				"features": [
+					"Unlimited responses",
+					"All premium templates",
+					"24/7 phone & email support",
+					"Enterprise analytics",
+					"White-label solution",
+					"Advanced team management",
+					"Advanced integrations",
+					"Custom development",
+					"SLA guarantee",
+					"Dedicated account manager"
+				],
+				"button": "Contact Sales"
+			}
+		},
+		"pricingPage": {
+			"title": "Pricing",
+			"intro": "Simple plans for teams of all sizes. Question Banks available to speed up testing.",
+			"banks": {
+				"title": "Question Banks",
+				"subtitle": "Kickstart with curated, AI-tagged question libraries"
+			},
+			"resale": {
+				"title": "Monetize your assessments",
+				"subtitle": "Sell tests to your own users with entitlements and billing integrations",
+				"points": [
+					"Per-user or per-response entitlements",
+					"Stripe integration and usage tracking",
+					"Control access with roles and licenses"
+				],
+				"cta": "Contact sales"
+			}
+		},
+		"testimonials": {
+			"title": "What Our Customers Say",
+			"testimonial1": {
+				"quote": "SigmaQ has transformed how we collect feedback. The analytics are incredible and the platform is so easy to use.",
+				"content": "SigmaQ has transformed how we collect feedback. The analytics are incredible and the platform is so easy to use.",
+				"author": "Sarah Johnson",
+				"role": "Marketing Director",
+				"company": "TechCorp"
+			},
+			"testimonial2": {
+				"quote": "We've increased our response rates by 40% since switching to SigmaQ. The mobile experience is fantastic.",
+				"content": "We've increased our response rates by 40% since switching to SigmaQ. The mobile experience is fantastic.",
+				"author": "Michael Chen",
+				"role": "HR Manager",
+				"company": "InnovateLab"
+			},
+			"testimonial3": {
+				"quote": "The custom branding features helped us maintain our brand identity while collecting valuable customer insights.",
+				"content": "The custom branding features helped us maintain our brand identity while collecting valuable customer insights.",
+				"author": "Emily Rodriguez",
+				"role": "Product Manager",
+				"company": "StartupXYZ"
+			}
+		},
+		"cta": {
+			"title": "Ready to Get Started?",
+			"subtitle": "Join thousands of organizations creating better assessments",
+			"button": "Start Your Free Trial",
+			"contactSales": "Contact Sales"
+		},
+		"footer": {
+			"features": "Features",
+			"pricing": "Pricing",
+			"integrations": "Integrations",
+			"caseStudies": "Case Studies",
+			"about": "About",
+			"contact": "Contact",
+			"helpCenter": "Help Center",
+			"privacy": "Privacy Policy",
+			"terms": "Terms of Service",
+			"copyright": "© 2025 SigmaQ. All rights reserved."
+		},
+		"featuresPage": {
+			"title": "All Features",
+			"intro": "Explore SigmaQ capabilities across AI authoring, analytics, automation and more"
+		}
+	}
+}

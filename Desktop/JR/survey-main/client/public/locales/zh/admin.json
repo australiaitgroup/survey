@@ -1,0 +1,239 @@
+{
+	"dashboard": {
+		"title": "{{companyName}} 管理后台",
+		"subtitle": "管理您的问卷、测评并查看回复"
+	},
+	"collections": {
+		"title": "合集",
+		"createButton": "创建合集",
+		"intro": "将相关问卷组织为可复用的分组，便于管理与快速访问。",
+		"info": "将相关问卷组织为可复用的分组，便于管理与快速访问。",
+		"searchPlaceholder": "按名称或描述搜索...",
+		"sort": {
+			"newest": "最新创建",
+			"lastActivity": "最近活动",
+			"az": "A–Z"
+		},
+		"meta": {
+			"surveys": "个问卷",
+			"created": "创建于",
+			"updated": "更新于"
+		},
+		"actions": {
+			"manage": "管理"
+		},
+		"noDescription": "暂无描述",
+		"noMatch": "没有符合当前筛选条件的合集。",
+		"empty": {
+			"title": "暂无合集",
+			"description": "将相关问卷归为一个合集，便于组织和管理。"
+		},
+		"createTitle": "创建合集",
+		"editTitle": "编辑合集",
+		"namePlaceholder": "合集名称",
+		"descriptionPlaceholder": "可选描述",
+		"tags": "标签",
+		"tagPlaceholder": "输入标签后点击 + 添加",
+		"linkedSurveys": "关联的问卷",
+		"noSurveys": "暂无问卷",
+		"open": "打开",
+		"addSurveys": "添加问卷",
+		"addSurveysHint": "可多选问卷添加到合集，原有问卷不会受到影响。",
+		"searchSurveys": "搜索问卷/测评",
+		"selectedCount": "已选择（{{count}}）",
+		"collectionMissing": "合集数据不可用"
+	},
+	"survey": {
+		"title": "问卷",
+		"surveys": "问卷管理",
+		"createSurvey": "创建问卷",
+		"editSurvey": "编辑问卷",
+		"deleteSurvey": "删除问卷",
+		"surveyList": "问卷列表",
+		"surveyDetails": "问卷详情",
+		"assessmentDetails": "测评详情",
+		"noSurveys": "暂无问卷",
+		"searchSurveys": "搜索问卷...",
+		"status": {
+			"active": "已发布",
+			"draft": "草稿",
+			"closed": "已关闭"
+		},
+		"type": {
+			"survey": "调研",
+			"quiz": "测验",
+			"assessment": "测评",
+			"iq": "IQ测试"
+		}
+	},
+	"createModal": {
+		"title": "创建新问卷",
+		"cancel": "取消",
+		"creating": "创建中...",
+		"createButton": "创建问卷",
+		"basicInfo": {
+			"title": "基本信息",
+			"surveyTitle": "标题",
+			"titleRequired": "标题 *",
+			"titlePlaceholder": "请输入问卷标题",
+			"description": "描述",
+			"descriptionPlaceholder": "请描述您的问卷",
+			"type": "类型",
+			"typeRequired": "类型 *"
+		},
+		"surveyTypes": {
+			"survey": {
+				"label": "调研",
+				"description": "收集反馈和意见"
+			},
+			"quiz": {
+				"label": "测验",
+				"description": "知识测试与评分"
+			},
+			"assessment": {
+				"label": "测评",
+				"description": "专业评估工具"
+			},
+			"iq": {
+				"label": "智商测试",
+				"description": "智力评估"
+			}
+		},
+		"questionSource": {
+			"title": "题目来源",
+			"sourceType": "来源类型",
+			"manual": "手动创建（手动创建题目）",
+			"singleBank": "单一题库（随机选择）",
+			"multiBank": "多题库（配置选择）",
+			"manualSelection": "手动选择（选择特定题目）",
+			"surveyOnlyManual": "调研类型仅支持手动创建题目",
+			"questionBank": "题库",
+			"selectBank": "选择题库",
+			"questionCount": "题目数量",
+			"multiBankConfig": "多题库配置",
+			"noConfigurations": "暂未配置",
+			"configureQuestionBanks": "配置题库",
+			"totalQuestions": "总计：",
+			"questions": "道题",
+			"withFilters": "（有过滤条件）",
+			"manualSelectionConfig": "手动选题",
+			"questionsSelected": "道题已选择",
+			"selectedFromBanks": "从各个题库中选择的题目",
+			"noQuestionsSelected": "暂未选择题目",
+			"selectQuestions": "选择题目",
+			"unknownBank": "未知题库"
+		},
+		"assessmentConfig": {
+			"title": "测评配置",
+			"timeLimit": "时间限制（分钟）",
+			"timeLimitPlaceholder": "无时间限制",
+			"maxAttempts": "最大尝试次数",
+			"navigationMode": "导航模式",
+			"stepByStep": "逐步模式",
+			"paginated": "分页模式",
+			"allInOne": "一页模式",
+			"oneQuestionPerPage": "单题页面模式（类似 Typeform）",
+			"instructions": "说明",
+			"instructionsPlaceholder": "为测试者提供特别说明"
+		},
+		"scoringSettings": {
+			"title": "评分设置",
+			"scoringMode": "评分模式",
+			"percentage": "百分比",
+			"accumulated": "累计分数",
+			"passingThreshold": "通过阈值",
+			"points": "分",
+			"showScore": "向参与者显示分数",
+			"showScoreHelp": "启用时，学生完成测评后将看到最终分数。禁用时，他们只会看到完成消息。",
+			"showCorrectAnswers": "完成后显示正确答案",
+			"showScoreBreakdown": "显示分数明细",
+			"useCustomPoints": "对每道题使用自定义分数",
+			"defaultQuestionPoints": "默认题目分数"
+		}
+	},
+	"statistics": {
+		"title": "统计数据",
+		"refreshData": "刷新数据",
+		"overview": "概览",
+		"totalResponses": "总回复数",
+		"completionRate": "完成率",
+		"totalQuestions": "总题目数",
+		"individualResponses": "个人回复",
+		"aggregatedResults": "汇总结果",
+		"noResponseData": "暂无回复数据",
+		"noStatisticsData": "暂无统计数据，点击\"刷新数据\"按钮加载",
+		"score": "成绩",
+		"points": "分",
+		"pass": "通过",
+		"fail": "未通过",
+		"correct": "正确",
+		"incorrect": "错误",
+		"timeUsed": "用时",
+		"minutes": "分钟",
+		"seconds": "秒",
+		"autoSubmitted": "自动提交"
+	},
+	"invitations": {
+		"title": "已邀请用户",
+		"inviteUsers": "📧 邀请用户测评",
+		"invitedUsersList": "已邀请用户列表",
+		"searchEmail": "搜索邮箱",
+		"invitationTime": "邀请时间",
+		"validUntil": "有效期",
+		"permanent": "永久",
+		"copyLink": "复制链接",
+		"noInvitations": "暂无邀请",
+		"status": {
+			"completed": "已完成",
+			"expired": "已过期",
+			"notFilled": "未填写"
+		}
+	},
+	"urls": {
+		"classicSurveyUrl": "经典版 Survey URL",
+		"enhancedAssessmentUrl": "增强版测评 URL",
+		"copyUrl": "复制链接",
+		"showQr": "显示二维码",
+		"hideQr": "隐藏二维码"
+	},
+	"questionBanks": {
+		"title": "题库",
+		"createButton": "创建题库",
+		"empty": {
+			"title": "暂无题库",
+			"description": "创建你的第一个题库开始使用。"
+		},
+		"viewDetails": "查看详情",
+		"delete": "删除",
+		"backToList": "返回列表",
+		"detailTitle": "题库详情",
+		"edit": "编辑题库",
+		"questions": "题目",
+		"importCsv": "导入 CSV",
+		"addQuestion": "新增题目",
+		"meta": {
+			"questions": "题",
+			"questionsCount": "题目数",
+			"created": "创建于",
+			"pointsAbbr": "分"
+		},
+		"questionIllustration": "题目说明图",
+		"options": "选项",
+		"optionAlt": "选项 {{number}}",
+		"noQuestions": "暂无题目。",
+		"editTitleWithName": "编辑题库：{{name}}",
+		"nameRequired": "题库名称 *",
+		"namePlaceholder": "请输入题库名称",
+		"description": "描述",
+		"descriptionPlaceholder": "请输入描述",
+		"updating": "更新中...",
+		"update": "更新题库",
+		"hint": {
+			"singleChoice": "单选题：只能选择一个正确答案",
+			"multipleChoice": "多选题：可选择多个正确答案",
+			"shortText": "简答题：填写文本回答",
+			"selectSingle": "点击选择单个正确答案",
+			"selectMultiple": "勾选多个选项作为正确答案"
+		}
+	}
+}

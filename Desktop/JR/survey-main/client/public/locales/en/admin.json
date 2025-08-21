@@ -1,0 +1,246 @@
+{
+	"dashboard": {
+		"title": "{{companyName}} Admin Dashboard",
+		"subtitle": "Manage your surveys, assessments and view responses"
+	},
+	"collections": {
+		"title": "Collections",
+		"createButton": "Create Collection",
+		"intro": "Organize related surveys into reusable groups for better management and quick access.",
+		"info": "Organize related surveys into reusable groups for better management and quick access.",
+		"searchPlaceholder": "Search by name or description...",
+		"sort": {
+			"newest": "Newest",
+			"lastActivity": "Last activity",
+			"az": "A–Z"
+		},
+		"meta": {
+			"surveys": "surveys",
+			"created": "Created",
+			"updated": "Updated"
+		},
+		"actions": {
+			"manage": "Manage"
+		},
+		"noDescription": "No description",
+		"noMatch": "No collections match current filters.",
+		"empty": {
+			"title": "No collections yet",
+			"description": "Group related surveys into collections to organize your workspace."
+		},
+		"createTitle": "Create Collection",
+		"editTitle": "Edit Collection",
+		"namePlaceholder": "Collection name",
+		"descriptionPlaceholder": "Optional description",
+		"tags": "Tags",
+		"tagPlaceholder": "Add a tag and press +",
+		"linkedSurveys": "Linked Surveys",
+		"noSurveys": "No surveys found",
+		"open": "Open",
+		"addSurveys": "Add Surveys",
+		"addSurveysHint": "Select multiple surveys to add to this collection. Your surveys will not be affected.",
+		"searchSurveys": "Search surveys/assessments",
+		"selectedCount": "Selected ({{count}})",
+		"collectionMissing": "Collection data is unavailable"
+	},
+	"survey": {
+		"title": "Survey",
+		"surveys": "Surveys",
+		"createSurvey": "Create Survey",
+		"editSurvey": "Edit Survey",
+		"deleteSurvey": "Delete Survey",
+		"surveyList": "Survey List",
+		"surveyDetails": "Survey Details",
+		"assessmentDetails": "Assessment Details",
+		"noSurveys": "No surveys found",
+		"searchSurveys": "Search surveys...",
+		"status": {
+			"active": "Active",
+			"draft": "Draft",
+			"closed": "Closed"
+		},
+		"type": {
+			"survey": "Survey",
+			"quiz": "Quiz",
+			"assessment": "Assessment",
+			"iq": "IQ Test"
+		}
+	},
+	"createModal": {
+		"title": "Create New Survey",
+		"cancel": "Cancel",
+		"creating": "Creating...",
+		"createButton": "Create Survey",
+		"basicInfo": {
+			"title": "Basic Information",
+			"surveyTitle": "Title",
+			"titleRequired": "Title *",
+			"titlePlaceholder": "Enter survey title",
+			"description": "Description",
+			"descriptionPlaceholder": "Describe your survey",
+			"type": "Type",
+			"typeRequired": "Type *"
+		},
+		"surveyTypes": {
+			"survey": {
+				"label": "Survey",
+				"description": "Collect feedback and opinions"
+			},
+			"quiz": {
+				"label": "Quiz",
+				"description": "Test knowledge with scoring"
+			},
+			"assessment": {
+				"label": "Assessment",
+				"description": "Professional evaluation tool"
+			},
+			"iq": {
+				"label": "IQ Test",
+				"description": "Intelligence assessment"
+			}
+		},
+		"questionSource": {
+			"title": "Question Source",
+			"sourceType": "Source Type",
+			"manual": "Manual (Create questions manually)",
+			"singleBank": "Single Question Bank (Random selection)",
+			"multiBank": "Multiple Question Banks (Configured selection)",
+			"manualSelection": "Manual Selection (Choose specific questions)",
+			"surveyOnlyManual": "Surveys only support manual question creation",
+			"questionBank": "Question Bank",
+			"selectBank": "Select a question bank",
+			"questionCount": "Number of Questions",
+			"multiBankConfig": "Multi-Question Bank Configuration",
+			"noConfigurations": "No configurations set",
+			"configureQuestionBanks": "Configure Question Banks",
+			"totalQuestions": "Total:",
+			"questions": "questions",
+			"withFilters": "(with filters)",
+			"manualSelectionConfig": "Manual Question Selection",
+			"questionsSelected": "questions selected",
+			"selectedFromBanks": "Questions selected from various question banks",
+			"noQuestionsSelected": "No questions selected",
+			"selectQuestions": "Select Questions",
+			"unknownBank": "Unknown Bank"
+		},
+		"assessmentConfig": {
+			"title": "Assessment Configuration",
+			"timeLimit": "Time Limit (minutes)",
+			"timeLimitPlaceholder": "No time limit",
+			"maxAttempts": "Maximum Attempts",
+			"navigationMode": "Navigation Mode",
+			"stepByStep": "Step by Step",
+			"paginated": "Paginated",
+			"allInOne": "All in One",
+			"oneQuestionPerPage": "One Question Per Page (Typeform-like)",
+			"instructions": "Instructions",
+			"instructionsPlaceholder": "Special instructions for test takers"
+		},
+		"scoringSettings": {
+			"title": "Scoring Settings",
+			"showScore": "Show score to participants",
+			"showScoreHelp": "When enabled, students will see their final score after completing the assessment. When disabled, they will only see a completion message.",
+			"showCorrectAnswers": "Show correct answers after completion",
+			"showScoreBreakdown": "Show score breakdown"
+		}
+	},
+	"scoringSettings": {
+		"title": "Scoring Settings",
+		"scoringMode": "Scoring Mode",
+		"percentage": "Percentage",
+		"accumulated": "Accumulated Points",
+		"passingThreshold": "Passing Threshold",
+		"points": "points",
+		"showScore": "Show score to participants",
+		"showScoreHelp": "When enabled, students will see their final score after completing the assessment. When disabled, they will only see a completion message.",
+		"showCorrectAnswers": "Show correct answers after completion",
+		"showScoreBreakdown": "Show score breakdown",
+		"useCustomPoints": "Use custom points per question",
+		"defaultQuestionPoints": "Default Question Points"
+	},
+	"statistics": {
+		"title": "Statistics",
+		"refreshData": "Refresh Data",
+		"overview": "Overview",
+		"totalResponses": "Total Responses",
+		"completionRate": "Completion Rate",
+		"totalQuestions": "Total Questions",
+		"individualResponses": "Individual Responses",
+		"aggregatedResults": "Aggregated Results",
+		"noResponseData": "No response data",
+		"noStatisticsData": "No statistics data, click \"Refresh Data\" to load",
+		"score": "Score",
+		"points": "points",
+		"pass": "Pass",
+		"fail": "Fail",
+		"correct": "Correct",
+		"incorrect": "Incorrect",
+		"timeUsed": "Time used",
+		"minutes": "minutes",
+		"seconds": "seconds",
+		"autoSubmitted": "Auto-submitted"
+	},
+	"invitations": {
+		"title": "Invited Users",
+		"inviteUsers": "📧 Invite Users for Assessment",
+		"invitedUsersList": "Invited Users List",
+		"searchEmail": "Search Email",
+		"invitationTime": "Invitation Time",
+		"validUntil": "Valid Until",
+		"permanent": "Permanent",
+		"copyLink": "Copy Link",
+		"noInvitations": "No invitations",
+		"status": {
+			"completed": "Completed",
+			"expired": "Expired",
+			"notFilled": "Not filled"
+		}
+	},
+	"urls": {
+		"classicSurveyUrl": "Classic Survey URL",
+		"enhancedAssessmentUrl": "Enhanced Assessment URL",
+		"copyUrl": "Copy URL",
+		"showQr": "Show QR",
+		"hideQr": "Hide QR"
+	},
+	"questionBanks": {
+		"title": "Question Banks",
+		"createButton": "Create Question Bank",
+		"empty": {
+			"title": "No question banks yet",
+			"description": "Create your first question bank to get started."
+		},
+		"viewDetails": "View Details",
+		"delete": "Delete",
+		"backToList": "Back to List",
+		"detailTitle": "Question Bank Detail",
+		"edit": "Edit Question Bank",
+		"questions": "Questions",
+		"importCsv": "Import CSV",
+		"addQuestion": "Add New Question",
+		"meta": {
+			"questions": "questions",
+			"questionsCount": "Questions",
+			"created": "Created",
+			"pointsAbbr": "pts"
+		},
+		"questionIllustration": "Question illustration",
+		"options": "Options",
+		"optionAlt": "Option {{number}}",
+		"noQuestions": "No questions added yet.",
+		"editTitleWithName": "Edit Question Bank: {{name}}",
+		"nameRequired": "Question Bank Name *",
+		"namePlaceholder": "Enter question bank name",
+		"description": "Description",
+		"descriptionPlaceholder": "Enter description",
+		"updating": "Updating...",
+		"update": "Update Question Bank",
+		"hint": {
+			"singleChoice": "Students can select only one correct answer",
+			"multipleChoice": "Students can select multiple correct answers",
+			"shortText": "Students can enter a text response",
+			"selectSingle": "Click to select the single correct answer",
+			"selectMultiple": "Click the checkboxes to select multiple correct answers"
+		}
+	}
+}

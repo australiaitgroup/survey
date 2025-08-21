@@ -1,0 +1,63 @@
+# Backend Dockerfile for Survey AI
+FROM node:20-alpine AS base
+
+# Build client
+FROM base AS client-builder
+WORKDIR /app
+COPY client/package*.json ./
+RUN npm ci
+COPY client/ ./
+RUN npm run build
+
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install backend dependencies
+COPY package.json package-lock.json* ./
+RUN npm ci --only=production
+
+# Production image, copy all the files and run the app
+FROM base AS runner
+WORKDIR /app
+
+# Install wget for health check
+RUN apk add --no-cache wget
+
+ENV NODE_ENV production
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 backend
+
+# Copy the backend application
+COPY --from=deps /app/node_modules ./node_modules
+COPY server.js ./
+COPY models ./models
+COPY routes ./routes
+COPY middlewares ./middlewares
+COPY schemas ./schemas
+COPY services ./services
+COPY shared ./shared
+COPY utils ./utils
+COPY controllers ./controllers
+COPY interfaces ./interfaces
+COPY config ./config
+COPY questions.json ./
+COPY package.json ./
+
+# Copy client build from client-builder stage
+COPY --from=client-builder /app/dist ./client/dist
+
+# Create uploads directory and set permissions
+RUN mkdir -p uploads uploads/images uploads/documents uploads/temp
+RUN chown -R backend:nodejs uploads
+RUN chmod -R 755 uploads
+
+USER backend
+
+EXPOSE 5050
+
+ENV PORT 5050
+
+CMD ["node", "server.js"]

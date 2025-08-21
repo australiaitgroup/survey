@@ -1,0 +1,36 @@
+{
+	"title": "第 {{number}} 题",
+	"addQuestion": "添加题目",
+	"editQuestion": "编辑题目",
+	"deleteQuestion": "删除题目",
+	"questionText": "题目内容",
+	"questionType": "题目类型",
+	"options": "选项",
+	"addOption": "添加选项",
+	"removeOption": "删除选项",
+	"correctAnswer": "正确答案",
+	"points": "分值",
+	"required": "必答",
+	"optional": "可选",
+	"types": {
+		"singleChoice": "单选题",
+		"multipleChoice": "多选题",
+		"shortText": "简答题"
+	},
+	"validation": {
+		"questionTextRequired": "题目内容不能为空",
+		"optionsRequired": "至少需要2个选项",
+		"correctAnswerRequired": "请选择正确答案"
+	},
+	"placeholders": {
+		"enterQuestionText": "请输入题目内容...",
+		"enterOptionText": "请输入选项内容...",
+		"enterShortAnswer": "请输入预期答案..."
+	},
+	"labels": {
+		"hasImage": "📷 包含图片",
+		"typeText": "类型：文本回答",
+		"expectedAnswer": "✓ 预期答案：{{answer}}",
+		"correctAnswerSelected": "✓ 已选择正确答案"
+	}
+}
