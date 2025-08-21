@@ -8,7 +8,6 @@ import api from '../../utils/axiosConfig';
 import TimeSpentChart from './TimeSpentChart';
 import DeviceChart from './DeviceChart';
 import CalendarHeatmap, { HeatmapDatum } from './CalendarHeatmap';
-import IndividualStatsPanel from './IndividualStatsPanel';
 
 type Filters = {
 	name?: string;
@@ -142,25 +141,6 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 	// Sort state
 	const [sortOrder, setSortOrder] = React.useState<'newest' | 'oldest'>('newest');
 
-	// Individual panel state
-	const [selectedResponseId, setSelectedResponseId] = React.useState<string | null>(null);
-	const selectedResponse = React.useMemo(
-		() => getSortedResponses().find((r: any) => (r as any)._id === selectedResponseId) as any,
-		[selectedResponseId, statsView, stats]
-	);
-	const selectedDetails = selectedResponseId
-		? (details as any)[selectedResponseId] || null
-		: null;
-
-	const fetchIpGeo = async (ip?: string) => {
-		if (!ip) return null;
-		try {
-			const res = await axios.get(`https://ipapi.co/${encodeURIComponent(ip)}/json/`);
-			return { city: res.data?.city, country: res.data?.country_name, org: res.data?.org };
-		} catch {
-			return null;
-		}
-	};
 
 	const toggleExpand = async (responseId: string): Promise<void> => {
 		const isOpen = expanded[responseId];
@@ -170,19 +150,7 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 			try {
 				setLoadingDetail(prev => ({ ...prev, [responseId]: true }));
 				const res = await api.get(`/admin/responses/${responseId}`);
-				let enriched = res.data as any;
-				const ip = enriched?.candidateInfo?.metadata?.ipAddress;
-				const geo = await fetchIpGeo(ip);
-				if (geo) {
-					enriched = {
-						...enriched,
-						candidateInfo: {
-							...enriched.candidateInfo,
-							metadata: { ...enriched.candidateInfo?.metadata, geo },
-						},
-					};
-				}
-				setDetails(prev => ({ ...prev, [responseId]: enriched }));
+				setDetails(prev => ({ ...prev, [responseId]: res.data }));
 			} catch {
 				// noop
 			} finally {
@@ -210,8 +178,7 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 	}
 
 	return (
-		<>
-			<div className='card'>
+		<div className='card'>
 				<div className='flex justify-between items-center mb-4'>
 					<h3 className='text-xl font-bold text-gray-800'>Statistics</h3>
 					<div className='flex gap-2'>
@@ -560,20 +527,6 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 																: 'View Result Detail'}
 														</button>
 														<button
-															className='btn-secondary btn-small'
-															onClick={async () => {
-																const responseId = (response as any)._id;
-																setSelectedResponseId(responseId);
-																// Ensure details are loaded for the selected response
-																if (!details[responseId]) {
-																	await toggleExpand(responseId);
-																}
-															}}
-															type='button'
-														>
-															Detailed Stats
-														</button>
-														<button
 															className='btn-secondary btn-small text-red-600'
 															onClick={async () => {
 																if (
@@ -796,17 +749,7 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 						)}
 					</div>
 				)}
-			</div>
-			{/* Individual Stats Panel */}
-			{selectedResponseId && selectedResponse && (
-				<IndividualStatsPanel
-					onClose={() => setSelectedResponseId(null)}
-					response={selectedResponse}
-					details={selectedDetails}
-					cohort={getSortedResponses()}
-				/>
-			)}
-		</>
+		</div>
 	);
 };
 
