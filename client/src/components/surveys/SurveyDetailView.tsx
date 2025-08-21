@@ -197,7 +197,7 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 			}, 500);
 			// Clean up the URL
 			searchParams.delete('action');
-			const newUrl = searchParams.toString() 
+			const newUrl = searchParams.toString()
 				? `${location.pathname}?${searchParams.toString()}`
 				: location.pathname;
 			window.history.replaceState({}, '', newUrl);

@@ -28,7 +28,7 @@ type ResponseSummary = {
 type Props = {
 	onClose: () => void;
 	response: ResponseSummary;
-	details: { questionDetails: QuestionDetail[] } | null;
+	details: { questionDetails: QuestionDetail[]; candidateInfo?: any } | null;
 	cohort: ResponseSummary[]; // all responses for ranking/percentile
 };
 
@@ -202,6 +202,45 @@ const IndividualStatsPanel: React.FC<Props> = ({ onClose, response, details, coh
 							</div>
 						)}
 					</div>
+
+					{/* Device Information */}
+					{details?.candidateInfo?.metadata && (
+						<div>
+							<div className='font-semibold text-gray-800 mb-2'>Device Information</div>
+							<div className='bg-gray-50 rounded p-3'>
+								<div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+									<div>
+										<div className='text-xs text-gray-500'>IP Address</div>
+										<div className='text-sm font-medium'>
+											{details.candidateInfo.metadata.ipAddress || '—'}
+										</div>
+									</div>
+									<div>
+										<div className='text-xs text-gray-500'>Device Type</div>
+										<div className='text-sm font-medium capitalize'>
+											{details.candidateInfo.metadata.deviceType || '—'}
+										</div>
+									</div>
+									{details.candidateInfo.metadata.geo && (
+										<div className='md:col-span-2'>
+											<div className='text-xs text-gray-500'>Location</div>
+											<div className='text-sm font-medium'>
+												{(details.candidateInfo.metadata.geo.city || '-') + 
+													', ' + 
+													(details.candidateInfo.metadata.geo.country || '-')}
+											</div>
+										</div>
+									)}
+									<div className='md:col-span-2'>
+										<div className='text-xs text-gray-500'>User Agent</div>
+										<div className='text-xs text-gray-700 break-all'>
+											{details.candidateInfo.metadata.userAgent || '—'}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
