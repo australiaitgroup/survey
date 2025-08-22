@@ -1,5 +1,4 @@
-// ULTIMATE Anti-cheat script - ALWAYS ACTIVE
-console.log('🚀 ULTIMATE Anti-cheat loading...');
+// ULTIMATE Anti-cheat script - CONDITIONAL LOADING
 
 (function () {
 	'use strict';
@@ -69,15 +68,15 @@ console.log('🚀 ULTIMATE Anti-cheat loading...');
 	// Check if we should activate protection based on URL
 	function shouldActivate() {
 		const path = window.location.pathname;
-		// Only activate on user survey pages, NOT admin pages
-		return path.match(/^\/survey\/[^/]+$/);
+		// Only activate on assessment pages, NOT survey or admin pages
+		return path.match(/^\/assessment\/[^/]+$/) || path.match(/^\/[^/]+\/assessment\/[^/]+$/);
 	}
 
 	// Immediate activation
 	function activate() {
 		if (!shouldActivate()) {
 			if (isActive) {
-				console.log('🛡️ Anti-cheat deactivated (not on survey page)');
+				console.log('🛡️ Anti-cheat deactivated (not on assessment page)');
 				deactivate();
 			}
 			return;
@@ -86,7 +85,8 @@ console.log('🚀 ULTIMATE Anti-cheat loading...');
 		if (isActive) return; // Already active
 
 		isActive = true;
-		console.log('🛡️ Anti-cheat activated for survey page');
+		console.log('🚀 ULTIMATE Anti-cheat loading...');
+		console.log('🛡️ Anti-cheat activated for assessment page');
 
 		// Add universal event listener to EVERYTHING
 		const events = [
@@ -146,6 +146,7 @@ console.log('🚀 ULTIMATE Anti-cheat loading...');
 		}
 
 		showStatus();
+		console.log('✅ ULTIMATE Anti-cheat loaded and ACTIVE');
 	}
 
 	// Deactivate protection
@@ -177,4 +178,4 @@ console.log('🚀 ULTIMATE Anti-cheat loading...');
 	setInterval(checkAndActivate, 3000);
 })();
 
-console.log('✅ ULTIMATE Anti-cheat loaded and ACTIVE');
+// Only log when actually needed - moved to activate() function
