@@ -5,6 +5,7 @@ import { useSurveys } from '../hooks/useSurveys';
 import api from '../utils/axiosConfig';
 import AdminNavbar from './layout/AdminNavbar';
 import AdminHeader from './layout/AdminHeader';
+import AdminFooter from './layout/AdminFooter';
 import NavigationTabs from './navigation/NavigationTabs';
 import SurveyListView from './surveys/SurveyListView';
 import SurveyDetailView from './surveys/SurveyDetailView';
@@ -179,12 +180,12 @@ const AdminDashboard: React.FC = () => {
 	const isCandidateDetailRoute = location.pathname.includes('/candidate/');
 
 	return (
-		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100'>
+		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col'>
 			{/* Top Navigation */}
 			<AdminNavbar />
 
-			{/* Main Content */}
-			<div className='w-full mx-auto px-4 pt-8' style={{ maxWidth: '1440px' }}>
+			{/* Main Content - flex-1 makes it take remaining space */}
+			<div className='flex-1 w-full mx-auto px-4 pt-8' style={{ maxWidth: '1440px' }}>
 				{!isCandidateDetailRoute && <AdminHeader />}
 				{!isCandidateDetailRoute && <NavigationTabs />}
 				{renderContent()}
@@ -196,6 +197,9 @@ const AdminDashboard: React.FC = () => {
 				<QuestionBankModal />
 				<EditQuestionBankModal />
 			</div>
+			
+			{/* Footer - stays at bottom */}
+			<AdminFooter />
 		</div>
 	);
 };
