@@ -7,12 +7,13 @@ type Bin = {
 };
 
 const DEFAULT_BINS: Bin[] = [
-	{ label: '<30s', min: 0, max: 30 },
-	{ label: '30–60s', min: 30, max: 60 },
-	{ label: '1–2m', min: 60, max: 120 },
-	{ label: '2–5m', min: 120, max: 300 },
+	{ label: '<1m', min: 0, max: 60 },
+	{ label: '1–3m', min: 60, max: 180 },
+	{ label: '3–5m', min: 180, max: 300 },
 	{ label: '5–10m', min: 300, max: 600 },
-	{ label: '10m+', min: 600, max: Infinity },
+	{ label: '10–20m', min: 600, max: 1200 },
+	{ label: '20–30m', min: 1200, max: 1800 },
+	{ label: '30m+', min: 1800, max: Infinity },
 ];
 
 export interface TimeSpentChartProps {
@@ -42,7 +43,7 @@ const TimeSpentChart: React.FC<TimeSpentChartProps> = ({
 
 	return (
 		<div className='w-full'>
-			<div className='flex items-end gap-2 h-40 sm:h-48 md:h-56'>
+			<div className='flex items-end gap-1 h-40 sm:h-48 md:h-56'>
 				{counts.map((count, i) => {
 					const hPct = (count / maxCount) * 100;
 					return (
@@ -56,8 +57,8 @@ const TimeSpentChart: React.FC<TimeSpentChartProps> = ({
 							>
 								<div className='w-full h-full bg-blue-500 rounded-t-md transition-all' />
 							</div>
-							<div className='mt-1 text-xs text-gray-600'>{count}</div>
-							<div className='mt-0.5 text-xs text-gray-700 text-center'>
+							<div className='mt-1 text-xs text-gray-600 font-medium'>{count}</div>
+							<div className='mt-0.5 text-xs text-gray-700 text-center leading-tight'>
 								{bins[i].label}
 							</div>
 						</div>

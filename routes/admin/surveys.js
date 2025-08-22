@@ -170,6 +170,8 @@ router.put(
 			showCorrectAnswers,
 			showScoreBreakdown,
 			customScoringRules,
+			multipleChoiceScoring,
+			includeShortTextInScore,
 		} = req.body;
 
 		// Validate scoring mode
@@ -201,24 +203,160 @@ router.put(
 			});
 		}
 
+		// Initialize default scoring settings if not present
+		const currentScoringSettings = survey.scoringSettings || {};
+		
 		// Update scoring settings
 		const updatedScoringSettings = {
-			...survey.scoringSettings,
+			...currentScoringSettings,
 			...(scoringMode && { scoringMode }),
 			...(passingThreshold !== undefined && { passingThreshold }),
 			...(showScore !== undefined && { showScore }),
 			...(showCorrectAnswers !== undefined && { showCorrectAnswers }),
 			...(showScoreBreakdown !== undefined && { showScoreBreakdown }),
-			...(customScoringRules && {
-				customScoringRules: {
-					...survey.scoringSettings.customScoringRules,
-					...customScoringRules,
-				},
-			}),
+			...(includeShortTextInScore !== undefined && { includeShortTextInScore }),
 		};
+
+		// Handle nested objects properly
+		if (customScoringRules) {
+			updatedScoringSettings.customScoringRules = {
+				...(currentScoringSettings.customScoringRules || {}),
+				...customScoringRules,
+			};
+		}
+
+		if (multipleChoiceScoring) {
+			updatedScoringSettings.multipleChoiceScoring = {
+				...(currentScoringSettings.multipleChoiceScoring || {}),
+				...multipleChoiceScoring,
+			};
+		}
 
 		survey.scoringSettings = updatedScoringSettings;
 		await survey.save();
+
+		// Recalculate scores for existing responses if scoring settings changed
+		console.log('=== SCORING SETTINGS UPDATE ===');
+		console.log('Survey ID:', id);
+		console.log('New includeShortTextInScore:', updatedScoringSettings.includeShortTextInScore);
+		
+		try {
+			const Response = require('./shared/models').Response;
+			const existingResponses = await Response.find({ surveyId: id });
+			
+			for (const response of existingResponses) {
+				// Skip incomplete responses that have no valid data
+				const hasAnswers = response.answers && (
+					(response.answers instanceof Map && response.answers.size > 0) ||
+					(typeof response.answers === 'object' && Object.keys(response.answers).length > 0)
+				);
+				const hasSnapshots = response.questionSnapshots && response.questionSnapshots.length > 0;
+				
+				if (!hasAnswers && !hasSnapshots) {
+					console.log(`Skipping incomplete response ${response._id}`);
+					continue;
+				}
+				
+				if (response.questionSnapshots && response.questionSnapshots.length > 0) {
+					// Recalculate score based on new settings
+					const { includeShortTextInScore: newIncludeShortText = false, multipleChoiceScoring: newMultipleChoiceScoring = {} } = updatedScoringSettings;
+					const { enablePartialScoring = false, partialScoringMode = 'proportional' } = newMultipleChoiceScoring;
+					
+					// Recalculate scoring for each question snapshot
+					response.questionSnapshots.forEach(snapshot => {
+						const question = snapshot.questionData;
+						const userAnswer = snapshot.userAnswer;
+						
+						// Reset scoring
+						let isCorrect = false;
+						let pointsAwarded = 0;
+						const maxPoints = question.points || 1;
+						
+						// Skip scoring for short_text if not included in score
+						const shouldScore = question.type !== 'short_text' || newIncludeShortText;
+						
+						if (shouldScore && question.correctAnswer !== undefined && userAnswer !== undefined) {
+							if (question.type === 'single_choice') {
+								const options = Array.isArray(question.options) ? question.options : [];
+								const userOptionIndex = options.findIndex(opt =>
+									typeof opt === 'string' ? opt === userAnswer : opt?.text === userAnswer
+								);
+								isCorrect = userOptionIndex === question.correctAnswer;
+							} else if (question.type === 'multiple_choice' && Array.isArray(userAnswer) && Array.isArray(question.correctAnswer)) {
+								const options = Array.isArray(question.options) ? question.options : [];
+								const userOptionIndices = userAnswer
+									.map(ans => options.findIndex(opt => typeof opt === 'string' ? opt === ans : opt?.text === ans))
+									.filter(idx => idx !== -1);
+								const correctIndices = question.correctAnswer;
+								
+								if (enablePartialScoring && partialScoringMode === 'proportional') {
+									const correctSelections = userOptionIndices.filter(idx => correctIndices.includes(idx));
+									const incorrectSelections = userOptionIndices.filter(idx => !correctIndices.includes(idx));
+									const correctRatio = correctSelections.length / correctIndices.length;
+									const incorrectPenalty = incorrectSelections.length > 0 ? 0.1 * incorrectSelections.length : 0;
+									const proportionalScore = Math.max(0, correctRatio - incorrectPenalty);
+									pointsAwarded = Math.round(proportionalScore * maxPoints * 100) / 100;
+									isCorrect = correctRatio >= 0.5 && incorrectSelections.length === 0;
+								} else {
+									isCorrect = userOptionIndices.length === correctIndices.length && userOptionIndices.every(idx => correctIndices.includes(idx));
+								}
+							} else if (question.type === 'short_text') {
+								isCorrect = String(userAnswer).trim() === String(question.correctAnswer).trim();
+							}
+							
+							// For non-partial scoring or when fully correct
+							if (!enablePartialScoring || question.type !== 'multiple_choice') {
+								if (isCorrect) {
+									pointsAwarded = maxPoints;
+								}
+							}
+						}
+						
+						// Update snapshot scoring
+						snapshot.scoring = {
+							isCorrect,
+							pointsAwarded,
+							maxPoints: shouldScore ? maxPoints : 0,
+						};
+					});
+					
+					// Recalculate total score
+					const scorableQuestions = response.questionSnapshots.filter(q => q.scoring.maxPoints > 0);
+					const totalPoints = response.questionSnapshots.reduce((sum, q) => sum + q.scoring.pointsAwarded, 0);
+					const maxPossiblePoints = response.questionSnapshots.reduce((sum, q) => sum + q.scoring.maxPoints, 0);
+					const correctAnswers = scorableQuestions.filter(q => q.scoring.isCorrect).length;
+					const wrongAnswers = scorableQuestions.length - correctAnswers;
+					const percentage = maxPossiblePoints > 0 ? Math.round((totalPoints / maxPossiblePoints) * 100) : 0;
+					
+					// Update response score
+					response.score = {
+						totalPoints,
+						correctAnswers,
+						wrongAnswers,
+						percentage,
+						passed: percentage >= (survey.passingThreshold || 70),
+						scoringMode: 'percentage',
+						maxPossiblePoints,
+						displayScore: percentage,
+						scoringDetails: {
+							questionScores: response.questionSnapshots.map(q => ({
+								questionIndex: q.questionIndex,
+								pointsAwarded: q.scoring.pointsAwarded,
+								maxPoints: q.scoring.maxPoints,
+								isCorrect: q.scoring.isCorrect,
+							})),
+						},
+					};
+					
+					await response.save();
+				}
+			}
+			
+			console.log(`Recalculated scores for ${existingResponses.length} responses based on new scoring settings`);
+		} catch (recalcError) {
+			console.error('Error recalculating response scores:', recalcError);
+			// Don't fail the main request if recalculation fails
+		}
 
 		res.json(survey);
 	})
