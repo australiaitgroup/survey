@@ -139,14 +139,14 @@ echo ""
 echo -e "${YELLOW}🔄 步骤 5: 重启后端服务...${NC}"
 ssh -o StrictHostKeyChecking=no $TARGET_SERVER "
     cd $TARGET_PATH
-    
+
     echo '当前进程:'
     ps aux | grep -E 'node.*server' | grep -v grep || echo '未找到运行中的 Node 进程'
     echo ''
-    
+
     # 设置环境变量并重启
     export NODE_ENV=production
-    
+
     echo '尝试重启服务...'
     if sudo systemctl restart survey-backend 2>/dev/null; then
         echo '✅ 使用 systemctl 重启成功'
@@ -155,12 +155,12 @@ ssh -o StrictHostKeyChecking=no $TARGET_SERVER "
         # 停止现有进程
         sudo pkill -f 'node.*server.js' || true
         sleep 3
-        
+
         # 启动新进程
         echo '启动新的 Node 进程...'
         nohup node server.js > server.log 2>&1 &
         sleep 2
-        
+
         # 检查进程是否启动成功
         if pgrep -f 'node.*server.js' > /dev/null; then
             echo '✅ 手动重启成功'

@@ -77,7 +77,7 @@ ssh -o StrictHostKeyChecking=no $TARGET_SERVER "
         echo '❌ 后端目录不存在: $TARGET_PATH'
         exit 1
     fi
-    
+
     mkdir -p $TARGET_PATH/super-admin/dist
     mkdir -p $TARGET_PATH/super-admin/public
     echo '✅ Super Admin 目录已创建'
@@ -122,7 +122,7 @@ ssh -o StrictHostKeyChecking=no $TARGET_SERVER "
     echo '当前目录内容:'
     ls -la
     echo ''
-    
+
     # 尝试重启服务
     if sudo systemctl restart survey-backend 2>/dev/null; then
         echo '✅ 使用 systemctl 重启服务成功'

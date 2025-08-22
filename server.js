@@ -94,12 +94,12 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 if (process.env.NODE_ENV === 'production') {
 	// Serve Super Admin static files first (JS, CSS, etc)
 	app.use('/super-admin', express.static(path.join(__dirname, 'super-admin', 'dist')));
-	
+
 	// Handle all Super Admin routes - return the SPA index.html for client-side routing
 	app.get('/super-admin/*', (req, res) => {
 		res.sendFile(path.join(__dirname, 'super-admin', 'dist', 'index.html'));
 	});
-	
+
 	// Handle root super-admin path
 	app.get('/super-admin', (req, res) => {
 		res.sendFile(path.join(__dirname, 'super-admin', 'dist', 'index.html'));

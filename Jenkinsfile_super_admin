@@ -4,11 +4,11 @@ pipeline {
     environment {
         // Application configuration
         APP_NAME = 'survey-super-admin'
-        
+
         // S3 Configuration - Deploy only to UAT bucket
         S3_BUCKET_NAME = 'uat-sigma.jiangren.com.au'
         AWS_REGION = 'ap-southeast-2'
-        
+
         // Super Admin specific configuration
         SUPER_ADMIN_PATH = 'super-admin'
     }
@@ -28,7 +28,7 @@ pipeline {
                     sh '''
                         echo "🌐 Configuring static website hosting for SPA support..."
                         aws s3 website s3://${S3_BUCKET_NAME}/ --index-document index.html --error-document index.html --region ${AWS_REGION}
-                        
+
                         echo "✅ S3 website configuration completed"
                         echo "📄 Website endpoint: http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/super-admin"
                     '''
@@ -44,11 +44,11 @@ pipeline {
                         # Check environment
                         echo "Node.js version: $(node --version)"
                         echo "NPM version: $(npm --version)"
-                        
+
                         # Clean install to ensure consistency
                         rm -rf node_modules package-lock.json
                         npm install
-                        
+
                         echo "✅ Dependencies installed successfully"
                     '''
                 }
@@ -126,15 +126,15 @@ pipeline {
 
                     sh '''
                         echo "🔍 Running health check for Super Admin..."
-                        
+
                         # Check S3 website endpoint
                         S3_ENDPOINT="http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/${SUPER_ADMIN_PATH}/"
                         echo "S3 endpoint: ${S3_ENDPOINT}"
-                        
+
                         # Check domain endpoint
                         DOMAIN_ENDPOINT="https://uat-sigma.jiangren.com.au/${SUPER_ADMIN_PATH}/"
                         echo "Domain endpoint: ${DOMAIN_ENDPOINT}"
-                        
+
                         echo "✅ Health check completed"
                         echo "🎯 Super Admin is accessible at the domain endpoint"
                     '''
