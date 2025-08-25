@@ -36,6 +36,10 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 	const { addQuestionBankQuestion, deleteQuestionBankQuestion, updateQuestionBankQuestion } =
 		useQuestionBanks();
 
+	// Pagination state
+	const [currentPage, setCurrentPage] = useState(1);
+	const pageSize = 10;
+
 	// Local state for add question modal
 	const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
 	// Local state for edit question modal
@@ -70,6 +74,20 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 		correctAnswer: undefined,
 		points: 1,
 	};
+
+	// Derived pagination values
+	const totalQuestions = qb.questions?.length || 0;
+	const totalPages = Math.max(1, Math.ceil(totalQuestions / pageSize));
+	const startIndex = (currentPage - 1) * pageSize;
+	const endIndex = startIndex + pageSize;
+	const currentQuestions = (qb.questions || []).slice(startIndex, endIndex);
+
+	// Ensure current page stays in bounds when question list changes
+	React.useEffect(() => {
+		if (currentPage > totalPages) {
+			setCurrentPage(1);
+		}
+	}, [totalPages]);
 
 	const handleQuestionBankBackToList = () => {
 		setSelectedQuestionBankDetail(null);
@@ -323,6 +341,8 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 			if (response.ok) {
 				// Update the question bank data
 				if (data.questionBank) {
+					// Reset pagination and refresh data
+					setCurrentPage(1);
 					// Trigger a refresh of the question bank data
 					window.location.reload();
 				}
@@ -333,6 +353,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 					imported: data.imported,
 					warnings: data.warnings,
 				});
+				setCurrentPage(1); // Reset page to 1 on successful import
 			} else {
 				setImportResult({
 					success: false,
@@ -444,44 +465,46 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 					<div className='pt-4 mt-4'>
 						{qb.questions && qb.questions.length > 0 ? (
 							<div className='space-y-4'>
-								{qb.questions.map((q, idx) => (
-									<div key={idx} className='bg-gray-50 rounded-lg p-4'>
-										<div className='flex justify-between items-start mb-2'>
-											<div className='flex-1'>
-												<div className='mb-1'>
-													<span className='font-medium text-gray-800'>
-														{idx + 1}. {q.text}
-													</span>
-												</div>
-												<div className='flex items-center gap-2 flex-wrap'>
-													<span className='text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded'>
-														{q.type === 'multiple_choice'
-															? tq(
-																'types.multipleChoice',
-																'Multiple Choice'
-															)
-															: q.type === 'single_choice'
+								{currentQuestions.map((q, idx) => {
+									const globalIndex = startIndex + idx;
+									return (
+										<div key={globalIndex} className='bg-gray-50 rounded-lg p-4'>
+											<div className='flex justify-between items-start mb-2'>
+												<div className='flex-1'>
+													<div className='mb-1'>
+														<span className='font-medium text-gray-800'>
+															{globalIndex + 1}. {q.text}
+														</span>
+													</div>
+													<div className='flex items-center gap-2 flex-wrap'>
+														<span className='text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded'>
+															{q.type === 'multiple_choice'
 																? tq(
-																	'types.singleChoice',
-																	'Single Choice'
+																	'types.multipleChoice',
+																	'Multiple Choice'
 																)
-																: tq(
-																	'types.shortText',
-																	'Short Text'
-																)}
-													</span>
-													<span className='text-xs bg-green-100 text-green-800 px-2 py-1 rounded'>
-														{q.points || 1}{' '}
-														{t('questionBanks.meta.pointsAbbr', 'pts')}
-													</span>
-													{q.difficulty && (
-														<span
-															className={`text-xs px-2 py-1 rounded ${
-																q.difficulty === 'easy'
-																	? 'bg-green-100 text-green-800'
-																	: q.difficulty === 'medium'
-																		? 'bg-yellow-100 text-yellow-800'
-																		: 'bg-red-100 text-red-800'
+																: q.type === 'single_choice'
+																		? tq(
+																			'types.singleChoice',
+																			'Single Choice'
+																		)
+																		: tq(
+																			'types.shortText',
+																			'Short Text'
+																		)}
+														</span>
+														<span className='text-xs bg-green-100 text-green-800 px-2 py-1 rounded'>
+															{q.points || 1}{' '}
+															{t('questionBanks.meta.pointsAbbr', 'pts')}
+														</span>
+														{q.difficulty && (
+															<span
+																className={`text-xs px-2 py-1 rounded ${
+																	q.difficulty === 'easy'
+																		? 'bg-green-100 text-green-800'
+																		: q.difficulty === 'medium'
+																				? 'bg-yellow-100 text-yellow-800'
+																				: 'bg-red-100 text-red-800'
 															}`}
 														>
 															{q.difficulty}
@@ -497,87 +520,83 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 																{tag}
 															</span>
 														))}
-												</div>
-												{q.descriptionImage && (
-													<div className='mb-2'>
-														<img
-															src={q.descriptionImage}
-															alt={t(
-																'questionBanks.questionIllustration',
-																'Question illustration'
-															)}
-															className='w-32 h-32 object-cover rounded border border-gray-300'
-														/>
 													</div>
-												)}
-											</div>
-											<div className='flex items-center gap-2'>
-												<button
-													className='btn-secondary text-sm px-3 py-1'
-													onClick={() =>
-														startEditQuestionBankQuestion(qb._id, idx)
-													}
-												>
-													{t('buttons.edit', {
-														ns: 'translation',
-														defaultValue: 'Edit',
-													})}
-												</button>
-												<button
-													className='px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors'
-													onClick={() =>
-														deleteQuestionBankQuestion(qb._id, idx)
-													}
-												>
-													{t('buttons.delete', {
-														ns: 'translation',
-														defaultValue: 'Delete',
-													})}
-												</button>
-											</div>
-										</div>
-										<div className='text-sm text-gray-600 space-y-1'>
-											{q.type === 'short_text' ? (
-												<div>
-													<div className='font-medium'>
-														Type: Text Response
-													</div>
-													{q.correctAnswer &&
-														typeof q.correctAnswer === 'string' && (
-														<div className='pl-4 text-green-600 font-semibold'>
-																Expected Answer: {q.correctAnswer}
+													{q.descriptionImage && (
+														<div className='mb-2'>
+															<img
+																src={q.descriptionImage}
+																alt={t(
+																	'questionBanks.questionIllustration',
+																	'Question illustration'
+																)}
+																className='w-32 h-32 object-cover rounded border border-gray-300'
+															/>
 														</div>
 													)}
 												</div>
-											) : (
-												<div>
-													<div className='font-medium'>
-														{t('questionBanks.options', 'Options')}:
+												<div className='flex items-center gap-2'>
+													<button
+														className='btn-secondary text-sm px-3 py-1'
+														onClick={() => startEditQuestionBankQuestion(qb._id, globalIndex)}
+													>
+														{t('buttons.edit', {
+															ns: 'translation',
+															defaultValue: 'Edit',
+														})}
+													</button>
+													<button
+														className='px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors'
+														onClick={() => deleteQuestionBankQuestion(qb._id, globalIndex)}
+													>
+														{t('buttons.delete', {
+															ns: 'translation',
+															defaultValue: 'Delete',
+														})}
+													</button>
+												</div>
+											</div>
+											<div className='text-sm text-gray-600 space-y-1'>
+												{q.type === 'short_text' ? (
+													<div>
+														<div className='font-medium'>
+															Type: Text Response
+														</div>
+														{q.correctAnswer &&
+															typeof q.correctAnswer === 'string' && (
+																<div className='pl-4 text-green-600 font-semibold'>
+																	Expected Answer: {q.correctAnswer}
+																</div>
+															)}
 													</div>
-													{q.options &&
-														q.options.map((opt, optIdx) => {
-															const optionText =
-																typeof opt === 'string'
-																	? opt
-																	: opt.text || '';
-															const optionImageUrl =
-																typeof opt === 'object'
-																	? opt.imageUrl
-																	: undefined;
-															const isCorrect = Array.isArray(
-																q.correctAnswer
-															)
-																? q.correctAnswer.includes(optIdx)
-																: q.correctAnswer === optIdx;
-															return (
-																<div
-																	key={optIdx}
-																	className={`flex items-start gap-2 pl-4 ${
-																		isCorrect
-																			? 'text-green-600 font-semibold'
-																			: ''
-																	}`}
-																>
+												) : (
+													<div>
+														<div className='font-medium'>
+															{t('questionBanks.options', 'Options')}:
+														</div>
+														{q.options &&
+															q.options.map((opt, optIdx) => {
+																const optionText =
+																	typeof opt === 'string'
+																		? opt
+																		: opt.text || '';
+																const optionImageUrl =
+																	typeof opt === 'object'
+																		? opt.imageUrl
+																		: undefined;
+																const isCorrect = Array.isArray(
+																	q.correctAnswer
+																)
+																	? q.correctAnswer.includes(optIdx)
+																	: q.correctAnswer === optIdx;
+																return (
+																	<div
+																		key={optIdx}
+																		className={`flex items-start gap-2 pl-4 ${
+																			isCorrect
+																				? 'text-green-600 font-semibold'
+																				: ''
+																		}`}
+																	>
 																	{isCorrect && (
 																		<svg
 																			className='w-4 h-4 mt-0.5'
@@ -596,16 +615,12 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 																		{optionImageUrl && (
 																			<div className='mt-1'>
 																				<img
-																					src={
-																						optionImageUrl
-																					}
+																					src={optionImageUrl}
 																					alt={t(
 																						'questionBanks.optionAlt',
 																						'Option {{number}}',
 																						{
-																							number:
-																								optIdx +
-																								1,
+																							number: optIdx + 1,
 																						}
 																					)}
 																					className='w-16 h-16 object-cover rounded border border-gray-300'
@@ -616,30 +631,62 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 																</div>
 															);
 														})}
-												</div>
-											)}
-											{q.explanation && (
-												<div className='mt-3 p-3 bg-blue-50 border-l-4 border-blue-200 rounded'>
-													<div className='font-medium text-blue-800 text-sm'>
-														{t(
-															'questionBanks.explanation',
-															'Explanation'
-														)}
-														:
 													</div>
-													<div className='text-blue-700 text-sm mt-1'>
-														{q.explanation}
-													</div>
+												)}
+												{q.explanation && (
+														<div className='mt-3 p-3 bg-blue-50 border-l-4 border-blue-200 rounded'>
+															<div className='font-medium text-blue-800 text-sm'>
+																{t(
+																	'questionBanks.explanation',
+																	'Explanation'
+																)}
+																:
+															</div>
+															<div className='text-blue-700 text-sm mt-1'>
+																{q.explanation}
+															</div>
+														</div>
+													)}
 												</div>
-											)}
-										</div>
-									</div>
-								))}
+											</div>
+										);
+									})}
 							</div>
 						) : (
 							<p className='text-gray-500 text-sm'>
 								{t('questionBanks.noQuestions', 'No questions added yet.')}
 							</p>
+						)}
+						{totalPages > 1 && (
+							<div className='mt-6 flex items-center justify-center gap-2'>
+								<button
+									className='px-3 py-1 text-sm rounded border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed'
+									onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+									disabled={currentPage === 1}
+								>
+									{t('pagination.previous', 'Previous')}
+								</button>
+								{Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+									<button
+										key={page}
+										className={`px-3 py-1 text-sm rounded border ${
+											page === currentPage
+												? 'border-blue-600 text-white bg-blue-600'
+												: 'border-gray-300 text-gray-700 hover:bg-gray-100'
+										}`}
+										onClick={() => setCurrentPage(page)}
+									>
+										{page}
+									</button>
+								))}
+								<button
+									className='px-3 py-1 text-sm rounded border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed'
+									onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+									disabled={currentPage === totalPages}
+								>
+									{t('pagination.next', 'Next')}
+								</button>
+							</div>
 						)}
 					</div>
 				</div>
