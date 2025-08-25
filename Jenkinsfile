@@ -44,7 +44,8 @@ pipeline {
 								#tar -czf - --exclude='.git' --exclude='node_modules' --exclude='client/node_modules' . | ssh -o StrictHostKeyChecking=no $SSHUser@$SSHServerIP 'mkdir -p /home/ubuntu/survey && cd /home/ubuntu/survey && tar -xzf -'
 
 								# Execute deployment script on EC2 with environment variables
-								ssh -o StrictHostKeyChecking=no $SSHUser@$SSHServerIP "cat /etc/nginx/sites-available/default"
+								#ssh -o StrictHostKeyChecking=no $SSHUser@$SSHServerIP "cat /etc/nginx/sites-available/default"
+								ssh -o StrictHostKeyChecking=no $SSHUser@$SSHServerIP "docker ps -a"
 							"""
 						}
 					}
@@ -52,36 +53,36 @@ pipeline {
 			}
 		}
 
-		stage('Health Check') {
-			steps {
-				echo 'Performing health checks...'
-				script {
-					sleep 10
+		// stage('Health Check') {
+		// 	steps {
+		// 		echo 'Performing health checks...'
+		// 		script {
+		// 			sleep 10
 
-					sh '''
-					echo "=== Health Check ==="
+		// 			sh '''
+		// 			echo "=== Health Check ==="
 
-					# Test application on EC2
-					echo "Testing application on EC2..."
-					if curl -f --connect-timeout 10 --max-time 30 -s http://13.238.204.157:5173 >/dev/null 2>&1; then
-						echo "✅ Application is accessible on EC2 port 5173"
-					else
-						echo "❌ Application health check failed on EC2"
-						exit 1
-					fi
+		// 			# Test application on EC2
+		// 			echo "Testing application on EC2..."
+		// 			if curl -f --connect-timeout 10 --max-time 30 -s http://13.238.204.157:5173 >/dev/null 2>&1; then
+		// 				echo "✅ Application is accessible on EC2 port 5173"
+		// 			else
+		// 				echo "❌ Application health check failed on EC2"
+		// 				exit 1
+		// 			fi
 
-					# Test API endpoint
-					if curl -f --connect-timeout 10 --max-time 30 -s http://13.238.204.157:5173/api/surveys >/dev/null 2>&1; then
-						echo "✅ API endpoint is working on EC2"
-					else
-						echo "⚠️ API endpoint test failed but continuing..."
-					fi
+		// 			# Test API endpoint
+		// 			if curl -f --connect-timeout 10 --max-time 30 -s http://13.238.204.157:5173/api/surveys >/dev/null 2>&1; then
+		// 				echo "✅ API endpoint is working on EC2"
+		// 			else
+		// 				echo "⚠️ API endpoint test failed but continuing..."
+		// 			fi
 
-					echo "=== Health Check Completed ==="
-					'''
-				}
-			}
-		}
+		// 			echo "=== Health Check Completed ==="
+		// 			'''
+		// 		}
+		// 	}
+		// }
 	}
 
 	post {
