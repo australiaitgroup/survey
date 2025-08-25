@@ -72,8 +72,8 @@ const TakeAssessment: React.FC = () => {
 	const timerRef = useRef<NodeJS.Timeout | null>(null);
 	const autoSubmitRef = useRef(false);
 
-	// Enable anti-cheating measures for assessments
-	const antiCheatEnabled = survey?.type === 'assessment' || survey?.type === 'live_quiz';
+	// Enable anti-cheating measures based on survey settings
+	const antiCheatEnabled = survey?.securitySettings?.antiCheatEnabled || false;
 
 	// Helper to check if survey questions come from any bank-based source
 	const isBankBasedSource = (sourceType: SourceType | undefined) =>

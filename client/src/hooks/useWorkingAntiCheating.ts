@@ -9,32 +9,14 @@ export const useWorkingAntiCheating = (enabled: boolean = true) => {
 
 		console.log('🚀 Working Anti-cheating enabled');
 
-		// Show status indicator
-		const statusDiv = document.createElement('div');
-		statusDiv.style.cssText = `
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      background: #16a34a;
-      color: white;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      z-index: 10000;
-      font-family: monospace;
-    `;
-		statusDiv.textContent = '🛡️ Anti-Cheat Active';
-		document.body.appendChild(statusDiv);
+		// Anti-cheat now runs silently without UI indicators
 
-		// Comprehensive event blocking
+		// Comprehensive event blocking - silent
 		const blockEvent = (e: Event, message: string) => {
 			console.log(`🚫 Blocked: ${e.type}`);
 			e.preventDefault();
 			e.stopPropagation();
 			e.stopImmediatePropagation();
-
-			// Show alert
-			setTimeout(() => alert(message), 10);
 			return false;
 		};
 
@@ -70,8 +52,14 @@ export const useWorkingAntiCheating = (enabled: boolean = true) => {
 			return blockEvent(e, `禁止${e.type}操作！`);
 		};
 
-		// Selection handler
+		// Selection handler - allow input fields
 		const selectHandler = (e: Event) => {
+			const target = e.target as HTMLElement;
+			// Allow selection and mouse events in input fields
+			if (target && target.tagName.match(/^(INPUT|TEXTAREA)$/)) {
+				console.log('✅ Selection allowed in input field');
+				return true;
+			}
 			console.log('📝 Selection blocked');
 			e.preventDefault();
 			return false;
@@ -99,7 +87,6 @@ export const useWorkingAntiCheating = (enabled: boolean = true) => {
 
 		// Selection events
 		document.addEventListener('selectstart', selectHandler, eventOptions);
-		document.addEventListener('mousedown', selectHandler, eventOptions);
 
 		// CSS-based protection
 		const originalStyles = {
@@ -138,9 +125,6 @@ export const useWorkingAntiCheating = (enabled: boolean = true) => {
 		return () => {
 			console.log('🧹 Removing anti-cheat protections');
 
-			// Remove status indicator
-			statusDiv.remove();
-
 			// Remove event listeners
 			document.removeEventListener('keydown', keyHandler, eventOptions);
 			document.removeEventListener('keyup', keyHandler, eventOptions);
@@ -157,7 +141,6 @@ export const useWorkingAntiCheating = (enabled: boolean = true) => {
 			window.removeEventListener('paste', clipboardHandler, eventOptions);
 
 			document.removeEventListener('selectstart', selectHandler, eventOptions);
-			document.removeEventListener('mousedown', selectHandler, eventOptions);
 
 			// Restore styles
 			Object.assign(document.body.style, originalStyles);

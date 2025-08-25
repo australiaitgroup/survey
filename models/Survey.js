@@ -227,6 +227,14 @@ const surveySchema = new mongoose.Schema({
 			default: 1,
 		},
 	},
+	// Security settings
+	securitySettings: {
+		// Enable anti-cheat protection (blocks copy/paste, right-click, etc.)
+		antiCheatEnabled: {
+			type: Boolean,
+			default: false,
+		},
+	},
 	// Publishing settings
 	publishingSettings: {
 		publishedAt: Date,

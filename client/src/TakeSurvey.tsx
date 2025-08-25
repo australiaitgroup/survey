@@ -57,8 +57,8 @@ const TakeSurvey: React.FC = () => {
 	const surveyTypeSafe: SurveyType | undefined = survey?.type as SurveyType | undefined;
 	const isAssessmentType = Boolean(surveyTypeSafe && surveyTypeSafe !== 'survey');
 
-	// Control anti-cheating features - can be configured per survey or globally
-	const antiCheatEnabled = false; // Set to false to disable all anti-cheating features
+	// Control anti-cheating features - read from survey settings
+	const antiCheatEnabled = survey?.securitySettings?.antiCheatEnabled || false;
 
 	// Debug logging removed
 

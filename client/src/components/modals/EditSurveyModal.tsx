@@ -209,6 +209,37 @@ const EditSurveyModal: React.FC = () => {
 							</div>
 						</div>
 
+						{/* Security Settings */}
+						{(editForm.type === 'assessment' || editForm.type === 'live_quiz') && (
+							<div>
+								<h3 className='text-lg font-medium text-gray-900 mb-4'>
+									Security Settings
+								</h3>
+								<div className='bg-gray-50 p-4 rounded-lg border'>
+									<label className='flex items-center cursor-pointer'>
+										<input
+											type='checkbox'
+											checked={editForm.securitySettings?.antiCheatEnabled || false}
+											onChange={(e) => setEditForm({
+												...editForm,
+												securitySettings: {
+													...editForm.securitySettings,
+													antiCheatEnabled: e.target.checked,
+												},
+											})}
+											className='mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+										/>
+										<div className='flex-1'>
+											<div className='font-medium text-gray-900'>Enable Anti-Cheat Protection</div>
+											<div className='text-sm text-gray-500'>
+												Prevents copying, pasting, right-clicking, and developer tools access during assessments
+											</div>
+										</div>
+									</label>
+								</div>
+							</div>
+						)}
+
 						{/* Question Source */}
 						<div>
 							<h3 className='text-lg font-medium text-gray-900 mb-4'>

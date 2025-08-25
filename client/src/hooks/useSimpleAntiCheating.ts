@@ -15,59 +15,52 @@ export const useSimpleAntiCheating = (enabled: boolean = true) => {
 
 			console.log(`Key pressed: ${key}, Ctrl: ${isCtrl}, Shift: ${e.shiftKey}`);
 
-			// Block Ctrl+C (Copy)
+			// Block Ctrl+C (Copy) - silent
 			if (isCtrl && key === 'c') {
 				e.preventDefault();
 				e.stopPropagation();
-				alert('为保证测评公平，系统不允许复制内容。');
 				return false;
 			}
 
-			// Block Ctrl+V (Paste)
+			// Block Ctrl+V (Paste) - silent
 			if (isCtrl && key === 'v') {
 				e.preventDefault();
 				e.stopPropagation();
-				alert('为保证测评公平，系统不允许粘贴内容。');
 				return false;
 			}
 
-			// Block Ctrl+A (Select All)
+			// Block Ctrl+A (Select All) - silent
 			if (isCtrl && key === 'a') {
 				e.preventDefault();
 				e.stopPropagation();
-				alert('测评期间禁用全选功能。');
 				return false;
 			}
 
-			// Block Ctrl+X (Cut)
+			// Block Ctrl+X (Cut) - silent
 			if (isCtrl && key === 'x') {
 				e.preventDefault();
 				e.stopPropagation();
-				alert('为保证测评公平，系统不允许剪切内容。');
 				return false;
 			}
 
-			// Block F12
+			// Block F12 - silent
 			if (key === 'f12') {
 				e.preventDefault();
 				e.stopPropagation();
-				alert('测评期间禁用开发者工具。');
 				return false;
 			}
 
-			// Block Ctrl+Shift+I
+			// Block Ctrl+Shift+I - silent
 			if (isCtrl && e.shiftKey && key === 'i') {
 				e.preventDefault();
 				e.stopPropagation();
-				alert('测评期间禁用开发者工具。');
 				return false;
 			}
 
-			// Block Ctrl+U
+			// Block Ctrl+U - silent
 			if (isCtrl && key === 'u') {
 				e.preventDefault();
 				e.stopPropagation();
-				alert('测评期间禁用查看源代码。');
 				return false;
 			}
 		};
@@ -75,25 +68,27 @@ export const useSimpleAntiCheating = (enabled: boolean = true) => {
 		const handleContextMenu = (e: MouseEvent) => {
 			e.preventDefault();
 			e.stopPropagation();
-			alert('测评期间禁用右键菜单。');
 			return false;
 		};
 
 		const handleCopy = (e: ClipboardEvent) => {
 			e.preventDefault();
 			e.stopPropagation();
-			alert('为保证测评公平，系统不允许复制内容。');
 			return false;
 		};
 
 		const handlePaste = (e: ClipboardEvent) => {
 			e.preventDefault();
 			e.stopPropagation();
-			alert('为保证测评公平，系统不允许粘贴内容。');
 			return false;
 		};
 
 		const handleSelectStart = (e: Event) => {
+			const target = e.target as HTMLElement;
+			// Allow selection in input fields and textareas
+			if (target && target.tagName.match(/^(INPUT|TEXTAREA)$/)) {
+				return true;
+			}
 			e.preventDefault();
 			return false;
 		};

@@ -7,33 +7,14 @@ export const useAggressiveAntiCheating = (enabled: boolean = true) => {
 			return;
 		}
 
-		console.log('🛡️ AGGRESSIVE Anti-cheating enabled');
+		console.log('🛡️ AGGRESSIVE Anti-cheating enabled - running silently');
 
-		// Show a warning message on page
-		const warningDiv = document.createElement('div');
-		warningDiv.id = 'anti-cheat-warning';
-		warningDiv.style.cssText = `
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: #dc2626;
-      color: white;
-      padding: 8px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      z-index: 9999;
-      font-family: sans-serif;
-    `;
-		warningDiv.textContent = '🛡️ 防作弊模式已启用';
-		document.body.appendChild(warningDiv);
-
-		// Multiple event handlers for maximum coverage
+		// Multiple event handlers for maximum coverage - silent
 		const preventEvent = (e: Event, message: string) => {
 			console.log('🚫 Blocked event:', e.type, e);
 			e.preventDefault();
 			e.stopPropagation();
 			e.stopImmediatePropagation();
-			alert(message);
 			return false;
 		};
 
@@ -79,9 +60,15 @@ export const useAggressiveAntiCheating = (enabled: boolean = true) => {
 			return preventEvent(e, '⚠️ 剪切功能已被禁用！');
 		};
 
-		// Selection handlers
+		// Selection handlers - allow selection in input fields
 		const handleSelectStart = (e: Event) => {
-			console.log('🎯 Text selection attempt');
+			const target = e.target as HTMLElement;
+			// Allow selection in input fields and textareas
+			if (target && target.tagName.match(/^(INPUT|TEXTAREA)$/)) {
+				console.log('✅ Selection allowed in input field');
+				return true;
+			}
+			console.log('🎯 Text selection blocked');
 			e.preventDefault();
 			return false;
 		};
@@ -105,42 +92,41 @@ export const useAggressiveAntiCheating = (enabled: boolean = true) => {
 
 		// Add listeners in both capture and bubble phases
 		events.forEach(({ name, handler }) => {
-			document.addEventListener(name, handler as EventListener, {
+			document.addEventListener(name, handler as (e: Event) => void, {
 				capture: true,
 				passive: false,
 			});
-			document.addEventListener(name, handler as EventListener, {
+			document.addEventListener(name, handler as (e: Event) => void, {
 				capture: false,
 				passive: false,
 			});
-			window.addEventListener(name, handler as EventListener, {
+			window.addEventListener(name, handler as (e: Event) => void, {
 				capture: true,
 				passive: false,
 			});
 		});
 
-		// Disable text selection with multiple methods
+		// Disable text selection with multiple methods but allow input fields
 		const disableSelection = () => {
-			const styles = {
+			const nonInputStyles = {
 				userSelect: 'none',
 				webkitUserSelect: 'none',
 				mozUserSelect: 'none',
 				msUserSelect: 'none',
 				webkitTouchCallout: 'none',
 				webkitUserDrag: 'none',
-				pointerEvents: 'none',
 			};
 
-			Object.assign(document.body.style, styles);
+			// Apply selection blocking only to body, not all elements
+			Object.assign(document.body.style, nonInputStyles);
 
-			// Apply to all elements
+			// Apply to non-interactive elements only
 			const allElements = document.querySelectorAll('*');
 			allElements.forEach(el => {
 				if (el instanceof HTMLElement) {
-					Object.assign(el.style, styles);
-					// Re-enable pointer events for interactive elements
-					if (el.tagName.match(/^(INPUT|TEXTAREA|BUTTON|SELECT|A)$/)) {
-						el.style.pointerEvents = 'auto';
+					// Skip form elements and interactive elements
+					if (!el.tagName.match(/^(INPUT|TEXTAREA|BUTTON|SELECT|A|LABEL)$/)) {
+						Object.assign(el.style, nonInputStyles);
 					}
 				}
 			});
@@ -148,31 +134,19 @@ export const useAggressiveAntiCheating = (enabled: boolean = true) => {
 
 		disableSelection();
 
-		// Override console functions to prevent debugging
-		const originalConsole = { ...console };
-		Object.keys(console).forEach(key => {
-			if (typeof console[key as keyof Console] === 'function') {
-				(console as any)[key] = () => {};
-			}
-		});
-
-		// Block common debugging variables
-		(window as any).console = undefined;
+		// Block common debugging variables but keep console working
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		(window as any).eval = undefined;
 
 		// Cleanup function
 		return () => {
 			console.log('🧹 Cleaning up aggressive anti-cheating');
 
-			// Remove warning
-			const warning = document.getElementById('anti-cheat-warning');
-			if (warning) warning.remove();
-
 			// Remove all event listeners
 			events.forEach(({ name, handler }) => {
-				document.removeEventListener(name, handler as EventListener, { capture: true });
-				document.removeEventListener(name, handler as EventListener, { capture: false });
-				window.removeEventListener(name, handler as EventListener, { capture: true });
+				document.removeEventListener(name, handler as (e: Event) => void, { capture: true });
+				document.removeEventListener(name, handler as (e: Event) => void, { capture: false });
+				window.removeEventListener(name, handler as (e: Event) => void, { capture: true });
 			});
 
 			// Restore styles
@@ -183,7 +157,6 @@ export const useAggressiveAntiCheating = (enabled: boolean = true) => {
 				msUserSelect: '',
 				webkitTouchCallout: '',
 				webkitUserDrag: '',
-				pointerEvents: '',
 			};
 
 			Object.assign(document.body.style, restoreStyles);
@@ -191,13 +164,15 @@ export const useAggressiveAntiCheating = (enabled: boolean = true) => {
 			const allElements = document.querySelectorAll('*');
 			allElements.forEach(el => {
 				if (el instanceof HTMLElement) {
-					Object.assign(el.style, restoreStyles);
+					// Only restore styles for elements that had them applied
+					if (!el.tagName.match(/^(INPUT|TEXTAREA|BUTTON|SELECT|A|LABEL)$/)) {
+						Object.assign(el.style, restoreStyles);
+					}
 				}
 			});
 
-			// Restore console
-			Object.assign(console, originalConsole);
-			(window as any).console = originalConsole;
+			// Restore eval only (console was never overridden)
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			(window as any).eval = eval;
 		};
 	}, [enabled]);

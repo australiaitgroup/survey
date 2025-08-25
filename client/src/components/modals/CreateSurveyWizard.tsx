@@ -53,6 +53,9 @@ const CreateSurveyWizard: React.FC<CreateSurveyWizardProps> = ({ show, onClose, 
 
 		// Step 3: Display settings
 		navigationMode: NAVIGATION_MODE.STEP_BY_STEP,
+		
+		// Security settings
+		antiCheatEnabled: false,
 	});
 
 	// Combine question banks for selection
@@ -83,6 +86,7 @@ const CreateSurveyWizard: React.FC<CreateSurveyWizardProps> = ({ show, onClose, 
 				contentSource: 'manual',
 				selectedBanks: [],
 				navigationMode: NAVIGATION_MODE.STEP_BY_STEP,
+				antiCheatEnabled: false,
 			});
 		}
 	}, [show, company]);
@@ -134,6 +138,9 @@ const CreateSurveyWizard: React.FC<CreateSurveyWizardProps> = ({ show, onClose, 
 				status: SURVEY_STATUS.DRAFT,
 				navigationMode: formData.navigationMode,
 				language: formData.language,
+				securitySettings: {
+					antiCheatEnabled: formData.antiCheatEnabled,
+				},
 			};
 
 			// Set source type based on content selection
@@ -307,6 +314,7 @@ const CreateSurveyWizard: React.FC<CreateSurveyWizardProps> = ({ show, onClose, 
 						{ value: SURVEY_TYPE.SURVEY, label: 'Survey', icon: ClipboardDocumentListIcon, desc: 'Collect feedback and opinions' },
 						{ value: SURVEY_TYPE.ASSESSMENT, label: 'Assessment', icon: CheckBadgeIcon, desc: 'Test knowledge with scoring' },
 						{ value: SURVEY_TYPE.ONBOARDING, label: 'Onboarding', icon: AcademicCapIcon, desc: 'Employee training and orientation' },
+						{ value: SURVEY_TYPE.LIVE_QUIZ, label: 'Live Quiz', icon: BanknotesIcon, desc: 'Real-time interactive quiz' },
 					].map(type => (
 						<label
 							key={type.value}
@@ -336,6 +344,31 @@ const CreateSurveyWizard: React.FC<CreateSurveyWizardProps> = ({ show, onClose, 
 					))}
 				</div>
 			</div>
+
+			{/* Anti-cheat settings for assessments and live quizzes */}
+			{(formData.type === SURVEY_TYPE.ASSESSMENT || formData.type === SURVEY_TYPE.LIVE_QUIZ) && (
+				<div>
+					<label className='block text-sm font-medium text-gray-700 mb-3'>
+						Security Settings
+					</label>
+					<div className='bg-gray-50 p-4 rounded-lg border'>
+						<label className='flex items-center cursor-pointer'>
+							<input
+								type='checkbox'
+								checked={formData.antiCheatEnabled}
+								onChange={(e) => setFormData(prev => ({ ...prev, antiCheatEnabled: e.target.checked }))}
+								className='mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+							/>
+							<div className='flex-1'>
+								<div className='font-medium text-gray-900'>Enable Anti-Cheat Protection</div>
+								<div className='text-sm text-gray-500'>
+									Prevents copying, pasting, right-clicking, and developer tools access during assessments
+								</div>
+							</div>
+						</label>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 

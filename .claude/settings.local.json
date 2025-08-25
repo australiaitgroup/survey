@@ -72,7 +72,10 @@
       "Bash(json -c:*)",
       "Bash(echo:*)",
       "Bash(test:*)",
-      "Bash(NODE_ENV=production npm start)"
+      "Bash(NODE_ENV=production npm start)",
+      "Bash(PORT=5051 npm start)",
+      "Bash(PORT=5052 npm start)",
+      "Bash(npx eslint:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
