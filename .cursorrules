@@ -17,3 +17,9 @@ Performance Optimization
 Other Rules need to follow:
 
 Don't be lazy, write all the code to implement features I ask for.
+
+String and Constant Usage
+
+- Never use raw string literals for branching/logic (conditions, switch cases, reducers, event names).
+- Always reference constants or enums defined in `client/src/constants/` or nearby `constants.ts` with `as const` unions.
+- If a new string token is required (status, view, event, type), create a constant and export its union type. Then import and use it.

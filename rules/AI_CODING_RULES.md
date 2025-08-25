@@ -28,6 +28,48 @@ This document defines the coding standards and AI rules for the Survey Project. 
     if (survey.type === 'assessment') {
     ```
 
+### 2.1. String Literals Must Be Constants
+
+- Do not compare on raw string literals in code paths (conditions, switches, reducers, event names).
+- Define and import constants/enums for any string used for logic: view states, event names, action types, routes, query keys.
+- Prefer TypeScript `enum` or a frozen object with `as const` and associated union types.
+- Examples:
+
+    ```ts
+    // ✅ CORRECT
+    export const LIVE_VIEW = {
+    	Lobby: 'lobby',
+    	Question: 'question',
+    	Locked: 'locked',
+    	Feedback: 'feedback',
+    	Leaderboard: 'leaderboard',
+    	End: 'end',
+    } as const;
+    export type LiveView = typeof LIVE_VIEW[keyof typeof LIVE_VIEW];
+
+    if (currentView === LIVE_VIEW.Question) { /* ... */ }
+
+    // ❌ WRONG
+    if (currentView === 'question') { /* ... */ }
+    ```
+
+    ```ts
+    // ✅ CORRECT: event names
+    export const LIVE_EVENTS = {
+    	SessionStarted: 'session_started',
+    	Question: 'question',
+    	QuestionLock: 'question_lock',
+    	QuestionResult: 'question_result',
+    	Leaderboard: 'leaderboard',
+    	SessionEnd: 'session_end',
+    } as const;
+
+    client.on(LIVE_EVENTS.Question, handler)
+
+    // ❌ WRONG
+    client.on('question', handler)
+    ```
+
 ### 3. **Consistent File Structure**
 
 ```
