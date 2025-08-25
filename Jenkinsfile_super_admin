@@ -134,7 +134,7 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
 
                             # Deploy to UAT bucket
                             echo "📦 Deploying to UAT bucket: ${S3_BUCKET_UAT}"
-                            
+
                             # Upload static assets to UAT
                             aws s3 sync dist/ s3://${S3_BUCKET_UAT}/super-admin/ \
                                 --region ${AWS_REGION} \
@@ -162,7 +162,7 @@ echo "📄 Bucket website endpoint (may 404 until first deploy): http://${S3_BUC
 
                             # Deploy to Production bucket
                             echo "🚀 Deploying to Production bucket: ${S3_BUCKET_PROD}"
-                            
+
                             # Upload static assets to Production
                             aws s3 sync dist/ s3://${S3_BUCKET_PROD}/super-admin/ \
                                 --region ${AWS_REGION} \

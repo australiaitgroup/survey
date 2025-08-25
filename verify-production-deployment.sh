@@ -31,7 +31,7 @@ echo "1️⃣ 检查 S3 桶状态..."
 echo "🔍 检查生产桶 ${PROD_BUCKET}..."
 if aws s3api head-bucket --bucket ${PROD_BUCKET} 2>/dev/null; then
     echo "✅ 生产桶存在"
-    
+
     # 检查静态网站配置
     echo "🌐 检查静态网站托管配置..."
     WEBSITE_CONFIG=$(aws s3api get-bucket-website --bucket ${PROD_BUCKET} 2>/dev/null || echo "未配置")
@@ -40,19 +40,19 @@ if aws s3api head-bucket --bucket ${PROD_BUCKET} 2>/dev/null; then
     else
         echo "❌ 静态网站托管未配置"
     fi
-    
+
     # 检查桶内容
     echo "📁 检查主前端文件..."
     FILE_COUNT=$(aws s3 ls s3://${PROD_BUCKET}/ --recursive | wc -l)
     echo "生产桶文件数量: ${FILE_COUNT}"
-    
+
     # 检查 index.html
     if aws s3api head-object --bucket ${PROD_BUCKET} --key index.html >/dev/null 2>&1; then
         echo "✅ index.html 存在"
     else
         echo "❌ index.html 不存在"
     fi
-    
+
 else
     echo "❌ 生产桶不存在"
 fi
@@ -62,11 +62,11 @@ echo ""
 echo "🔍 检查 UAT 桶 Super Admin..."
 if aws s3api head-bucket --bucket ${UAT_BUCKET} 2>/dev/null; then
     echo "✅ UAT桶存在"
-    
+
     # 检查 Super Admin 文件
     SUPER_ADMIN_COUNT=$(aws s3 ls s3://${UAT_BUCKET}/super-admin/ --recursive | wc -l)
     echo "Super Admin 文件数量: ${SUPER_ADMIN_COUNT}"
-    
+
     if aws s3api head-object --bucket ${UAT_BUCKET} --key super-admin/index.html >/dev/null 2>&1; then
         echo "✅ Super Admin index.html 存在"
     else
@@ -134,14 +134,14 @@ echo "4️⃣ 检查 Nginx 配置..."
 # 检查生产 Nginx 配置文件
 if [[ -f "nginx-sigma-domain.conf" ]]; then
     echo "📄 找到生产 Nginx 配置文件"
-    
+
     # 检查主前端代理配置
     if grep -q "sigma.jiangren.com.au.s3-website" nginx-sigma-domain.conf; then
         echo "✅ 生产 Nginx 已配置代理到生产 S3 桶"
     else
         echo "❌ 生产 Nginx 未正确配置生产 S3 代理"
     fi
-    
+
     # 检查 Super Admin 代理配置
     if grep -q "uat-sigma.jiangren.com.au.s3-website.*super-admin" nginx-sigma-domain.conf; then
         echo "✅ 生产 Nginx 已配置 Super Admin 代理到 UAT"
@@ -155,7 +155,7 @@ fi
 # 检查 UAT Nginx 配置文件
 if [[ -f "nginx-uat-domain.conf" ]]; then
     echo "📄 找到 UAT Nginx 配置文件"
-    
+
     # 检查 UAT Super Admin 代理配置
     if grep -q "uat-sigma.jiangren.com.au.s3-website.*super-admin" nginx-uat-domain.conf; then
         echo "✅ UAT Nginx 已配置 Super Admin 代理到 UAT S3"

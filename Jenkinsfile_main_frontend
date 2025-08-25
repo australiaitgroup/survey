@@ -12,11 +12,11 @@ pipeline {
 
         // S3 Static Website URL
         S3_WEBSITE_URL = "http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com"
-        
+
         // NPM and Node configuration for better compatibility
         npm_config_optional = 'true'
         npm_config_legacy_peer_deps = 'true'
-        
+
         // Tailwind/PostCSS configuration for Alpine Linux compatibility
         TAILWIND_DISABLE_TOUCH = '1'
         TAILWIND_MODE = 'compat'
@@ -149,7 +149,7 @@ echo "Note: Super Admin is deployed separately to UAT bucket"
 
                         # Try to fix any potential native module issues
                         npm rebuild || echo "Rebuild failed, continuing..."
-                        
+
                         # Final verification
                         echo "🔍 Final package verification:"
                         npm list @tailwindcss/postcss autoprefixer postcss @rollup/rollup-linux-x64-gnu || echo "Some packages may have issues"
@@ -165,11 +165,11 @@ echo "Note: Super Admin is deployed separately to UAT bucket"
                     sh '''
                         # Build for production
                         echo "🔨 Building with simple PostCSS config..."
-                        
+
                         # Check current PostCSS config
                         echo "Current PostCSS config:"
                         cat postcss.config.js
-                        
+
                         # Check if rollup native module exists before building
                         if npm list @rollup/rollup-linux-x64-gnu > /dev/null 2>&1; then
                             echo "✅ Rollup native module found"
@@ -177,11 +177,11 @@ echo "Note: Super Admin is deployed separately to UAT bucket"
                             echo "⚠️  Rollup native module missing, attempting to install..."
                             npm install @rollup/rollup-linux-x64-gnu --legacy-peer-deps || echo "Failed to install rollup native module"
                         fi
-                        
+
                         # Set environment variables to avoid lightningcss issues
                         export TAILWIND_DISABLE_TOUCH=1
                         export NODE_ENV=production
-                        
+
                         # Try building
                         npm run build
 
