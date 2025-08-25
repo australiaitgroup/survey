@@ -119,11 +119,26 @@ router.put(
 			updateData.status = updateData.isActive ? 'active' : 'draft';
 		}
 
+		// Debug: Log what we're updating
+		console.log('🔄 Survey PUT request:', {
+			surveyId: req.params.id,
+			securitySettings: updateData.securitySettings,
+			antiCheatEnabled: updateData.securitySettings?.antiCheatEnabled
+		});
+
 		const survey = await Survey.findOneAndUpdate(
 			{ _id: req.params.id, createdBy: req.user.id },
 			updateData,
 			{ new: true }
 		);
+		
+		// Debug: Log what we're returning
+		console.log('✅ Survey PUT response:', {
+			surveyId: survey?._id,
+			securitySettings: survey?.securitySettings,
+			antiCheatEnabled: survey?.securitySettings?.antiCheatEnabled
+		});
+		
 		if (!survey) {
 			throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
 		}

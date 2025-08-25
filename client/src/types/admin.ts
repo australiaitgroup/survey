@@ -144,6 +144,9 @@ export interface NewSurveyForm {
 		};
 		includeShortTextInScore?: boolean;
 	};
+	securitySettings?: {
+		antiCheatEnabled: boolean;
+	};
 }
 
 export interface QuestionBankForm {

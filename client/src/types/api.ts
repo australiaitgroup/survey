@@ -239,6 +239,9 @@ export interface Survey {
 	multiQuestionBankConfig?: MultiQuestionBankConfig[];
 	selectedQuestions?: SelectedQuestion[];
 	scoringSettings?: ScoringSettings;
+	securitySettings?: {
+		antiCheatEnabled: boolean;
+	};
 	createdAt: string;
 	updatedAt: string;
 	// 新增：公司信息（用于assessment页面显示logo）
@@ -262,6 +265,9 @@ export interface SurveyCreateRequest {
 	multiQuestionBankConfig?: MultiQuestionBankConfig[];
 	selectedQuestions?: SelectedQuestion[];
 	scoringSettings?: ScoringSettings;
+	securitySettings?: {
+		antiCheatEnabled: boolean;
+	};
 }
 
 export interface SurveyUpdateRequest extends Partial<SurveyCreateRequest> {}

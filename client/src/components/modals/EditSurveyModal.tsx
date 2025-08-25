@@ -75,6 +75,10 @@ const EditSurveyModal: React.FC = () => {
 				isActive: editForm.status === 'active',
 				timeLimit: editForm.timeLimit ? Number(editForm.timeLimit) : undefined,
 				maxAttempts: editForm.maxAttempts || 1,
+				// Include security settings
+				securitySettings: editForm.securitySettings || {
+					antiCheatEnabled: false,
+				},
 				// Include scoring settings if it's an assessment type
 				...(['assessment', 'live_quiz', 'quiz', 'iq'].includes(editForm.type) &&
 					editForm.scoringSettings && {
@@ -82,9 +86,19 @@ const EditSurveyModal: React.FC = () => {
 				}),
 			};
 
+			// Debug: Log what we're saving
+			console.log('🔄 Updating survey with data:', {
+				surveyId: selectedSurvey._id,
+				securitySettings: surveyData.securitySettings,
+				antiCheatEnabled: surveyData.securitySettings?.antiCheatEnabled
+			});
+
 			await updateSurvey(selectedSurvey._id, surveyData);
+			
+			console.log('✅ Survey updated successfully');
 			closeEditModal();
 		} catch (err) {
+			console.error('❌ Failed to update survey:', err);
 			setError('Failed to update survey. Please try again.');
 		} finally {
 			setLoading(false);
