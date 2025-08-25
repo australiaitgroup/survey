@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const { asyncHandler, jwtAuth } = require('./shared/middleware');
 const { QuestionBank, Survey } = require('./shared/models');
 const { HTTP_STATUS, ERROR_MESSAGES, DATA_TYPES, AppError } = require('./shared/constants');
@@ -159,6 +160,69 @@ router.post(
 
 		await questionBank.save();
 		res.json(questionBank);
+	})
+);
+
+/**
+ * @route   GET /admin/surveys/:id/questions
+ * @desc    Get questions for a survey with optional pagination
+ * @access  Private (Admin)
+ */
+router.get(
+	'/surveys/:id/questions',
+	jwtAuth,
+	asyncHandler(async (req, res) => {
+		const { id } = req.params;
+
+		// Detect if the client explicitly requested pagination
+		const hasPagingParams =
+			Object.prototype.hasOwnProperty.call(req.query, 'page') ||
+			Object.prototype.hasOwnProperty.call(req.query, 'limit');
+
+		// Parse and validate page/limit
+		let page = parseInt(req.query.page, 10);
+		let limit = parseInt(req.query.limit, 10);
+		if (!Number.isFinite(page) || page <= 0) page = 1;
+		if (!Number.isFinite(limit) || limit <= 0) limit = 10;
+		limit = Math.min(limit, 50);
+
+		if (!hasPagingParams) {
+			// Backward compatibility: return all questions when no pagination params are provided
+			const survey = await Survey.findOne({ _id: id, createdBy: req.user.id }).select('questions');
+			if (!survey) {
+				throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+			}
+			const totalQuestions = Array.isArray(survey.questions) ? survey.questions.length : 0;
+			return res.status(HTTP_STATUS.OK).json({
+				questions: survey.questions || [],
+				totalQuestions,
+				totalPages: 1,
+				currentPage: 1,
+			});
+		}
+
+		// Paginated path: use MongoDB $slice for efficiency
+		const start = (page - 1) * limit;
+		const objectId = new mongoose.Types.ObjectId(id);
+		const results = await Survey.aggregate([
+			{ $match: { _id: objectId, createdBy: req.user.id } },
+			{ $project: { totalQuestions: { $size: '$questions' }, questions: { $slice: ['$questions', start, limit] } } },
+		]);
+
+		if (!results || results.length === 0) {
+			throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+		}
+
+		const { totalQuestions, questions } = results[0];
+		const totalPages = Math.max(1, Math.ceil((totalQuestions || 0) / limit));
+		const currentPage = Math.min(page, totalPages);
+
+		return res.status(HTTP_STATUS.OK).json({
+			questions: questions || [],
+			totalQuestions: totalQuestions || 0,
+			totalPages,
+			currentPage,
+		});
 	})
 );
 
