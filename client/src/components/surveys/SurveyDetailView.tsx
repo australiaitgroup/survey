@@ -27,7 +27,7 @@ import SurveyPreviewTab from './SurveyPreviewTab';
 import SurveyHeaderActions from './tabs/SurveyHeaderActions';
 import SurveyStatisticsTab from './tabs/SurveyStatisticsTab';
 import SurveyDetailTab from './tabs/SurveyDetailTab';
-import { getSurveyUrl, getAssessmentUrl } from './utils/url';
+import { getSurveyUrl, getAssessmentUrl, getOnboardingUrl } from './utils/url';
 import { useCompanySlug } from './hooks/useCompanySlug';
 import { useQuestionReorder } from './hooks/useQuestionReorder';
 import { useLocalQuestionEditing } from './hooks/useLocalQuestionEditing';
@@ -442,6 +442,7 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 						toggleQR={toggleQR}
 						getAssessmentUrl={getAssessmentUrl}
 						getSurveyUrl={getSurveyUrl}
+						getOnboardingUrl={getOnboardingUrl}
 						copyToClipboard={copyToClipboard}
 						loading={loading}
 						handleQuestionsReorder={handleQuestionsReorder}

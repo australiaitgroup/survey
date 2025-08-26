@@ -5,6 +5,7 @@ import AnalyticsProvider from './AnalyticsProvider';
 import Survey from './Survey';
 import TakeSurvey from './TakeSurvey';
 import TakeAssessment from './TakeAssessment';
+import TakeOnboarding from './TakeOnboarding';
 import Admin from './Admin';
 import OnboardingPage from './components/onboarding/OnboardingPage';
 import LandingPage from './components/landing/LandingPage';
@@ -73,10 +74,12 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 					{/* Non-tenant routes (backward compatibility) */}
 					<Route path='/survey/:slug' element={<TakeSurvey />} />
 					<Route path='/assessment/:slug' element={<TakeAssessment />} />
+					<Route path='/onboarding/:slug' element={<TakeOnboarding />} />
 
 					{/* Multi-tenant routes */}
 					<Route path='/:companySlug/survey/:slug' element={<TakeSurvey />} />
 					<Route path='/:companySlug/assessment/:slug' element={<TakeAssessment />} />
+					<Route path='/:companySlug/onboarding/:slug' element={<TakeOnboarding />} />
 					<Route path='/legacy' element={<Survey />} />
 				</Routes>
 			</AnalyticsProvider>

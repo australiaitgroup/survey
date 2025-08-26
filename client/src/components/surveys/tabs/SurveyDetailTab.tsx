@@ -4,7 +4,7 @@ import { SURVEY_TYPE, SURVEY_STATUS, SOURCE_TYPE } from '../../../constants';
 import SurveyHeaderActions from './SurveyHeaderActions';
 import SurveyPreviewTab from '../SurveyPreviewTab';
 import QRCodeComponent from '../../QRCode';
-import { getSurveyUrl, getAssessmentUrl } from '../utils/url';
+import { getSurveyUrl, getAssessmentUrl, getOnboardingUrl } from '../utils/url';
 import SurveyQuestionList from './SurveyQuestionList';
 import SurveyAssessmentConfig from './SurveyAssessmentConfig';
 
@@ -19,6 +19,7 @@ interface Props {
 	toggleQR: (surveyId: string) => void;
 	getAssessmentUrl: (slug: string, companySlug: string) => string;
 	getSurveyUrl: (slug: string, companySlug: string) => string;
+	getOnboardingUrl: (slug: string, companySlug: string) => string;
 	copyToClipboard: (text: string) => void;
 	loading: boolean;
 	handleQuestionsReorder: (surveyId: string, newQuestions: any[]) => void;
@@ -43,6 +44,7 @@ const SurveyDetailTab: React.FC<Props> = ({
 	toggleQR,
 	getAssessmentUrl,
 	getSurveyUrl,
+	getOnboardingUrl,
 	copyToClipboard,
 	loading,
 	handleQuestionsReorder,
@@ -218,6 +220,44 @@ const SurveyDetailTab: React.FC<Props> = ({
 										</button>
 									</div>
 								</div>
+							) : s.type === SURVEY_TYPE.ONBOARDING ? (
+								<div className='flex flex-col items-start gap-2'>
+									<label className='block text-sm font-medium text-gray-700'>
+										Employee Onboarding URL
+									</label>
+									<div className='text-sm text-gray-600 font-mono break-all'>
+										{getOnboardingUrl(s.slug, companySlug)}
+									</div>
+									<div className='flex items-center gap-1 sm:gap-2'>
+										<button
+											className='btn-outline btn-small'
+											onClick={() =>
+												copyToClipboard(
+													getOnboardingUrl(s.slug, companySlug)
+												)
+											}
+										>
+											Copy URL
+										</button>
+										<button
+											className='btn-outline btn-small'
+											onClick={() =>
+												window.open(
+													getOnboardingUrl(s.slug, companySlug),
+													'_blank'
+												)
+											}
+										>
+											Open
+										</button>
+										<button
+											className='btn-outline btn-small'
+											onClick={() => toggleQR(s._id)}
+										>
+											{showQR[s._id] ? 'Hide QR' : 'Show QR'}
+										</button>
+									</div>
+								</div>
 							) : (
 								<>
 									<div className='flex flex-col items-start gap-2'>
@@ -272,7 +312,9 @@ const SurveyDetailTab: React.FC<Props> = ({
 									url={
 										s.type === SURVEY_TYPE.ASSESSMENT
 											? getAssessmentUrl(s.slug, companySlug)
-											: getSurveyUrl(s.slug, companySlug)
+											: s.type === SURVEY_TYPE.ONBOARDING
+												? getOnboardingUrl(s.slug, companySlug)
+												: getSurveyUrl(s.slug, companySlug)
 									}
 								/>
 							</div>
