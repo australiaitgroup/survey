@@ -42,70 +42,70 @@ pipeline {
         }
 
         // COMMENTED OUT: S3 bucket creation - buckets already exist
-        stage('Prepare Production S3 Bucket') {
-            steps {
-                echo 'Ensuring production S3 bucket exists and is configured...'
-                withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
-                    sh '''
-set -e
+//         stage('Prepare Production S3 Bucket') {
+//             steps {
+//                 echo 'Ensuring production S3 bucket exists and is configured...'
+//                 withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
+//                     sh '''
+// set -e
 
-echo "🔍 Checking if production bucket ${S3_BUCKET_NAME} exists..."
-if aws s3api head-bucket --bucket ${S3_BUCKET_NAME} 2>/dev/null; then
-    echo "✅ Production bucket already exists"
-else
-    echo "🪣 Creating production bucket ${S3_BUCKET_NAME} in ${AWS_REGION}..."
-    aws s3api create-bucket --bucket ${S3_BUCKET_NAME} --region ${AWS_REGION} --create-bucket-configuration LocationConstraint=${AWS_REGION}
-    echo "✅ Production bucket created"
-fi
+// echo "🔍 Checking if production bucket ${S3_BUCKET_NAME} exists..."
+// if aws s3api head-bucket --bucket ${S3_BUCKET_NAME} 2>/dev/null; then
+//     echo "✅ Production bucket already exists"
+// else
+//     echo "🪣 Creating production bucket ${S3_BUCKET_NAME} in ${AWS_REGION}..."
+//     aws s3api create-bucket --bucket ${S3_BUCKET_NAME} --region ${AWS_REGION} --create-bucket-configuration LocationConstraint=${AWS_REGION}
+//     echo "✅ Production bucket created"
+// fi
 
-echo "🔐 Configuring public access block (allow policy usage)..."
-aws s3api put-public-access-block --bucket ${S3_BUCKET_NAME} \
-    --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
+// echo "🔐 Configuring public access block (allow policy usage)..."
+// aws s3api put-public-access-block --bucket ${S3_BUCKET_NAME} \
+//     --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
 
-echo "🌐 Configuring static website hosting..."
-aws s3 website s3://${S3_BUCKET_NAME}/ --index-document index.html --error-document index.html
+// echo "🌐 Configuring static website hosting..."
+// aws s3 website s3://${S3_BUCKET_NAME}/ --index-document index.html --error-document index.html
 
-echo "📄 Production bucket website endpoint: http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/"
-'''
-                }
-            }
-        }
+// echo "📄 Production bucket website endpoint: http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/"
+// '''
+//                 }
+//             }
+//         }
 
-        // COMMENTED OUT: S3 bucket policy update - buckets already configured
-        stage('Update S3 Bucket Policy') {
-            steps {
-                echo 'Updating S3 bucket policy for production main frontend...'
-                withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
-                    sh '''
-set -e
+//         // COMMENTED OUT: S3 bucket policy update - buckets already configured
+//         stage('Update S3 Bucket Policy') {
+//             steps {
+//                 echo 'Updating S3 bucket policy for production main frontend...'
+//                 withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
+//                     sh '''
+// set -e
 
-echo "📝 Applying production bucket policy for main frontend..."
-POLICY_FILE=$(mktemp)
-cat > $POLICY_FILE <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "PublicReadMainApp",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::${S3_BUCKET_NAME}/*"
-    }
-  ]
-}
-EOF
+// echo "📝 Applying production bucket policy for main frontend..."
+// POLICY_FILE=$(mktemp)
+// cat > $POLICY_FILE <<EOF
+// {
+//   "Version": "2012-10-17",
+//   "Statement": [
+//     {
+//       "Sid": "PublicReadMainApp",
+//       "Effect": "Allow",
+//       "Principal": "*",
+//       "Action": "s3:GetObject",
+//       "Resource": "arn:aws:s3:::${S3_BUCKET_NAME}/*"
+//     }
+//   ]
+// }
+// EOF
 
-aws s3api put-bucket-policy --bucket ${S3_BUCKET_NAME} --policy file://$POLICY_FILE
-rm -f $POLICY_FILE
+// aws s3api put-bucket-policy --bucket ${S3_BUCKET_NAME} --policy file://$POLICY_FILE
+// rm -f $POLICY_FILE
 
-echo "✅ Production bucket policy updated successfully"
-echo "Supports main frontend access: arn:aws:s3:::${S3_BUCKET_NAME}/*"
-echo "Note: Super Admin is deployed separately to UAT bucket"
-'''
-                }
-            }
-        }
+// echo "✅ Production bucket policy updated successfully"
+// echo "Supports main frontend access: arn:aws:s3:::${S3_BUCKET_NAME}/*"
+// echo "Note: Super Admin is deployed separately to UAT bucket"
+// '''
+//                 }
+//             }
+//         }
 
 
         stage('Install Dependencies') {
