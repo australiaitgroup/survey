@@ -8,6 +8,7 @@ import TakeAssessment from './TakeAssessment';
 import TakeOnboarding from './TakeOnboarding';
 import Admin from './Admin';
 import OnboardingPage from './components/onboarding/OnboardingPage';
+import EmployeeTraining from './components/employee-training/EmployeeTraining';
 import LandingPage from './components/landing/LandingPage';
 import FeaturesPage from './components/landing/FeaturesPage';
 import AboutPage from './components/landing/AboutPage';
@@ -74,12 +75,17 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 					{/* Non-tenant routes (backward compatibility) */}
 					<Route path='/survey/:slug' element={<TakeSurvey />} />
 					<Route path='/assessment/:slug' element={<TakeAssessment />} />
-					<Route path='/onboarding/:slug' element={<TakeOnboarding />} />
+					<Route path='/onboarding/:slug' element={<EmployeeTraining />} />
+					<Route path='/employee-training/:templateId' element={<EmployeeTraining />} />
 
 					{/* Multi-tenant routes */}
 					<Route path='/:companySlug/survey/:slug' element={<TakeSurvey />} />
 					<Route path='/:companySlug/assessment/:slug' element={<TakeAssessment />} />
-					<Route path='/:companySlug/onboarding/:slug' element={<TakeOnboarding />} />
+					<Route path='/:companySlug/onboarding/:slug' element={<EmployeeTraining />} />
+					<Route
+						path='/:companySlug/employee-training/:templateId'
+						element={<EmployeeTraining />}
+					/>
 					<Route path='/legacy' element={<Survey />} />
 				</Routes>
 			</AnalyticsProvider>

@@ -25,29 +25,105 @@ function maskQuestions(questions) {
 // Helper function to check if answer is correct (reused from assessments)
 function checkAnswer(question, userAnswer) {
 	if (!question.correctAnswer) return false;
-	
+
 	if (question.type === 'single_choice') {
 		return parseInt(userAnswer) === question.correctAnswer;
 	} else if (question.type === 'multiple_choice') {
-		const userAnswers = Array.isArray(userAnswer) ? userAnswer.map(a => parseInt(a)) : [parseInt(userAnswer)];
-		const correctAnswers = Array.isArray(question.correctAnswer) ? question.correctAnswer : [question.correctAnswer];
-		return userAnswers.length === correctAnswers.length && 
-			   userAnswers.every(a => correctAnswers.includes(a));
+		const userAnswers = Array.isArray(userAnswer)
+			? userAnswer.map(a => parseInt(a))
+			: [parseInt(userAnswer)];
+		const correctAnswers = Array.isArray(question.correctAnswer)
+			? question.correctAnswer
+			: [question.correctAnswer];
+		return (
+			userAnswers.length === correctAnswers.length &&
+			userAnswers.every(a => correctAnswers.includes(a))
+		);
 	} else if (question.type === 'short_text') {
 		return question.correctAnswer.toLowerCase().trim() === userAnswer.toLowerCase().trim();
 	}
-	
+
 	return false;
 }
 
 // Helper function to get available hints based on attempt number
 function getAvailableHints(question, attemptNumber) {
 	if (!question.onboarding?.hints) return [];
-	
-	return question.onboarding.hints.filter(hint => 
-		attemptNumber >= hint.showAfterAttempts
-	).sort((a, b) => a.order - b.order);
+
+	return question.onboarding.hints
+		.filter(hint => attemptNumber >= hint.showAfterAttempts)
+		.sort((a, b) => a.order - b.order);
 }
+
+// Employee Training specific endpoints
+// GET /onboarding/:slug/employee-training/progress
+router.get(
+	'/:slug/employee-training/progress',
+	asyncHandler(async (req, res) => {
+		const { slug } = req.params;
+		const { employeeId } = req.query;
+
+		if (!employeeId) {
+			throw new AppError('Employee ID is required', 400);
+		}
+
+		// 查找对应的 onboarding survey
+		let survey = await Survey.findOne({
+			slug,
+			status: SURVEY_STATUS.ACTIVE,
+			type: SURVEY_TYPE.ONBOARDING,
+		}).populate('questions');
+
+		if (!survey) {
+			throw new AppError('Training template not found', 404);
+		}
+
+		// TODO: 从 EmployeeProgress 模型获取实际进度
+		// 现在返回默认状态
+		res.json({
+			status: 'not_started',
+			template: survey,
+			currentSection: null,
+			currentQuestion: 0,
+			answers: {},
+			attempts: {},
+			completedSections: [],
+			startedAt: null,
+		});
+	})
+);
+
+// POST /onboarding/:slug/employee-training/start
+router.post(
+	'/:slug/employee-training/start',
+	asyncHandler(async (req, res) => {
+		const { slug } = req.params;
+		const { employeeId, name, email } = req.body;
+
+		if (!employeeId || !name || !email) {
+			throw new AppError('Employee ID, name, and email are required', 400);
+		}
+
+		// 查找对应的 onboarding survey
+		let survey = await Survey.findOne({
+			slug,
+			status: SURVEY_STATUS.ACTIVE,
+			type: SURVEY_TYPE.ONBOARDING,
+		}).populate('questions');
+
+		if (!survey) {
+			throw new AppError('Training template not found', 404);
+		}
+
+		// TODO: 创建或更新 EmployeeProgress 记录
+		// 现在直接返回模板数据
+		res.json({
+			success: true,
+			template: survey,
+			message: 'Training started successfully',
+		});
+	})
+);
 
 // GET /onboarding/:slug - metadata only (no questions) - REUSED from assessments
 router.get(
@@ -148,18 +224,16 @@ router.post(
 
 		let response;
 		if (existingResponse) {
-			response = await Response.findByIdAndUpdate(
-				existingResponse._id,
-				responseData,
-				{ new: true }
-			);
+			response = await Response.findByIdAndUpdate(existingResponse._id, responseData, {
+				new: true,
+			});
 		} else {
 			response = await Response.create(responseData);
 		}
 
 		// Return masked questions (reused from assessments)
 		const maskedQuestions = maskQuestions(selectedQuestions);
-		
+
 		res.json({
 			responseId: response._id,
 			questions: maskedQuestions,
@@ -192,8 +266,8 @@ router.post(
 		}
 
 		// Find the question
-		const question = response.selectedQuestions.find(sq => 
-			sq.questionId.toString() === questionId.toString()
+		const question = response.selectedQuestions.find(
+			sq => sq.questionId.toString() === questionId.toString()
 		)?.questionData;
 
 		if (!question) {
@@ -202,7 +276,7 @@ router.post(
 
 		// Check if answer is correct (reused from assessments)
 		const isCorrect = checkAnswer(question, answer);
-		
+
 		// Get available hints for this attempt
 		const availableHints = getAvailableHints(question, attemptNumber);
 
@@ -264,7 +338,7 @@ router.post(
 		if (!response.onboardingProgress.completedSections) {
 			response.onboardingProgress.completedSections = [];
 		}
-		
+
 		if (!response.onboardingProgress.completedSections.includes(sectionIndex)) {
 			response.onboardingProgress.completedSections.push(sectionIndex);
 		}
@@ -308,8 +382,8 @@ router.get(
 			throw new AppError('Response not found', HTTP_STATUS.NOT_FOUND);
 		}
 
-		const question = response.selectedQuestions.find(sq => 
-			sq.questionId.toString() === questionId.toString()
+		const question = response.selectedQuestions.find(
+			sq => sq.questionId.toString() === questionId.toString()
 		)?.questionData;
 
 		if (!question) {
@@ -353,8 +427,8 @@ router.post(
 			if (attempt.isCorrect) {
 				correctAnswers++;
 				// Get question points
-				const question = response.selectedQuestions.find(sq => 
-					sq.questionId.toString() === attempt.questionId.toString()
+				const question = response.selectedQuestions.find(
+					sq => sq.questionId.toString() === attempt.questionId.toString()
 				)?.questionData;
 				totalScore += question?.points || 1;
 			}
@@ -448,19 +522,19 @@ router.get(
 					_id: null,
 					totalResponses: { $sum: 1 },
 					completedResponses: {
-						$sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] }
+						$sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] },
 					},
 					averageScore: { $avg: '$percentageScore' },
 					passingRate: {
-						$avg: { $cond: ['$isPassing', 1, 0] }
+						$avg: { $cond: ['$isPassing', 1, 0] },
 					},
 					averageCompletionTime: {
 						$avg: {
-							$subtract: ['$completedAt', '$startedAt']
-						}
+							$subtract: ['$completedAt', '$startedAt'],
+						},
 					},
-				}
-			}
+				},
+			},
 		]);
 
 		res.json({

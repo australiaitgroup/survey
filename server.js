@@ -10,6 +10,8 @@ const adminRouter = require('./routes/admin');
 const surveysRouter = require('./routes/surveys');
 const assessmentsRouter = require('./routes/assessments');
 const onboardingRouter = require('./routes/onboarding');
+// Employee training routes are now handled by onboarding router
+console.log('✓ Employee Training routes handled by onboarding router');
 const usersRouter = require('./routes/users');
 const invitationsRouter = require('./routes/invitations');
 const questionBanksRouter = require('./routes/questionBanks');
@@ -45,8 +47,8 @@ mongoose
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// Allow dev cross-origin for Super Admin on localhost:3000
-app.use(cors({ origin: ['http://localhost:3000'], credentials: true }));
+// Allow dev cross-origin for development
+app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:5051', 'http://localhost:5052'], credentials: true }));
 app.use(
 	session({
 		secret: 'change-me',
@@ -65,14 +67,16 @@ app.use('/:companySlug/api', multiTenant, questionsRouter);
 app.use('/:companySlug/api', multiTenant, responsesRouter);
 app.use('/:companySlug/api', multiTenant, surveysRouter);
 app.use('/:companySlug/api', multiTenant, assessmentsRouter);
-app.use('/:companySlug/api', multiTenant, onboardingRouter);
+app.use('/:companySlug/api/onboarding', multiTenant, onboardingRouter);
+// Employee training handled by onboarding router
 app.use('/:companySlug/api/invitations', multiTenant, invitationsRouter);
 
 // Regular API routes
 app.use('/api', responsesRouter);
 app.use('/api', surveysRouter);
 app.use('/api', assessmentsRouter);
-app.use('/api', onboardingRouter);
+app.use('/api/onboarding', onboardingRouter);
+// Employee training handled by onboarding router
 app.use('/api/admin', adminRouter);
 app.use('/api/admin/users', usersRouter);
 app.use('/api/admin/question-banks', questionBanksRouter);
@@ -126,7 +130,12 @@ const CLIENT_BUILD_PATH = path.join(__dirname, 'client', 'dist');
 app.use(express.static(CLIENT_BUILD_PATH));
 
 // Handle React routing, return all requests to React app
+// BUT exclude API routes which should have been handled above
 app.get('*', (req, res) => {
+	// Don't serve React app for API routes that failed
+	if (req.path.startsWith('/api/')) {
+		return res.status(404).json({ error: 'API endpoint not found' });
+	}
 	res.sendFile(path.join(CLIENT_BUILD_PATH, 'index.html'));
 });
 
