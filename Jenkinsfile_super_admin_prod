@@ -39,7 +39,6 @@ pipeline {
         stage('Setup Node.js & Install Dependencies') {
             steps {
                 echo 'Setting up Node.js and installing Super Admin dependencies...'
-                dir('super-admin') {
                     sh '''
                        cd super-admin
                         rm -rf node_modules package-lock.json
@@ -48,7 +47,6 @@ pipeline {
                         rm -rf node_modules package-lock.json
                         npm install
                     '''
-                }
             }
         }
 
