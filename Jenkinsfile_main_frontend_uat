@@ -7,7 +7,7 @@ pipeline {
         NODE_VERSION = '18'
 
         // S3 Configuration - UAT environment
-        S3_BUCKET_NAME = 'uat-sigma.jiangren.com.au'
+        S3_BUCKET_NAME = 'uat.sigmaq.co'
         AWS_REGION = 'ap-southeast-2'
 
         // S3 Static Website URL
