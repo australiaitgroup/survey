@@ -65,6 +65,10 @@ const responseSchema = new mongoose.Schema({
 	// For question bank submissions: store the selected question IDs (legacy support)
 	selectedQuestions: [
 		{
+			questionId: {
+				type: mongoose.Schema.Types.ObjectId,
+				required: false,
+			},
 			originalQuestionId: {
 				type: mongoose.Schema.Types.ObjectId,
 				required: false,

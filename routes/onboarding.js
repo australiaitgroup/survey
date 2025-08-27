@@ -206,10 +206,17 @@ router.post(
 			name,
 			attempt: attempt ? parseInt(attempt) : 1,
 			startedAt: new Date(),
-			selectedQuestions: selectedQuestions.map(q => ({
-				questionId: q._id || q.id,
-				questionData: q,
-			})),
+			answers: new Map(), // Initialize empty answers Map
+			selectedQuestions: selectedQuestions.map(q => {
+				const questionId = q._id || q.id;
+				return {
+					questionId,
+					questionData: {
+						...q,
+						_id: questionId // Ensure _id is properly set in questionData
+					},
+				};
+			}),
 			// Onboarding-specific fields
 			onboardingProgress: {
 				currentSection: 0,
@@ -267,7 +274,7 @@ router.post(
 
 		// Find the question
 		const question = response.selectedQuestions.find(
-			sq => sq.questionId.toString() === questionId.toString()
+			sq => sq.questionId && sq.questionId.toString() === questionId.toString()
 		)?.questionData;
 
 		if (!question) {
