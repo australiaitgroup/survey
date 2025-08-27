@@ -116,6 +116,32 @@ const responseSchema = new mongoose.Schema({
 		type: Boolean,
 		default: false,
 	},
+	// Question attempts tracking (for onboarding/training)
+	questionAttempts: [
+		{
+			questionId: {
+				type: mongoose.Schema.Types.ObjectId,
+				required: true,
+			},
+			answer: {
+				type: mongoose.Schema.Types.Mixed,
+				required: true,
+			},
+			isCorrect: {
+				type: Boolean,
+				default: false,
+			},
+			attemptNumber: {
+				type: Number,
+				default: 1,
+			},
+			timestamp: {
+				type: Date,
+				default: Date.now,
+			},
+			hintsUsed: [String], // Array of hint IDs used
+		},
+	],
 	// Device/browser information
 	metadata: {
 		userAgent: String,

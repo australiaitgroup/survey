@@ -9,6 +9,7 @@ import { OnboardingContext } from './OnboardingContext';
 import OnboardingProgress from './OnboardingProgress';
 import QuestionRenderer from './QuestionRenderer';
 import OnboardingComplete from './OnboardingComplete';
+import EmployeeTrainingComplete from './EmployeeTrainingComplete';
 
 // Types  
 type StepType = 'instructions' | 'questions' | 'results';
@@ -67,6 +68,21 @@ interface OnboardingTemplate {
 	maxAttempts?: number;
 }
 
+interface TrainingResult {
+	questionId: string;
+	questionText: string;
+	questionDescription?: string;
+	userAnswer: any;
+	correctAnswer: any;
+	isCorrect: boolean;
+	pointsAwarded: number;
+	maxPoints: number;
+	attemptsUsed: number;
+	explanation?: string;
+	learningContext?: any;
+	learningResources?: any[];
+}
+
 interface OnboardingState {
 	template: OnboardingTemplate | null;
 	responseId: string | null;
@@ -78,6 +94,11 @@ interface OnboardingState {
 	startedAt: Date | null;
 	status: 'loading' | 'not_started' | 'in_progress' | 'completed' | 'failed';
 	error: string | null;
+	// Training completion results
+	results?: TrainingResult[];
+	totalScore?: number;
+	maxPossibleScore?: number;
+	completionTime?: string;
 }
 
 interface FormState {
@@ -226,6 +247,44 @@ const EmployeeTraining: React.FC = () => {
 		}
 	}, [templateIdentifier, form.name, form.email, getApiPath]);
 
+	// Complete training function
+	const completeTraining = useCallback(async () => {
+		if (!onboardingState.responseId) return;
+
+		try {
+			const response = await axios.post(
+				getApiPath(`/onboarding/${templateIdentifier}/complete`),
+				{
+					responseId: onboardingState.responseId,
+				}
+			);
+
+			const { 
+				score, 
+				maxPossibleScore, 
+				completionTime, 
+				results 
+			} = response.data;
+
+			setOnboardingState(prev => ({
+				...prev,
+				status: 'completed',
+				totalScore: score,
+				maxPossibleScore: maxPossibleScore,
+				completionTime: completionTime,
+				results: results,
+			}));
+
+			setCurrentStep('results');
+		} catch (error: any) {
+			console.error('Failed to complete training:', error);
+			setOnboardingState(prev => ({
+				...prev,
+				error: error.response?.data?.message || 'Failed to complete training',
+			}));
+		}
+	}, [onboardingState.responseId, templateIdentifier, getApiPath]);
+
 	// Handle answer submission
 	const handleAnswerSubmit = useCallback(
 		async (questionId: string, answer: any) => {
@@ -257,20 +316,17 @@ const EmployeeTraining: React.FC = () => {
 					},
 				}));
 
-				// For now, just move to next question if answer is correct
-				// TODO: Implement proper navigation based on onboarding flow
-				if (isCorrect) {
-					const nextQuestionIndex = onboardingState.currentQuestionIndex + 1;
-					if (nextQuestionIndex < (onboardingState.template.questions?.length || 0)) {
-						setOnboardingState(prev => ({
-							...prev,
-							currentQuestionIndex: nextQuestionIndex,
-						}));
-					} else {
-						// All questions completed
-						setOnboardingState(prev => ({ ...prev, status: 'completed' }));
-						setCurrentStep('results');
-					}
+				// In employee training, always allow user to continue to next question
+				// This is a learning experience, not an assessment
+				const nextQuestionIndex = onboardingState.currentQuestionIndex + 1;
+				if (nextQuestionIndex < (onboardingState.template.questions?.length || 0)) {
+					setOnboardingState(prev => ({
+						...prev,
+						currentQuestionIndex: nextQuestionIndex,
+					}));
+				} else {
+					// All questions completed - call complete endpoint
+					completeTraining();
 				}
 			} catch (error: any) {
 				console.error('Failed to submit answer:', error);
@@ -282,6 +338,26 @@ const EmployeeTraining: React.FC = () => {
 		},
 		[onboardingState, templateIdentifier, getApiPath]
 	);
+
+	// Handle retake training - reset to instructions
+	const handleRetakeTraining = useCallback(() => {
+		// Reset to instructions step and clear completion state
+		setCurrentStep('instructions');
+		setOnboardingState(prev => ({
+			...prev,
+			status: 'not_started',
+			currentQuestionIndex: 0,
+			answers: {},
+			attempts: {},
+			responseId: null,
+			results: undefined,
+			totalScore: undefined,
+			maxPossibleScore: undefined,
+			completionTime: undefined,
+		}));
+		// Also clear the form
+		setForm({ name: '', email: '' });
+	}, []);
 
 	// Handle section completion
 	const handleSectionComplete = useCallback(
@@ -341,6 +417,20 @@ const EmployeeTraining: React.FC = () => {
 
 	// Render completed state
 	if (currentStep === 'results' && onboardingState.status === 'completed') {
+		// Use comprehensive training results if available
+		if (onboardingState.results && onboardingState.totalScore !== undefined) {
+			return (
+				<EmployeeTrainingComplete 
+					template={onboardingState.template!} 
+					results={onboardingState.results}
+					totalScore={onboardingState.totalScore}
+					maxPossibleScore={onboardingState.maxPossibleScore || 0}
+					completionTime={onboardingState.completionTime || 'Unknown'}
+					onRetakeTraining={handleRetakeTraining} 
+				/>
+			);
+		}
+		// Fallback to simple completion page
 		return (
 			<OnboardingComplete template={onboardingState.template!} onRestart={loadOnboarding} />
 		);

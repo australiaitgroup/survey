@@ -425,28 +425,76 @@ router.post(
 			throw new AppError('Invalid survey', HTTP_STATUS.BAD_REQUEST);
 		}
 
-		// Calculate final score (reused from assessment logic)
+		// Calculate final score and prepare detailed results
 		let totalScore = 0;
 		let correctAnswers = 0;
+		let maxPossibleScore = 0;
 		let totalQuestions = response.selectedQuestions.length;
+		const questionResults = [];
 
+		// Create a map of question attempts by questionId
+		const attemptsByQuestion = new Map();
 		response.questionAttempts?.forEach(attempt => {
-			if (attempt.isCorrect) {
-				correctAnswers++;
-				// Get question points
-				const question = response.selectedQuestions.find(
-					sq => sq.questionId.toString() === attempt.questionId.toString()
-				)?.questionData;
-				totalScore += question?.points || 1;
+			if (!attemptsByQuestion.has(attempt.questionId.toString())) {
+				attemptsByQuestion.set(attempt.questionId.toString(), []);
 			}
+			attemptsByQuestion.get(attempt.questionId.toString()).push(attempt);
 		});
 
-		const percentageScore = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+		// Process each question
+		response.selectedQuestions.forEach((selectedQuestion, index) => {
+			const question = selectedQuestion.questionData;
+			const questionId = selectedQuestion.questionId.toString();
+			const questionPoints = question?.points || 1;
+			maxPossibleScore += questionPoints;
+
+			// Get attempts for this question
+			const attempts = attemptsByQuestion.get(questionId) || [];
+			const lastAttempt = attempts[attempts.length - 1];
+			const attemptsUsed = attempts.length;
+			const isCorrect = lastAttempt?.isCorrect || false;
+			const pointsAwarded = isCorrect ? questionPoints : 0;
+
+			if (isCorrect) {
+				correctAnswers++;
+				totalScore += pointsAwarded;
+			}
+
+			// Prepare question result
+			questionResults.push({
+				questionId,
+				questionText: question?.text || '',
+				questionDescription: question?.description || '',
+				userAnswer: lastAttempt?.answer || null,
+				correctAnswer: question?.correctAnswer || null,
+				isCorrect,
+				pointsAwarded,
+				maxPoints: questionPoints,
+				attemptsUsed,
+				explanation: question?.explanation || null,
+				learningContext: question?.onboarding?.learningContext || null,
+				learningResources: question?.onboarding?.learningResources || [],
+			});
+		});
+
+		const percentageScore = maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0;
 		const isPassing = percentageScore >= (survey.scoringSettings?.passingThreshold || 60);
 
 		// Update response
 		response.completedAt = new Date();
-		response.score = totalScore;
+		response.score = {
+			totalPoints: totalScore,
+			correctAnswers: correctAnswers,
+			wrongAnswers: totalQuestions - correctAnswers,
+			percentage: percentageScore,
+			passed: isPassing,
+			scoringMode: 'percentage',
+			maxPossiblePoints: maxPossibleScore,
+			displayScore: percentageScore,
+			scoringDetails: {
+				questionScores: []
+			}
+		};
 		response.percentageScore = percentageScore;
 		response.isPassing = isPassing;
 		response.status = 'completed';
@@ -460,12 +508,23 @@ router.post(
 
 		await response.save();
 
+		// Calculate completion time
+		const completionTimeMs = response.completedAt - response.startedAt;
+		const completionTimeMinutes = Math.round(completionTimeMs / (1000 * 60));
+		const completionTime = completionTimeMinutes > 0 
+			? `${completionTimeMinutes} minute${completionTimeMinutes !== 1 ? 's' : ''}`
+			: 'Less than a minute';
+
 		res.json({
 			message: 'Onboarding completed successfully',
 			score: totalScore,
+			maxPossibleScore,
 			percentageScore,
 			isPassing,
-			completionTime: response.completedAt,
+			correctAnswers,
+			totalQuestions,
+			completionTime,
+			results: questionResults,
 			onboardingProgress: response.onboardingProgress,
 		});
 	})
