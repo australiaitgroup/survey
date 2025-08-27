@@ -6,7 +6,7 @@ pipeline {
         APP_NAME = 'survey-super-admin'
 
         // S3 Configuration - Deploy only to UAT bucket
-        S3_BUCKET_NAME = 'uat-sigma.jiangren.com.au'
+        S3_BUCKET_NAME = 'uat.sigmaq.co'
         AWS_REGION = 'ap-southeast-2'
 
         // Super Admin specific configuration
