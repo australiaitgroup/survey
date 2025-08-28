@@ -470,6 +470,28 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 							</div>
 						</div>
 
+						{/* Required Question */}
+						<div>
+							<div className='flex items-center'>
+								<input
+									type='checkbox'
+									id='isRequired'
+									checked={form.isRequired || false}
+									onChange={e => onChange('isRequired', e.target.checked)}
+									className='h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+								/>
+								<label htmlFor='isRequired' className='ml-2 block text-sm text-gray-900'>
+									{t('question.isRequired', '必做题')}
+								</label>
+							</div>
+							<div className='text-xs text-gray-500 mt-1'>
+								{t(
+									'question.isRequiredHelp',
+									'如果设为必做题，在assessment测试时，这道题将对每个candidate都显示'
+								)}
+							</div>
+						</div>
+
 						{/* Tags */}
 						<div>
 							<label className='block text-sm font-medium text-gray-700 mb-2'>

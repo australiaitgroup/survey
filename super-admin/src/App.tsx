@@ -172,8 +172,8 @@ function Layout({ children }: { children: React.ReactNode }) {
 			{/* Content with top padding to account for fixed header */}
 			<div className="pt-16">
 				{/* Fixed Sidebar */}
-				<nav className="fixed left-0 top-16 w-64 bg-white shadow-sm h-[calc(100vh-4rem)] overflow-y-auto z-40">
-					<div className="p-4">
+				<nav className="fixed left-0 top-16 w-64 bg-white shadow-sm h-[calc(100vh-4rem)] overflow-y-auto z-40 flex flex-col">
+					<div className="p-4 flex-1">
 						<ul className="space-y-2">
 							{navigation.map(item => {
 								const isActive = location.pathname === item.path;
@@ -193,6 +193,21 @@ function Layout({ children }: { children: React.ReactNode }) {
 								);
 							})}
 						</ul>
+					</div>
+					{/* Sidebar Footer */}
+					<div className="p-4 border-t border-gray-200 bg-gray-50">
+						<div className="text-center">
+							<img src="/SigmaQ-logo.svg" alt="SigmaQ" className="h-6 mx-auto mb-2" />
+							<p className="text-xs text-gray-500 mb-1">Powered by</p>
+							<a 
+								href="https://jracademy.ai" 
+								target="_blank" 
+								rel="noopener noreferrer"
+								className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+							>
+								JR Academy
+							</a>
+						</div>
 					</div>
 				</nav>
 

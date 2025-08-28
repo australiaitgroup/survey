@@ -1,6 +1,7 @@
 {
-	"name": "survey-app",
+	"name": "sigmaq",
 	"version": "1.0.0",
+	"description": "AI-Powered Assessment & Survey Platform for Modern Organizations",
 	"main": "server.js",
 	"license": "MIT",
 	"engines": {

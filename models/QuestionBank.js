@@ -117,6 +117,11 @@ const questionBankSchema = new mongoose.Schema({
 				enum: ['easy', 'medium', 'hard'],
 				default: 'medium',
 			},
+			// Required question flag - if true, this question must be included in assessments
+			isRequired: {
+				type: Boolean,
+				default: false,
+			},
 		},
 	],
 	// Creator information
