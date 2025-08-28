@@ -179,45 +179,60 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 
 	return (
 		<div className='card'>
-				<div className='flex justify-between items-center mb-4'>
-					<h3 className='text-xl font-bold text-gray-800'>Statistics</h3>
-					<div className='flex gap-2'>
-						<div className='relative'>
-							<select
-								value={sortOrder}
-								onChange={e => setSortOrder(e.target.value as 'newest' | 'oldest')}
-								className='btn-secondary text-sm pr-8 appearance-none bg-white border border-gray-300 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500'
-							>
-								<option value='newest'>Newest First</option>
-								<option value='oldest'>Oldest First</option>
-							</select>
-							<div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
-								<svg
-									className='fill-current h-4 w-4'
-									xmlns='http://www.w3.org/2000/svg'
-									viewBox='0 0 20 20'
+				<div className='mb-4'>
+					<div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4'>
+						<h3 className='text-xl font-bold text-gray-800'>Statistics</h3>
+						
+						{/* Mobile: Stack buttons vertically, Desktop: Horizontal layout */}
+						<div className='flex flex-col sm:flex-row gap-2 w-full sm:w-auto'>
+							{/* Sort dropdown - full width on mobile */}
+							<div className='relative w-full sm:w-auto'>
+								<select
+									value={sortOrder}
+									onChange={e => setSortOrder(e.target.value as 'newest' | 'oldest')}
+									className='w-full sm:w-auto btn-secondary text-sm pr-8 appearance-none bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500'
 								>
-									<path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
-								</svg>
+									<option value='newest'>Newest First</option>
+									<option value='oldest'>Oldest First</option>
+								</select>
+								<div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
+									<svg
+										className='fill-current h-4 w-4'
+										xmlns='http://www.w3.org/2000/svg'
+										viewBox='0 0 20 20'
+									>
+										<path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
+									</svg>
+								</div>
+							</div>
+							
+							{/* Action buttons - stack on mobile */}
+							<div className='flex flex-col sm:flex-row gap-2'>
+								<button 
+									className='btn-secondary text-sm w-full sm:w-auto' 
+									onClick={onRefresh} 
+									type='button'
+								>
+									Refresh Data
+								</button>
+								<button
+									className='btn-secondary text-sm w-full sm:w-auto'
+									onClick={exportIndividualCsv}
+									type='button'
+								>
+									<span className='hidden sm:inline'>Export CSV (Individual)</span>
+									<span className='sm:hidden'>Export Individual CSV</span>
+								</button>
+								<button
+									className='btn-secondary text-sm w-full sm:w-auto'
+									onClick={exportAggregatedCsv}
+									type='button'
+								>
+									<span className='hidden sm:inline'>Export CSV (Aggregated)</span>
+									<span className='sm:hidden'>Export Aggregated CSV</span>
+								</button>
 							</div>
 						</div>
-						<button className='btn-secondary text-sm' onClick={onRefresh} type='button'>
-							Refresh Data
-						</button>
-						<button
-							className='btn-secondary text-sm'
-							onClick={exportIndividualCsv}
-							type='button'
-						>
-							Export CSV (Individual)
-						</button>
-						<button
-							className='btn-secondary text-sm'
-							onClick={exportAggregatedCsv}
-							type='button'
-						>
-							Export CSV (Aggregated)
-						</button>
 					</div>
 				</div>
 
@@ -230,7 +245,7 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 						{/* Overview */}
 						<div className='bg-blue-50 rounded-lg p-4'>
 							<h5 className='font-semibold text-gray-800 mb-2'>Overview</h5>
-							<div className='grid grid-cols-3 gap-4 text-sm'>
+							<div className='grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm'>
 								<div className='text-center'>
 									<div className='font-bold text-blue-600 text-lg'>
 										{totals.totalResponses}
@@ -403,32 +418,34 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 							<div className='space-y-4'>
 								{getSortedResponses()?.length > 0 ? (
 									<>
-										<div className='flex justify-between items-center text-sm text-gray-600 mb-4'>
-											<div>
-												{getSortedResponses().length} records, showing page{' '}
+										<div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4 text-sm text-gray-600 mb-4'>
+											<div className='text-center sm:text-left'>
+												{getSortedResponses().length} records, showing{' '}
+												<span className='hidden sm:inline'>page </span>
 												{(responsePage - 1) * pageSize + 1} -{' '}
 												{Math.min(
 													responsePage * pageSize,
 													getSortedResponses().length
 												)}
 											</div>
-											<div className='flex items-center gap-2'>
+											<div className='flex items-center justify-center sm:justify-end gap-2'>
 												<button
-													className='btn-secondary btn-small'
+													className='btn-secondary btn-small px-3 py-1'
 													onClick={() =>
 														setResponsePage(prev => Math.max(1, prev - 1))
 													}
 													disabled={responsePage === 1}
 													type='button'
 												>
-													← Previous
+													<span className='hidden sm:inline'>← Previous</span>
+													<span className='sm:hidden'>←</span>
 												</button>
-												<span className='text-xs text-gray-500'>
+												<span className='text-xs text-gray-500 whitespace-nowrap'>
 													Page {responsePage} of{' '}
 													{Math.ceil(getSortedResponses().length / pageSize)}
 												</span>
 												<button
-													className='btn-secondary btn-small'
+													className='btn-secondary btn-small px-3 py-1'
 													onClick={() => setResponsePage(prev => prev + 1)}
 													disabled={
 														responsePage * pageSize >=
@@ -436,7 +453,8 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 													}
 													type='button'
 												>
-													Next →
+													<span className='hidden sm:inline'>Next →</span>
+													<span className='sm:hidden'>→</span>
 												</button>
 											</div>
 										</div>
@@ -514,20 +532,20 @@ const SurveyStatisticsTab: React.FC<Props> = ({
 															</span>
 														</div>
 													</div>
-													<div className='mt-3 flex gap-2'>
+													<div className='mt-3 flex flex-col sm:flex-row gap-2'>
 														<button
-															className='btn-outline btn-small'
+															className='btn-outline btn-small w-full sm:w-auto'
 															onClick={() =>
 																toggleExpand((response as any)._id)
 															}
 															type='button'
 														>
 															{expanded[(response as any)._id]
-																? 'Hide Result Detail'
-																: 'View Result Detail'}
+																? 'Hide Detail'
+																: 'View Detail'}
 														</button>
 														<button
-															className='btn-secondary btn-small text-red-600'
+															className='btn-secondary btn-small text-red-600 w-full sm:w-auto'
 															onClick={async () => {
 																if (
 																	!confirm(

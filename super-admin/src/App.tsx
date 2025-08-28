@@ -119,6 +119,7 @@ function Login() {
 // Layout Component with Navigation
 function Layout({ children }: { children: React.ReactNode }) {
 	const [user, setUser] = useState<any>(null);
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const navigate = useNavigate();
 	const location = useLocation();
 
@@ -141,6 +142,19 @@ function Layout({ children }: { children: React.ReactNode }) {
 		navigate('/login');
 	};
 
+	const toggleMobileMenu = () => {
+		setIsMobileMenuOpen(!isMobileMenuOpen);
+	};
+
+	const closeMobileMenu = () => {
+		setIsMobileMenuOpen(false);
+	};
+
+	const handleNavigation = (path: string) => {
+		navigate(path);
+		closeMobileMenu();
+	};
+
 	const navigation = [
 		{ name: 'Overview', path: '/overview' },
 		{ name: 'Companies', path: '/companies' },
@@ -153,15 +167,31 @@ function Layout({ children }: { children: React.ReactNode }) {
 		<div className="min-h-screen bg-gray-50">
 			{/* Fixed Header */}
 			<header className="fixed top-0 left-0 right-0 bg-white shadow z-50">
-				<div className="px-6 py-4 flex justify-between items-center">
-					<h1 className="text-2xl font-bold text-gray-900">Super Admin Dashboard</h1>
-					<div className="flex items-center space-x-4">
-						<span className="text-sm text-gray-600">
+				<div className="px-4 sm:px-6 py-4 flex justify-between items-center">
+					<div className="flex items-center">
+						{/* Mobile menu button */}
+						<button
+							onClick={toggleMobileMenu}
+							className="lg:hidden mr-3 p-1 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+							aria-label="Toggle menu"
+						>
+							<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								{isMobileMenuOpen ? (
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+								) : (
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+								)}
+							</svg>
+						</button>
+						<h1 className="text-xl sm:text-2xl font-bold text-gray-900">Super Admin Dashboard</h1>
+					</div>
+					<div className="flex items-center space-x-2 sm:space-x-4">
+						<span className="text-xs sm:text-sm text-gray-600 hidden sm:block">
 							Welcome, {user?.name || 'Admin'}
 						</span>
 						<button
 							onClick={handleLogout}
-							className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+							className="bg-red-600 text-white px-2 sm:px-3 py-1 text-xs sm:text-sm rounded hover:bg-red-700"
 						>
 							Logout
 						</button>
@@ -169,10 +199,18 @@ function Layout({ children }: { children: React.ReactNode }) {
 				</div>
 			</header>
 
+			{/* Mobile menu overlay */}
+			{isMobileMenuOpen && (
+				<div
+					className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+					onClick={closeMobileMenu}
+				/>
+			)}
+
 			{/* Content with top padding to account for fixed header */}
 			<div className="pt-16">
-				{/* Fixed Sidebar */}
-				<nav className="fixed left-0 top-16 w-64 bg-white shadow-sm h-[calc(100vh-4rem)] overflow-y-auto z-40 flex flex-col">
+				{/* Desktop Sidebar */}
+				<nav className="hidden lg:fixed lg:left-0 lg:top-16 lg:w-64 lg:bg-white lg:shadow-sm lg:h-[calc(100vh-4rem)] lg:overflow-y-auto lg:z-40 lg:flex lg:flex-col">
 					<div className="p-4 flex-1">
 						<ul className="space-y-2">
 							{navigation.map(item => {
@@ -180,7 +218,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 								return (
 									<li key={item.name}>
 										<button
-											onClick={() => navigate(item.path)}
+											onClick={() => handleNavigation(item.path)}
 											className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
 												isActive
 													? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
@@ -194,7 +232,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 							})}
 						</ul>
 					</div>
-					{/* Sidebar Footer */}
+					{/* Desktop Sidebar Footer */}
 					<div className="p-4 border-t border-gray-200 bg-gray-50">
 						<div className="text-center">
 							<img src="/SigmaQ-logo.svg" alt="SigmaQ" className="h-6 mx-auto mb-2" />
@@ -211,8 +249,50 @@ function Layout({ children }: { children: React.ReactNode }) {
 					</div>
 				</nav>
 
-				{/* Main Content with left margin for sidebar */}
-				<main className="ml-64 p-6">{children}</main>
+				{/* Mobile Sidebar */}
+				<nav className={`fixed left-0 top-16 w-64 bg-white shadow-sm h-[calc(100vh-4rem)] overflow-y-auto z-50 flex flex-col transition-transform duration-300 ease-in-out lg:hidden ${
+					isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+				}`}>
+					<div className="p-4 flex-1">
+						<ul className="space-y-2">
+							{navigation.map(item => {
+								const isActive = location.pathname === item.path;
+								return (
+									<li key={item.name}>
+										<button
+											onClick={() => handleNavigation(item.path)}
+											className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
+												isActive
+													? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
+													: 'text-gray-700 hover:bg-gray-100'
+											}`}
+										>
+											{item.name}
+										</button>
+									</li>
+								);
+							})}
+						</ul>
+					</div>
+					{/* Mobile Sidebar Footer */}
+					<div className="p-4 border-t border-gray-200 bg-gray-50">
+						<div className="text-center">
+							<img src="/SigmaQ-logo.svg" alt="SigmaQ" className="h-6 mx-auto mb-2" />
+							<p className="text-xs text-gray-500 mb-1">Powered by</p>
+							<a 
+								href="https://jracademy.ai" 
+								target="_blank" 
+								rel="noopener noreferrer"
+								className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+							>
+								JR Academy
+							</a>
+						</div>
+					</div>
+				</nav>
+
+				{/* Main Content with responsive margin */}
+				<main className="lg:ml-64 p-4 sm:p-6">{children}</main>
 			</div>
 		</div>
 	);
