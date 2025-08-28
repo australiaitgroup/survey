@@ -46,18 +46,6 @@ const EditSurveyModal: React.FC = () => {
 		}
 	}, [selectedSurvey, editForm.scoringSettings, setEditForm]);
 
-	// Debug log for editForm changes
-	useEffect(() => {
-		if (showEditModal) {
-			console.log('EditSurveyModal: editForm state:', {
-				sourceType: editForm.sourceType,
-				questionBankId: editForm.questionBankId,
-				questionCount: editForm.questionCount,
-				multiQuestionBankConfig: editForm.multiQuestionBankConfig,
-				selectedQuestions: editForm.selectedQuestions,
-			});
-		}
-	}, [showEditModal, editForm]);
 
 	if (!selectedSurvey || !showEditModal) return null;
 
@@ -86,16 +74,7 @@ const EditSurveyModal: React.FC = () => {
 				}),
 			};
 
-			// Debug: Log what we're saving
-			console.log('🔄 Updating survey with data:', {
-				surveyId: selectedSurvey._id,
-				securitySettings: surveyData.securitySettings,
-				antiCheatEnabled: surveyData.securitySettings?.antiCheatEnabled
-			});
-
 			await updateSurvey(selectedSurvey._id, surveyData);
-			
-			console.log('✅ Survey updated successfully');
 			closeEditModal();
 		} catch (err) {
 			console.error('❌ Failed to update survey:', err);

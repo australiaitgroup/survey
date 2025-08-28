@@ -34,13 +34,6 @@ router.get(
 		}
 		if (!survey) throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
 
-		// Debug: Log survey security settings
-		console.log('📋 Assessment GET response:', {
-			surveyId: survey._id,
-			securitySettings: survey.securitySettings,
-			antiCheatEnabled: survey.securitySettings?.antiCheatEnabled
-		});
-
 		// Ensure it is an assessment-type survey
 		if (survey.type !== SURVEY_TYPE.ASSESSMENT) {
 			throw new AppError('Not an assessment', HTTP_STATUS.BAD_REQUEST);
@@ -48,7 +41,16 @@ router.get(
 
 		// Never include questions in this metadata response
 		survey.questions = [];
-		res.json(survey);
+		
+		// Ensure securitySettings is included in the response
+		const response = {
+			...survey,
+			securitySettings: survey.securitySettings || {
+				antiCheatEnabled: false
+			}
+		};
+		
+		res.json(response);
 	})
 );
 
