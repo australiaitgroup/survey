@@ -66,7 +66,7 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 	// Company assets
 	const [companyBanks, setCompanyBanks] = useState<Array<{ _id: string; name: string; description?: string; questionCount: number; createdAt: string }>>([]);
 	const [companyBanksLoading, setCompanyBanksLoading] = useState(true);
-	const [companySurveys, setCompanySurveys] = useState<Array<{ _id: string; title: string; type: string; status: string; createdAt: string }>>([]);
+	const [companySurveys, setCompanySurveys] = useState<Array<{ _id: string; title: string; type: string; status: string; createdAt: string; questionCount: number }>>([]);
 	const [companySurveysLoading, setCompanySurveysLoading] = useState(true);
 
 	useEffect(() => {
@@ -480,7 +480,7 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 	const handleToggleUserStatus = async (user: any) => {
 		const newStatus = user.status === 'active' ? 'inactive' : 'active';
 		const action = newStatus === 'active' ? 'activate' : 'deactivate';
-		
+
 		if (!confirm(`Are you sure you want to ${action} ${user.name} (${user.email})?`)) {
 			return;
 		}
@@ -500,8 +500,8 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 				const data = await response.json();
 				if (data.success) {
 					// Update user in local state
-					setUsers(prev => prev.map(u => 
-						u._id === user._id 
+					setUsers(prev => prev.map(u =>
+						u._id === user._id
 							? { ...u, status: newStatus }
 							: u
 					));
@@ -513,8 +513,8 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 				}
 			} else {
 				// API endpoint not implemented, update locally
-				setUsers(prev => prev.map(u => 
-					u._id === user._id 
+				setUsers(prev => prev.map(u =>
+					u._id === user._id
 						? { ...u, status: newStatus }
 						: u
 				));
@@ -524,8 +524,8 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 		} catch (error) {
 			console.error(`Error ${action}ing user:`, error);
 			// Update locally when API is not available
-			setUsers(prev => prev.map(u => 
-				u._id === user._id 
+			setUsers(prev => prev.map(u =>
+				u._id === user._id
 					? { ...u, status: newStatus }
 					: u
 			));
@@ -1440,6 +1440,7 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 								<tr>
 									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
 									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Questions</th>
 									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
 									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
 								</tr>
@@ -1451,6 +1452,11 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 											<div className="text-sm font-medium text-gray-900">{s.title || s._id}</div>
 										</td>
 										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">{s.type || 'survey'}</td>
+										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+											<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+												📝 {s.questionCount || 0} questions
+											</span>
+										</td>
 										<td className="px-6 py-4 whitespace-nowrap">
 											<span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${s.status === 'active' ? 'bg-green-100 text-green-800' : s.status === 'closed' ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800'}`}>{s.status}</span>
 										</td>
@@ -1497,7 +1503,7 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 								</svg>
 							</button>
 						</div>
-						
+
 						<div className="space-y-4">
 							<div className="flex items-center space-x-4">
 								<div className="flex-shrink-0 h-16 w-16">

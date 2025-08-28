@@ -401,11 +401,17 @@ router.get(
 		const userIdStrings = companyUsers.map(u => u._id.toString());
 
 		const surveys = await Survey.find({ createdBy: { $in: userIdStrings } })
-			.select('_id title type status createdAt updatedAt')
+			.select('_id title type status createdAt updatedAt questions')
 			.sort({ createdAt: -1 })
 			.lean();
 
-		res.json({ success: true, data: surveys });
+		// Add question count to each survey
+		const surveysWithQuestionCount = surveys.map(survey => ({
+			...survey,
+			questionCount: survey.questions ? survey.questions.length : 0
+		}));
+
+		res.json({ success: true, data: surveysWithQuestionCount });
 	})
 );
 
@@ -1076,14 +1082,14 @@ router.get(
 		// Get last activity (most recent survey, response, or question bank)
 		const lastSurvey = await Survey.findOne({ createdBy: userId }).sort({ createdAt: -1 }).select('createdAt');
 		const lastQuestionBank = await QuestionBank.findOne({ createdBy: userId }).sort({ createdAt: -1 }).select('createdAt');
-		
+
 		const lastActivities = [
 			lastSurvey?.createdAt,
 			lastQuestionBank?.createdAt,
 			user.lastLoginAt,
 		].filter(Boolean);
 
-		const lastActivity = lastActivities.length > 0 
+		const lastActivity = lastActivities.length > 0
 			? new Date(Math.max(...lastActivities.map(d => new Date(d).getTime())))
 			: user.createdAt;
 
