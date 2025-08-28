@@ -812,6 +812,134 @@ router.post(
 );
 
 /**
+ * @route   POST /sa/users/:id/reset-password
+ * @desc    Reset password for a user
+ * @access  SuperAdmin only
+ */
+router.post(
+	'/users/:id/reset-password',
+	asyncHandler(async (req, res) => {
+		const userId = req.params.id;
+		const targetUser = await User.findById(userId);
+
+		if (!targetUser) {
+			return res.status(404).json({
+				success: false,
+				error: 'User not found',
+			});
+		}
+
+		// Generate a temporary password
+		const crypto = require('crypto');
+		const tempPassword = crypto.randomBytes(8).toString('hex'); // 16 character temp password
+
+		// Hash the temporary password
+		const bcrypt = require('bcryptjs');
+		const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+		// Update user password
+		targetUser.password = hashedPassword;
+		// You might want to add a flag to force password change on next login
+		targetUser.mustChangePassword = true;
+		await targetUser.save();
+
+		// In a real implementation, you would send an email here
+		// For now, we'll just log it and return success
+		console.log(`Temporary password for ${targetUser.email}: ${tempPassword}`);
+
+		// Audit log
+		await audit(
+			req.auditContext.actor,
+			'user_password_reset',
+			'user',
+			targetUser._id.toString(),
+			{
+				targetName: targetUser.name,
+				targetEmail: targetUser.email,
+				companyId: targetUser.companyId?.toString(),
+			},
+			req
+		);
+
+		res.json({
+			success: true,
+			message: `Password reset successfully for ${targetUser.name}`,
+			data: {
+				user: {
+					id: targetUser._id,
+					name: targetUser.name,
+					email: targetUser.email,
+				},
+				// In production, don't return the password - send via email
+				temporaryPassword: tempPassword, // Remove this in production
+			},
+		});
+	})
+);
+
+/**
+ * @route   PUT /sa/users/:id/status
+ * @desc    Update user status (activate/deactivate)
+ * @access  SuperAdmin only
+ */
+router.put(
+	'/users/:id/status',
+	asyncHandler(async (req, res) => {
+		const userId = req.params.id;
+		const { isActive } = req.body;
+
+		if (typeof isActive !== 'boolean') {
+			return res.status(400).json({
+				success: false,
+				error: 'isActive must be a boolean value',
+			});
+		}
+
+		const targetUser = await User.findById(userId);
+
+		if (!targetUser) {
+			return res.status(404).json({
+				success: false,
+				error: 'User not found',
+			});
+		}
+
+		const oldStatus = targetUser.isActive;
+		targetUser.isActive = isActive;
+		await targetUser.save();
+
+		// Audit log
+		await audit(
+			req.auditContext.actor,
+			'user_status_change',
+			'user',
+			targetUser._id.toString(),
+			{
+				targetName: targetUser.name,
+				targetEmail: targetUser.email,
+				companyId: targetUser.companyId?.toString(),
+				oldStatus: oldStatus ? 'active' : 'inactive',
+				newStatus: isActive ? 'active' : 'inactive',
+			},
+			req
+		);
+
+		res.json({
+			success: true,
+			message: `User ${isActive ? 'activated' : 'deactivated'} successfully`,
+			data: {
+				user: {
+					id: targetUser._id,
+					name: targetUser.name,
+					email: targetUser.email,
+					isActive: targetUser.isActive,
+				},
+			},
+		});
+	})
+);
+
+/**
  * @route   GET /sa/audit-logs
  * @desc    Get audit logs across all companies
  * @access  SuperAdmin only

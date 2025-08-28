@@ -54,6 +54,10 @@ const userSchema = new mongoose.Schema({
 	lastLoginAt: {
 		type: Date,
 	},
+	mustChangePassword: {
+		type: Boolean,
+		default: false,
+	},
 	// Stripe subscription fields
 	stripeCustomerId: {
 		type: String,
