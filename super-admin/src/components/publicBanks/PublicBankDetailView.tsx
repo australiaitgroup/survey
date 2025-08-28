@@ -1,7 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { PublicBank, Question, QuestionForm } from '../../types/publicBanks';
 import QuestionDrawer from './QuestionDrawer';
-import ImportCSVModal from '../../../../client/src/components/modals/ImportCSVModal';
+// Local lightweight CSV import modal (inline)
+const ImportCSVModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    onImport: (file: File) => Promise<void> | void;
+    loading?: boolean;
+    onDownloadTemplate?: () => void | Promise<void>;
+}> = ({ isOpen, onClose, onImport, loading = false, onDownloadTemplate }) => {
+    const [file, setFile] = React.useState<File | null>(null);
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+            <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+                <h3 className="text-lg font-semibold mb-4">Import Questions from CSV</h3>
+                <div className="space-y-3">
+                    <input
+                        type="file"
+                        accept=".csv,text/csv"
+                        onChange={e => setFile(e.target.files?.[0] || null)}
+                        className="w-full"
+                    />
+                    <div className="flex items-center justify-between">
+                        <button
+                            onClick={onClose}
+                            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded"
+                        >
+                            Cancel
+                        </button>
+                        <div className="flex gap-2">
+                            {onDownloadTemplate && (
+                                <button
+                                    onClick={() => onDownloadTemplate()}
+                                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded"
+                                >
+                                    Download Template
+                                </button>
+                            )}
+                            <button
+                                disabled={!file || loading}
+                                onClick={() => file && onImport(file)}
+                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded disabled:opacity-50"
+                            >
+                                {loading ? 'Importing...' : 'Import'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 import ImportResultModal from './ImportResultModal';
 
 interface PublicBankDetailViewProps {
