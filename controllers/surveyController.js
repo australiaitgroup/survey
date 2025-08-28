@@ -262,7 +262,8 @@ async function createSurvey(req, res) {
 		// Generate slug after schema validation
 		// Check for both falsy values and empty strings
 		if (data.title && (!data.slug || data.slug.trim() === '')) {
-			data.slug = await SurveyModel.generateSlug(data.title);
+			const { generateUniqueSlug } = require('../utils/slugUtils');
+			data.slug = await generateUniqueSlug(data.title, SurveyModel, null, 16);
 		}
 
 		// Add createdBy field from authenticated user

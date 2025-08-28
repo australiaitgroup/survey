@@ -18,6 +18,7 @@ const companiesRouter = require('./routes/companies');
 const superAdminRouter = require('./routes/superAdmin');
 const publicBanksRouter = require('./routes/publicBanks');
 const contactRouter = require('./routes/contact');
+const slugManagementRouter = require('./routes/slug-management');
 const webhooksRouter = require('./routes/webhooks');
 const errorHandler = require('./middlewares/errorHandler');
 const { extractTenantFromUrl, multiTenant } = require('./middlewares/multiTenant');
@@ -83,6 +84,7 @@ app.use('/api', collectionsRouter);
 // Public Banks API
 app.use('/api/public-banks', publicBanksRouter);
 app.use('/api', contactRouter);
+app.use('/api/slug-management', slugManagementRouter);
 // Webhooks API (must be before JSON parser middleware)
 app.use('/api/webhooks', webhooksRouter);
 

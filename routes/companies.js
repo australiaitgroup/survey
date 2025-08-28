@@ -36,26 +36,8 @@ router.get('/current', jwtAuth, async (req, res) => {
 		// Ensure company has a slug (auto-generate for legacy companies)
 		const companyDoc = await Company.findById(user.companyId);
 		if (companyDoc && !companyDoc.slug) {
-			const generateSlug = name => {
-				return (name || 'company')
-					.toLowerCase()
-					.replace(/[^a-z0-9\s-]/g, '')
-					.replace(/\s+/g, '-')
-					.replace(/-+/g, '-')
-					.replace(/(^-)|(-$)/g, '');
-			};
-
-			let slug = generateSlug(companyDoc.name);
-			const originalSlug = slug;
-			let counter = 1;
-			// Ensure uniqueness
-			// eslint-disable-next-line no-await-in-loop
-			while (await Company.findOne({ slug, _id: { $ne: companyDoc._id } })) {
-				slug = `${originalSlug}-${counter}`;
-				counter++;
-			}
-
-			companyDoc.slug = slug;
+			const { generateUniqueSlug } = require('../utils/slugUtils');
+			companyDoc.slug = await generateUniqueSlug(companyDoc.name || 'company', Company, companyDoc._id, 16);
 			await companyDoc.save();
 		}
 
@@ -108,25 +90,9 @@ router.patch('/current', jwtAuth, async (req, res) => {
 
 		// If user doesn't have a company, create one
 		if (!user.companyId) {
-			const generateSlug = name => {
-				return name
-					.toLowerCase()
-					.replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-					.replace(/\s+/g, '-') // Replace spaces with hyphens
-					.replace(/-+/g, '-') // Replace multiple hyphens with single
-					.trim('-'); // Remove leading/trailing hyphens
-			};
-
+			const { generateUniqueSlug } = require('../utils/slugUtils');
 			const companyName = req.body.name || 'My Company';
-			let slug = generateSlug(companyName);
-
-			// Ensure slug is unique
-			let counter = 1;
-			let originalSlug = slug;
-			while (await Company.findOne({ slug })) {
-				slug = `${originalSlug}-${counter}`;
-				counter++;
-			}
+			let slug = await generateUniqueSlug(companyName, Company, null, 16);
 
 			company = new Company({
 				name: companyName,
@@ -150,25 +116,8 @@ router.patch('/current', jwtAuth, async (req, res) => {
 
 			// If name is changing, regenerate a unique slug unless an explicit slug is provided
 			if (req.body.name && req.body.name !== company.name && !req.body.slug) {
-				const generateSlug = name => {
-					return name
-						.toLowerCase()
-						.replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-						.replace(/\s+/g, '-') // Replace spaces with hyphens
-						.replace(/-+/g, '-') // Replace multiple hyphens with single
-						.replace(/(^-)|(-$)/g, ''); // Trim leading/trailing hyphens
-				};
-
-				let slug = generateSlug(req.body.name);
-				const originalSlug = slug;
-				let counter = 1;
-				// Ensure uniqueness excluding current company
-				// eslint-disable-next-line no-await-in-loop
-				while (await Company.findOne({ slug, _id: { $ne: company._id } })) {
-					slug = `${originalSlug}-${counter}`;
-					counter++;
-				}
-				company.slug = slug;
+				const { generateUniqueSlug } = require('../utils/slugUtils');
+				company.slug = await generateUniqueSlug(req.body.name, Company, company._id, 16);
 			}
 
 			// Update other company fields

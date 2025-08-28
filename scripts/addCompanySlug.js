@@ -1,15 +1,8 @@
 const mongoose = require('mongoose');
 const Company = require('../models/Company');
 
-// Function to generate slug from company name
-const generateSlug = name => {
-	return name
-		.toLowerCase()
-		.replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-		.replace(/\s+/g, '-') // Replace spaces with hyphens
-		.replace(/-+/g, '-') // Replace multiple hyphens with single
-		.trim('-'); // Remove leading/trailing hyphens
-};
+// Import centralized slug utility
+const { generateUniqueSlug } = require('../utils/slugUtils');
 
 const addSlugsToCompanies = async () => {
 	try {
@@ -25,15 +18,7 @@ const addSlugsToCompanies = async () => {
 		console.log(`Found ${companiesWithoutSlug.length} companies without slug`);
 
 		for (const company of companiesWithoutSlug) {
-			let slug = generateSlug(company.name || 'company');
-
-			// Ensure slug is unique
-			let counter = 1;
-			let originalSlug = slug;
-			while (await Company.findOne({ slug, _id: { $ne: company._id } })) {
-				slug = `${originalSlug}-${counter}`;
-				counter++;
-			}
+			const slug = await generateUniqueSlug(company.name || 'company', Company, company._id, 16);
 
 			// Update the company with the slug
 			await Company.findByIdAndUpdate(company._id, { slug });

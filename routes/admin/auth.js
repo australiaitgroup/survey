@@ -205,20 +205,9 @@ router.post(
 			let company = null;
 			if (companyName) {
 				console.log('Creating company:', companyName);
-				// Generate a slug from the company name
-				const baseSlug = companyName
-					.toLowerCase()
-					.trim()
-					.replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric characters with hyphens
-					.replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-
-				// Check if slug already exists and make it unique if needed
-				let slug = baseSlug;
-				let counter = 1;
-				while (await Company.findOne({ slug })) {
-					slug = `${baseSlug}-${counter}`;
-					counter++;
-				}
+				// Generate a unique slug from the company name
+				const { generateUniqueSlug } = require('../../utils/slugUtils');
+				const slug = await generateUniqueSlug(companyName, Company, null, 16);
 
 				console.log('Generated slug:', slug);
 				company = new Company({
