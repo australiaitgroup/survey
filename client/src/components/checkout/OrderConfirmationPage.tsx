@@ -31,7 +31,7 @@ const OrderConfirmationPage: React.FC = () => {
 	const [searchParams] = useSearchParams();
 	const bankId = searchParams.get('bank');
 	const purchaseType = searchParams.get('type');
-	
+
 	const [bank, setBank] = useState<QuestionBank | null>(null);
 	const [recommendedBanks, setRecommendedBanks] = useState<RecommendedBank[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -146,7 +146,7 @@ const OrderConfirmationPage: React.FC = () => {
 							<div className="flex-1">
 								<h3 className="text-lg font-medium text-gray-900 mb-2">{bank.title}</h3>
 								<p className="text-gray-600 mb-3">{bank.description}</p>
-								
+
 								{/* Tags */}
 								<div className="flex flex-wrap gap-2 mb-3">
 									{bank.tags.slice(0, 5).map((tag, index) => (
@@ -235,7 +235,7 @@ const OrderConfirmationPage: React.FC = () => {
 													• {recommendedBank.questionCount} questions
 												</span>
 											</div>
-											
+
 											{recommendedBank.entitlement === 'Locked' ? (
 												<button
 													onClick={() => handlePurchaseRecommended(recommendedBank)}

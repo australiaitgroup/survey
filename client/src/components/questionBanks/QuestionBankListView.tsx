@@ -38,7 +38,7 @@ const QuestionBankListView: React.FC = () => {
 	const purchasedBanks = authorized
 		.filter((b: any) => b.accessType === 'Owned' || b.accessType === 'Subscription')
 		.map(convertToPublicQuestionBank);
-	
+
 	// Use random recommendations instead of just locked banks
 	const recommendedBanks = randomRecommendations;
 

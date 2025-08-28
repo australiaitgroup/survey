@@ -36,7 +36,7 @@ export const usePublicBankRecommendations = (limit: number = 3) => {
 		} catch (err: any) {
 			console.error('Error fetching recommendations:', err);
 			setError(err.response?.data?.error || 'Failed to fetch recommendations');
-			
+
 			// Set empty data on error
 			setData({
 				recommendations: [],

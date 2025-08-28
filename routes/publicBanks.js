@@ -1118,14 +1118,14 @@ router.get('/analytics/purchases', jwtAuth, async (req, res) => {
 
 		// Get purchase statistics
 		const totalPurchases = await BankPurchase.countDocuments(filter);
-		const freePurchases = await BankPurchase.countDocuments({ 
-			...filter, 
-			amount: 0, 
-			paymentMethod: 'free' 
+		const freePurchases = await BankPurchase.countDocuments({
+			...filter,
+			amount: 0,
+			paymentMethod: 'free'
 		});
-		const paidPurchases = await BankPurchase.countDocuments({ 
-			...filter, 
-			amount: { $gt: 0 } 
+		const paidPurchases = await BankPurchase.countDocuments({
+			...filter,
+			amount: { $gt: 0 }
 		});
 
 		// Get purchases by bank
@@ -1227,7 +1227,7 @@ router.get('/analytics/purchases', jwtAuth, async (req, res) => {
 		// Get purchase trends over time (last 30 days by default)
 		const thirtyDaysAgo = new Date();
 		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-		
+
 		const trendFilter = {
 			...filter,
 			purchasedAt: { $gte: startDate ? new Date(startDate) : thirtyDaysAgo }

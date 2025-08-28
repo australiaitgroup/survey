@@ -13,7 +13,7 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/survey
 
 async function testFreeBankPurchaseFlow() {
 	console.log('🧪 Starting Free Question Bank Purchase Flow Tests\n');
-	
+
 	let authToken;
 	let testUser;
 	let testCompany;
@@ -47,7 +47,7 @@ async function testFreeBankPurchaseFlow() {
 		console.log('\n--- Creating test user ---');
 		const bcrypt = require('bcrypt');
 		const hashedPassword = await bcrypt.hash('password123', 10);
-		
+
 		testUser = new User({
 			email: 'testuser@freepurchase.test',
 			password: hashedPassword,
@@ -123,7 +123,7 @@ async function testFreeBankPurchaseFlow() {
 				email: 'testuser@freepurchase.test',
 				password: 'password123',
 			});
-			
+
 			authToken = loginResponse.data.token;
 			console.log('✓ User login successful');
 		} catch (error) {
@@ -310,7 +310,7 @@ async function testFreeBankPurchaseFlow() {
 			if (testCompany) await Company.findByIdAndDelete(testCompany._id);
 			if (freeBank) await PublicBank.findByIdAndDelete(freeBank._id);
 			if (paidBank) await PublicBank.findByIdAndDelete(paidBank._id);
-			await BankPurchase.deleteMany({ 
+			await BankPurchase.deleteMany({
 				$or: [
 					{ companyId: testCompany?._id },
 					{ notes: { $regex: /Test free purchase/ } }

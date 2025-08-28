@@ -218,7 +218,7 @@ const AdminDashboard: React.FC = () => {
 				<QuestionBankModal />
 				<EditQuestionBankModal />
 			</div>
-			
+
 			{/* Footer - stays at bottom */}
 			<AdminFooter />
 		</div>

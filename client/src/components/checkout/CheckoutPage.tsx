@@ -19,7 +19,7 @@ const CheckoutPage: React.FC = () => {
 	const navigate = useNavigate();
 	const [searchParams] = useSearchParams();
 	const bankId = searchParams.get('bank');
-	
+
 	const [bank, setBank] = useState<QuestionBank | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [processing, setProcessing] = useState(false);
@@ -55,7 +55,7 @@ const CheckoutPage: React.FC = () => {
 			if (bank.type === 'FREE' || bank.price === 0) {
 				// Handle free purchase
 				const response = await api.post(`/public-banks/${bank._id}/purchase-free`);
-				
+
 				if (response.data.success) {
 					// Redirect to confirmation page
 					navigate(`/admin/checkout/confirmation?bank=${bank._id}&type=free`);
@@ -63,7 +63,7 @@ const CheckoutPage: React.FC = () => {
 			} else {
 				// Handle paid purchase - redirect to Stripe
 				const response = await api.post(`/public-banks/${bank._id}/buy-once`);
-				
+
 				if (response.data.checkoutUrl) {
 					window.location.href = response.data.checkoutUrl;
 				} else {
@@ -133,7 +133,7 @@ const CheckoutPage: React.FC = () => {
 							<div className="flex-1">
 								<h2 className="text-xl font-semibold text-gray-900 mb-2">{bank.title}</h2>
 								<p className="text-gray-600 mb-4">{bank.description}</p>
-								
+
 								{/* Tags */}
 								<div className="flex flex-wrap gap-2 mb-4">
 									{bank.tags.slice(0, 3).map((tag, index) => (

@@ -12,7 +12,7 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/survey
 
 async function testRecommendationsFeature() {
 	console.log('🧪 Starting Public Bank Recommendations Feature Tests\n');
-	
+
 	let authToken;
 	let testUser;
 	let testCompany;
@@ -44,7 +44,7 @@ async function testRecommendationsFeature() {
 		console.log('\n--- Creating test user ---');
 		const bcrypt = require('bcrypt');
 		const hashedPassword = await bcrypt.hash('password123', 10);
-		
+
 		testUser = new User({
 			email: 'testuser@recommendations.test',
 			password: hashedPassword,
@@ -125,7 +125,7 @@ async function testRecommendationsFeature() {
 				email: 'testuser@recommendations.test',
 				password: 'password123',
 			});
-			
+
 			authToken = loginResponse.data.token;
 			console.log('✓ User login successful');
 		} catch (error) {
@@ -148,7 +148,7 @@ async function testRecommendationsFeature() {
 
 			firstRecommendations = response.data.recommendations;
 			console.log('✓ Got recommendations:', firstRecommendations.length);
-			
+
 			if (firstRecommendations.length > 0) {
 				console.log('  First recommendation:', firstRecommendations[0].title);
 				console.log('  Total available:', response.data.total);
@@ -173,7 +173,7 @@ async function testRecommendationsFeature() {
 
 			secondRecommendations = response.data.recommendations;
 			console.log('✓ Got second set of recommendations:', secondRecommendations.length);
-			
+
 			if (secondRecommendations.length > 0) {
 				console.log('  First recommendation:', secondRecommendations[0].title);
 			}
@@ -182,7 +182,7 @@ async function testRecommendationsFeature() {
 			const firstIds = firstRecommendations.map(b => b._id).sort();
 			const secondIds = secondRecommendations.map(b => b._id).sort();
 			const areDifferent = JSON.stringify(firstIds) !== JSON.stringify(secondIds);
-			
+
 			if (areDifferent) {
 				console.log('✓ Recommendations are randomized (different results)');
 			} else {
@@ -197,7 +197,7 @@ async function testRecommendationsFeature() {
 		console.log('\n--- Test 4: Test Exclusion of Owned Banks ---');
 		if (firstRecommendations.length > 0) {
 			const bankToPurchase = firstRecommendations.find(b => b.type === 'FREE');
-			
+
 			if (bankToPurchase) {
 				// Purchase the free bank
 				try {
@@ -282,7 +282,7 @@ async function testRecommendationsFeature() {
 		if (firstRecommendations.length > 0) {
 			const recommendation = firstRecommendations[0];
 			const requiredFields = ['_id', 'title', 'description', 'tags', 'questionCount', 'type', 'entitlement'];
-			
+
 			let allFieldsPresent = true;
 			for (const field of requiredFields) {
 				if (!(field in recommendation)) {
@@ -290,7 +290,7 @@ async function testRecommendationsFeature() {
 					allFieldsPresent = false;
 				}
 			}
-			
+
 			if (allFieldsPresent) {
 				console.log('✓ All required fields present in recommendation data');
 				console.log('  Fields:', Object.keys(recommendation).join(', '));
