@@ -940,6 +940,166 @@ router.put(
 );
 
 /**
+ * @route   GET /sa/users/:id
+ * @desc    Get a specific user by ID
+ * @access  SuperAdmin only
+ */
+router.get(
+	'/users/:id',
+	asyncHandler(async (req, res) => {
+		const userId = req.params.id;
+		const user = await User.findById(userId)
+			.populate('companyId', 'name slug')
+			.select('-password')
+			.lean();
+
+		if (!user) {
+			return res.status(404).json({
+				success: false,
+				error: 'User not found',
+			});
+		}
+
+		res.json({
+			success: true,
+			data: user,
+		});
+	})
+);
+
+/**
+ * @route   PUT /sa/users/:id
+ * @desc    Update user information
+ * @access  SuperAdmin only
+ */
+router.put(
+	'/users/:id',
+	asyncHandler(async (req, res) => {
+		const userId = req.params.id;
+		const updateData = req.body;
+
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(404).json({
+				success: false,
+				error: 'User not found',
+			});
+		}
+
+		// Store old values for audit
+		const oldValues = { ...user.toObject() };
+
+		// Update allowed fields
+		const allowedFields = [
+			'name',
+			'email',
+			'role',
+			'department',
+			'studentId',
+			'class',
+			'isActive',
+		];
+
+		allowedFields.forEach(field => {
+			if (updateData[field] !== undefined) {
+				user[field] = updateData[field];
+			}
+		});
+
+		await user.save();
+
+		// Audit log
+		await audit(
+			req.auditContext.actor,
+			'user_update',
+			'user',
+			user._id.toString(),
+			{
+				targetName: user.name,
+				targetEmail: user.email,
+				oldValues,
+				newValues: user.toObject(),
+			},
+			req
+		);
+
+		// Return user without password
+		const updatedUser = await User.findById(userId)
+			.populate('companyId', 'name slug')
+			.select('-password')
+			.lean();
+
+		res.json({
+			success: true,
+			message: 'User updated successfully',
+			data: updatedUser,
+		});
+	})
+);
+
+/**
+ * @route   GET /sa/users/:id/stats
+ * @desc    Get user activity statistics
+ * @access  SuperAdmin only
+ */
+router.get(
+	'/users/:id/stats',
+	asyncHandler(async (req, res) => {
+		const userId = req.params.id;
+
+		// Verify user exists
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(404).json({
+				success: false,
+				error: 'User not found',
+			});
+		}
+
+		// Get surveys created by this user
+		const surveyCount = await Survey.countDocuments({ createdBy: userId });
+
+		// Get responses submitted by this user (if Response model has userId field)
+		// For now, we'll use a mock count since the relationship might be different
+		const responseCount = await Response.countDocuments({
+			// Assuming responses have a userId or similar field
+			// This might need to be adjusted based on your actual schema
+			$or: [
+				{ userId: userId },
+				{ createdBy: userId },
+			]
+		});
+
+		// Get question banks created by this user
+		const questionBankCount = await QuestionBank.countDocuments({ createdBy: userId });
+
+		// Get last activity (most recent survey, response, or question bank)
+		const lastSurvey = await Survey.findOne({ createdBy: userId }).sort({ createdAt: -1 }).select('createdAt');
+		const lastQuestionBank = await QuestionBank.findOne({ createdBy: userId }).sort({ createdAt: -1 }).select('createdAt');
+		
+		const lastActivities = [
+			lastSurvey?.createdAt,
+			lastQuestionBank?.createdAt,
+			user.lastLoginAt,
+		].filter(Boolean);
+
+		const lastActivity = lastActivities.length > 0 
+			? new Date(Math.max(...lastActivities.map(d => new Date(d).getTime())))
+			: user.createdAt;
+
+		res.json({
+			success: true,
+			data: {
+				surveyCount,
+				responseCount,
+				questionBankCount,
+				lastActivity: lastActivity.toISOString(),
+			},
+		});
+	})
+);
+
+/**
  * @route   GET /sa/audit-logs
  * @desc    Get audit logs across all companies
  * @access  SuperAdmin only
