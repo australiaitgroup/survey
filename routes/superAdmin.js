@@ -144,11 +144,33 @@ router.get(
 			return acc;
 		}, {});
 
-		// Enrich companies with user counts
-		const enrichedCompanies = companies.map(company => ({
-			...company,
-			userCount: userCountMap[company._id.toString()] || 0,
-		}));
+		// Also collect admin emails for each company
+		const adminUsers = await User.find({ companyId: { $in: companyIds }, role: 'admin' })
+			.select('email companyId')
+			.lean();
+
+		const adminEmailsMap = adminUsers.reduce((acc, user) => {
+			const key = user.companyId.toString();
+			if (!acc[key]) acc[key] = [];
+			if (user.email) acc[key].push(user.email);
+			return acc;
+		}, {});
+
+		// Enrich companies with user counts and admin emails
+		const enrichedCompanies = companies.map(company => {
+			const id = company._id.toString();
+			const adminEmails = adminEmailsMap[id] || [];
+			const isActive = company.isActive === undefined ? true : company.isActive;
+			return {
+				...company,
+				status: isActive ? 'active' : 'inactive',
+				email: company.contactEmail || adminEmails[0] || '',
+				userCount: userCountMap[id] || 0,
+				adminEmails,
+				adminCount: adminEmails.length,
+				primaryAdminEmail: adminEmails[0] || null,
+			};
+		});
 
 		res.json({
 			success: true,
