@@ -32,7 +32,7 @@ router.use(attachAuditContext);
  * @access  SuperAdmin only
  */
 router.get(
-	'/stats',
+	'/stats/overview-basic',
 	asyncHandler(async (req, res) => {
 		const now = new Date();
 		const since7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -337,6 +337,119 @@ router.get(
 				_id: company._id,
 				name: company.name,
 				slug: company.slug,
+			},
+		});
+	})
+);
+
+/**
+ * @route   GET /sa/companies/:id/question-banks
+ * @desc    List question banks created by users in a specific company
+ * @access  SuperAdmin only
+ */
+router.get(
+	'/companies/:id/question-banks',
+	asyncHandler(async (req, res) => {
+		const companyId = req.params.id;
+
+		// Validate company exists
+		const company = await Company.findById(companyId).lean();
+		if (!company) {
+			return res.status(404).json({ success: false, error: 'Company not found' });
+		}
+
+		// Get company user ids (QuestionBank.createdBy stores user id as string)
+		const companyUsers = await User.find({ companyId: company._id }).select('_id name email').lean();
+		const userIdStrings = companyUsers.map(u => u._id.toString());
+
+		const banks = await QuestionBank.find({ createdBy: { $in: userIdStrings } })
+			.select('_id name description questions createdBy createdAt updatedAt')
+			.lean();
+
+		const data = banks.map(b => ({
+			_id: b._id,
+			name: b.name,
+			description: b.description || '',
+			questionCount: Array.isArray(b.questions) ? b.questions.length : 0,
+			createdBy: b.createdBy,
+			createdAt: b.createdAt,
+			updatedAt: b.updatedAt,
+		}));
+
+		res.json({ success: true, data });
+	})
+);
+
+/**
+ * @route   GET /sa/companies/:id/surveys
+ * @desc    List surveys created by users in a specific company
+ * @access  SuperAdmin only
+ */
+router.get(
+	'/companies/:id/surveys',
+	asyncHandler(async (req, res) => {
+		const companyId = req.params.id;
+
+		// Validate company exists
+		const company = await Company.findById(companyId).lean();
+		if (!company) {
+			return res.status(404).json({ success: false, error: 'Company not found' });
+		}
+
+		// Get company user ids (Survey.createdBy stores user id as string)
+		const companyUsers = await User.find({ companyId: company._id }).select('_id').lean();
+		const userIdStrings = companyUsers.map(u => u._id.toString());
+
+		const surveys = await Survey.find({ createdBy: { $in: userIdStrings } })
+			.select('_id title type status createdAt updatedAt')
+			.sort({ createdAt: -1 })
+			.lean();
+
+		res.json({ success: true, data: surveys });
+	})
+);
+
+/**
+ * @route   GET /sa/companies/:id/stats
+ * @desc    Get statistics for a specific company (counts)
+ * @access  SuperAdmin only
+ */
+router.get(
+	'/companies/:id/stats',
+	asyncHandler(async (req, res) => {
+		const companyId = req.params.id;
+		const company = await Company.findById(companyId).lean();
+		if (!company) {
+			return res.status(404).json({ success: false, error: 'Company not found' });
+		}
+
+		// Company users
+		const companyUsers = await User.find({ companyId: company._id }).select('_id isActive').lean();
+		const userIdStrings = companyUsers.map(u => u._id.toString());
+		const totalUsers = companyUsers.length;
+		const activeUsers = companyUsers.filter(u => u.isActive !== false).length;
+
+		// Surveys created by these users
+		const surveysByCompanyUsers = await Survey.find({ createdBy: { $in: userIdStrings } })
+			.select('_id createdAt')
+			.lean();
+		const surveyIds = surveysByCompanyUsers.map(s => s._id);
+		const totalSurveys = surveysByCompanyUsers.length;
+
+		// Responses for those surveys
+		const totalResponses = await Response.countDocuments({ surveyId: { $in: surveyIds } });
+
+		// Question banks created by these users
+		const totalQuestionBanks = await QuestionBank.countDocuments({ createdBy: { $in: userIdStrings } });
+
+		res.json({
+			success: true,
+			data: {
+				totalQuestionBanks,
+				totalSurveys,
+				totalResponses,
+				activeUsers,
+				totalUsers,
 			},
 		});
 	})
@@ -1102,6 +1215,98 @@ router.put(
 			success: true,
 			message: 'Public bank updated successfully',
 			data: bank,
+		});
+	})
+);
+
+/**
+ * @route   POST /sa/public-banks/import-from-company-bank
+ * @desc    Import a company's question bank into a new public bank
+ * @access  SuperAdmin only
+ */
+router.post(
+	'/public-banks/import-from-company-bank',
+	asyncHandler(async (req, res) => {
+		const {
+			companyId,
+			questionBankId,
+			title,
+			description,
+			type = 'free',
+			priceOneTime = 0,
+			tags = [],
+			locales = ['en'],
+			isActive = true,
+			isPublished = true,
+		} = req.body;
+
+		if (!companyId || !questionBankId) {
+			return res.status(400).json({ success: false, error: 'companyId and questionBankId are required' });
+		}
+
+		const company = await Company.findById(companyId).lean();
+		if (!company) {
+			return res.status(404).json({ success: false, error: 'Company not found' });
+		}
+
+		const companyUsers = await User.find({ companyId: company._id }).select('_id').lean();
+		const userIdStrings = companyUsers.map(u => u._id.toString());
+
+		const sourceBank = await QuestionBank.findById(questionBankId).lean();
+		if (!sourceBank) {
+			return res.status(404).json({ success: false, error: 'Source question bank not found' });
+		}
+
+		if (!userIdStrings.includes(sourceBank.createdBy)) {
+			return res.status(403).json({ success: false, error: 'Question bank does not belong to the specified company' });
+		}
+
+		const newPublicBank = new PublicBank({
+			title: title || sourceBank.name,
+			description: description || sourceBank.description || 'Imported from company question bank',
+			type: type === 'paid' ? 'paid' : 'free',
+			priceOneTime: type === 'paid' ? Number(priceOneTime || 0) : 0,
+			tags,
+			locales: Array.isArray(locales) && locales.length ? locales : ['en'],
+			isActive: !!isActive,
+			isPublished: !!isPublished,
+			createdBy: req.user.id,
+			questions: (sourceBank.questions || []).map(q => ({
+				text: q.text,
+				description: q.description || '',
+				type: q.type,
+				options: q.options || [],
+				correctAnswer: q.correctAnswer,
+				explanation: q.explanation || null,
+				descriptionImage: q.descriptionImage || null,
+				points: q.points || 1,
+				tags: q.tags || [],
+				difficulty: q.difficulty || 'medium',
+			})),
+		});
+
+		await newPublicBank.save();
+
+		await audit(
+			req.auditContext.actor,
+			'public_bank_import_from_company',
+			'bank',
+			newPublicBank._id.toString(),
+			{
+				targetName: newPublicBank.title,
+				sourceCompanyId: company._id.toString(),
+				sourceQuestionBankId: sourceBank._id.toString(),
+				importedQuestions: newPublicBank.questionCount,
+				type: newPublicBank.type,
+				price: newPublicBank.priceOneTime,
+			},
+			req
+		);
+
+		res.status(201).json({
+			success: true,
+			message: 'Public bank created from company question bank',
+			data: newPublicBank,
 		});
 	})
 );

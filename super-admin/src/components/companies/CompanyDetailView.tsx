@@ -60,11 +60,18 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 	const [statsLoading, setStatsLoading] = useState(true);
 	const [users, setUsers] = useState<any[]>([]);
 	const [usersLoading, setUsersLoading] = useState(true);
+	// Company assets
+	const [companyBanks, setCompanyBanks] = useState<Array<{ _id: string; name: string; description?: string; questionCount: number; createdAt: string }>>([]);
+	const [companyBanksLoading, setCompanyBanksLoading] = useState(true);
+	const [companySurveys, setCompanySurveys] = useState<Array<{ _id: string; title: string; type: string; status: string; createdAt: string }>>([]);
+	const [companySurveysLoading, setCompanySurveysLoading] = useState(true);
 
 	useEffect(() => {
 		setFormData(company);
 		loadCompanyStats();
 		loadCompanyUsers();
+		loadCompanyBanks();
+		loadCompanySurveys();
 	}, [company]);
 
 	const loadCompanyStats = async () => {
@@ -164,6 +171,58 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 			});
 		} finally {
 			setStatsLoading(false);
+		}
+	};
+
+	const loadCompanyBanks = async () => {
+		setCompanyBanksLoading(true);
+		try {
+			const token = localStorage.getItem('sa_token');
+			if (!token) {
+				setCompanyBanks([]);
+				setCompanyBanksLoading(false);
+				return;
+			}
+
+			const response = await fetch(`/api/sa/companies/${company._id}/question-banks`, {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			if (response.ok) {
+				const data = await response.json();
+				setCompanyBanks(data.data || []);
+			} else {
+				setCompanyBanks([]);
+			}
+		} catch (e) {
+			setCompanyBanks([]);
+		} finally {
+			setCompanyBanksLoading(false);
+		}
+	};
+
+	const loadCompanySurveys = async () => {
+		setCompanySurveysLoading(true);
+		try {
+			const token = localStorage.getItem('sa_token');
+			if (!token) {
+				setCompanySurveys([]);
+				setCompanySurveysLoading(false);
+				return;
+			}
+
+			const response = await fetch(`/api/sa/companies/${company._id}/surveys`, {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			if (response.ok) {
+				const data = await response.json();
+				setCompanySurveys(data.data || []);
+			} else {
+				setCompanySurveys([]);
+			}
+		} catch (e) {
+			setCompanySurveys([]);
+		} finally {
+			setCompanySurveysLoading(false);
 		}
 	};
 
@@ -1139,6 +1198,101 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 							This company has no registered users yet
 						</p>
 					</div>
+				)}
+			</div>
+
+			{/* Company Question Banks */}
+			<div className="bg-white rounded-lg shadow p-6">
+				<div className="flex items-center justify-between mb-4">
+					<h3 className="text-lg font-medium text-gray-900">Company Question Banks</h3>
+					<button
+						onClick={loadCompanyBanks}
+						disabled={companyBanksLoading}
+						className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50"
+					>
+						{companyBanksLoading ? 'Loading...' : 'Refresh'}
+					</button>
+				</div>
+				{companyBanksLoading ? (
+					<div className="flex items-center justify-center py-8">
+						<div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent"></div>
+						<span className="ml-2 text-gray-600">Loading question banks...</span>
+					</div>
+				) : companyBanks.length > 0 ? (
+					<div className="overflow-x-auto">
+						<table className="min-w-full divide-y divide-gray-200">
+							<thead className="bg-gray-50">
+								<tr>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Questions</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+								</tr>
+							</thead>
+							<tbody className="bg-white divide-y divide-gray-200">
+								{companyBanks.map(b => (
+									<tr key={b._id}>
+										<td className="px-6 py-4 whitespace-nowrap">
+											<div className="text-sm font-medium text-gray-900">{b.name}</div>
+											<div className="text-sm text-gray-500">{b.description || 'No description'}</div>
+										</td>
+										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{b.questionCount}</td>
+										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(b.createdAt).toLocaleDateString()}</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				) : (
+					<div className="text-center py-8 text-gray-500">No question banks found</div>
+				)}
+			</div>
+
+			{/* Company Surveys */}
+			<div className="bg-white rounded-lg shadow p-6">
+				<div className="flex items-center justify-between mb-4">
+					<h3 className="text-lg font-medium text-gray-900">Company Surveys</h3>
+					<button
+						onClick={loadCompanySurveys}
+						disabled={companySurveysLoading}
+						className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50"
+					>
+						{companySurveysLoading ? 'Loading...' : 'Refresh'}
+					</button>
+				</div>
+				{companySurveysLoading ? (
+					<div className="flex items-center justify-center py-8">
+						<div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent"></div>
+						<span className="ml-2 text-gray-600">Loading surveys...</span>
+					</div>
+				) : companySurveys.length > 0 ? (
+					<div className="overflow-x-auto">
+						<table className="min-w-full divide-y divide-gray-200">
+							<thead className="bg-gray-50">
+								<tr>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+								</tr>
+							</thead>
+							<tbody className="bg-white divide-y divide-gray-200">
+								{companySurveys.map(s => (
+									<tr key={s._id}>
+										<td className="px-6 py-4 whitespace-nowrap">
+											<div className="text-sm font-medium text-gray-900">{s.title || s._id}</div>
+										</td>
+										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">{s.type || 'survey'}</td>
+										<td className="px-6 py-4 whitespace-nowrap">
+											<span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${s.status === 'active' ? 'bg-green-100 text-green-800' : s.status === 'closed' ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800'}`}>{s.status}</span>
+										</td>
+										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(s.createdAt).toLocaleDateString()}</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				) : (
+					<div className="text-center py-8 text-gray-500">No surveys found</div>
 				)}
 			</div>
 
