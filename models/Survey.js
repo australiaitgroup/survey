@@ -336,38 +336,10 @@ const surveySchema = new mongoose.Schema({
 	},
 });
 
-// Helper function to generate unique slug
+// Helper function to generate unique slug (deprecated - use utils/slugUtils.js)
 surveySchema.statics.generateSlug = async function (title, excludeId = null) {
-	let baseSlug = title
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/(^-|-$)/g, '');
-
-	// If the slug is empty (e.g., Chinese title), generate a unique ID
-	if (!baseSlug) {
-		// Generate a unique slug using timestamp and random string
-		const timestamp = Date.now().toString(36);
-		const randomStr = Math.random().toString(36).substring(2, 8);
-		baseSlug = `survey-${timestamp}-${randomStr}`;
-	}
-
-	// Ensure slug is unique
-	let slug = baseSlug;
-	let counter = 1;
-
-	// Check if slug already exists (excluding current document)
-	const query = { slug };
-	if (excludeId) {
-		query._id = { $ne: excludeId };
-	}
-
-	while (await this.findOne(query)) {
-		slug = `${baseSlug}-${counter}`;
-		counter++;
-		query.slug = slug;
-	}
-
-	return slug;
+	const { generateUniqueSlug } = require('../utils/slugUtils');
+	return await generateUniqueSlug(title, this, excludeId, 16);
 };
 
 // Virtual method to check if survey requires answers

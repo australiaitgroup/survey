@@ -43,26 +43,8 @@ router.get(
 				// Ensure slug exists for legacy companies
 				const companyDoc = await Company.findById(user.companyId);
 				if (companyDoc && !companyDoc.slug) {
-					const generateSlug = name => {
-						return (name || 'company')
-							.toLowerCase()
-							.replace(/[^a-z0-9\s-]/g, '')
-							.replace(/\s+/g, '-')
-							.replace(/-+/g, '-')
-							.replace(/(^-)|(-$)/g, '');
-					};
-
-					let slug = generateSlug(companyDoc.name);
-					const originalSlug = slug;
-					let counter = 1;
-					// Ensure uniqueness
-					// eslint-disable-next-line no-await-in-loop
-					while (await Company.findOne({ slug, _id: { $ne: companyDoc._id } })) {
-						slug = `${originalSlug}-${counter}`;
-						counter++;
-					}
-
-					companyDoc.slug = slug;
+					const { generateUniqueSlug } = require('../../utils/slugUtils');
+					companyDoc.slug = await generateUniqueSlug(companyDoc.name || 'company', Company, companyDoc._id, 16);
 					await companyDoc.save();
 				}
 
