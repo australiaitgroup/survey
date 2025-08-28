@@ -284,7 +284,7 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 							<span
 								className={`px-2 py-1 text-xs font-semibold rounded-full ${getTypeBadgeStyle(bank.type)}`}
 							>
-								{bank.type === 'FREE' ? 'Free' : `${formatPrice(bank.price)}`}
+								{bank.type === 'FREE' ? '[Free]' : `${formatPrice(bank.price)}`}
 							</span>
 							{/* Entitlement Status Badge */}
 							<span
