@@ -30,7 +30,7 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 
 	// Format price display
 	const formatPrice = (price?: number) => {
-		if (!price) return 'Free';
+		if (!price) return '$0';
 		return `$${price.toFixed(2)}`;
 	};
 
@@ -63,22 +63,26 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 		return type === 'FREE' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700';
 	};
 
-	// Handle free bank attachment
-	const handleAddToUse = async () => {
+	// Handle free bank purchase (go through checkout)
+	const handleFreePurchase = async () => {
 		setLoading(true);
 		try {
-			const response = await api.post(`/public-banks/${bank._id}/attach`);
+			const response = await api.post(`/public-banks/${bank._id}/purchase`);
 
 			if (response.data.success) {
-				setLocalEntitlement('Owned');
-				onEntitlementChange?.();
-
-				// Show success message
-				console.log('Question bank added successfully');
+				if (response.data.checkoutUrl) {
+					// Redirect to checkout page
+					window.location.href = response.data.checkoutUrl;
+				} else {
+					// Direct success for free items
+					setLocalEntitlement('Owned');
+					onEntitlementChange?.();
+					console.log('Free question bank purchased successfully');
+				}
 			}
 		} catch (error: any) {
-			console.error('Error adding question bank:', error);
-			alert(error.response?.data?.error || 'Failed to add question bank');
+			console.error('Error purchasing question bank:', error);
+			alert(error.response?.data?.error || 'Failed to purchase question bank');
 		} finally {
 			setLoading(false);
 		}
@@ -199,14 +203,14 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 			} else {
 				buttons.push(
 					<button
-						key='add'
-						onClick={handleAddToUse}
+						key='purchase'
+						onClick={handleFreePurchase}
 						disabled={loading}
 						className='flex-1 sm:flex-none px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-0'
 					>
 						{loading
-							? t('questionBanks.marketplace.adding', 'Adding...')
-							: t('questionBanks.marketplace.addToUse', 'Add to use')}
+							? t('questionBanks.marketplace.processing', 'Processing...')
+							: t('questionBanks.marketplace.purchase', 'Purchase')}
 					</button>
 				);
 			}
@@ -280,7 +284,7 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 							<span
 								className={`px-2 py-1 text-xs font-semibold rounded-full ${getTypeBadgeStyle(bank.type)}`}
 							>
-								{bank.type === 'FREE' ? 'FREE' : `PAID ${formatPrice(bank.price)}`}
+								{bank.type === 'FREE' ? 'Free' : `${formatPrice(bank.price)}`}
 							</span>
 							{/* Entitlement Status Badge */}
 							<span

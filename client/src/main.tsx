@@ -69,6 +69,8 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 					/>
 					<Route path='/admin/profile' element={<Admin />} />
 					<Route path='/admin/billing' element={<Admin />} />
+					<Route path='/admin/checkout' element={<Admin />} />
+					<Route path='/admin/checkout/confirmation' element={<Admin />} />
 					<Route path='/admin/:id' element={<Admin />} />
 					{/* Non-tenant routes (backward compatibility) */}
 					<Route path='/survey/:slug' element={<TakeSurvey />} />

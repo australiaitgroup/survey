@@ -306,7 +306,149 @@ router.get('/for-survey', async (req, res) => {
 	}
 });
 
-// POST /api/public-banks/:id/attach - Add free bank to company (idempotent)
+// POST /api/public-banks/:id/purchase - Unified purchase endpoint for both free and paid banks
+router.post('/:id/purchase', jwtAuth, async (req, res) => {
+	try {
+		const bank = await PublicBank.findOne({
+			_id: req.params.id,
+			isActive: true,
+			isPublished: true,
+		});
+
+		if (!bank) {
+			return res.status(404).json({ error: 'Question bank not found' });
+		}
+
+		const resolveUser = async (req, select) => {
+			const raw = req.user && (req.user.id || req.user._id || req.user);
+			if (!raw) return null;
+			if (mongoose.Types.ObjectId.isValid(raw)) {
+				return await User.findById(raw).select(select);
+			}
+			return await User.findOne({ $or: [{ email: raw }, { username: raw }] }).select(select);
+		};
+		const user = await resolveUser(req, 'companyId email');
+
+		if (!user || !user.companyId) {
+			return res.status(403).json({ error: 'Company not found' });
+		}
+
+		// Check if already has access
+		const hasAccess = await Entitlement.hasAccess(user.companyId, bank._id);
+		if (hasAccess) {
+			return res.status(400).json({ error: 'You already have access to this question bank' });
+		}
+
+		const baseUrl = process.env.CLIENT_URL || 'http://localhost:5051';
+
+		// For free banks, redirect to checkout page
+		if (bank.type === 'free') {
+			return res.json({
+				success: true,
+				checkoutUrl: `${baseUrl}/admin/checkout?bank=${bank._id}`,
+			});
+		}
+
+		// For paid banks, redirect to checkout page
+		return res.json({
+			success: true,
+			checkoutUrl: `${baseUrl}/admin/checkout?bank=${bank._id}`,
+		});
+	} catch (error) {
+		console.error('Error initiating purchase:', error);
+		res.status(500).json({
+			error: 'Failed to initiate purchase',
+			details: error.message,
+		});
+	}
+});
+
+// POST /api/public-banks/:id/purchase-free - Process free bank purchase (create order and grant access)
+router.post('/:id/purchase-free', jwtAuth, async (req, res) => {
+	try {
+		const bank = await PublicBank.findOne({
+			_id: req.params.id,
+			isActive: true,
+			isPublished: true,
+			type: 'free',
+		});
+
+		if (!bank) {
+			return res.status(404).json({ error: 'Free question bank not found' });
+		}
+
+		const resolveUser = async (req, select) => {
+			const raw = req.user && (req.user.id || req.user._id || req.user);
+			if (!raw) return null;
+			if (mongoose.Types.ObjectId.isValid(raw)) {
+				return await User.findById(raw).select(select);
+			}
+			return await User.findOne({ $or: [{ email: raw }, { username: raw }] }).select(select);
+		};
+		const user = await resolveUser(req, 'companyId email');
+
+		if (!user || !user.companyId) {
+			return res.status(403).json({ error: 'Company not found' });
+		}
+
+		// Check if already has access
+		const hasAccess = await Entitlement.hasAccess(user.companyId, bank._id);
+		if (hasAccess) {
+			return res.status(400).json({ error: 'You already have access to this question bank' });
+		}
+
+		// Create order entry for analytics
+		const order = new BankPurchase({
+			companyId: user.companyId,
+			bankId: bank._id,
+			type: 'oneTime',
+			status: 'completed',
+			amount: 0,
+			currency: 'USD',
+			paymentMethod: 'free',
+			transactionId: `free_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+			purchasedBy: user._id,
+			purchasedAt: new Date(),
+			notes: 'Free question bank purchase',
+		});
+
+		await order.save();
+
+		// Grant access through entitlement
+		const entitlement = await Entitlement.grantFreeAccess(user.companyId, bank._id, user._id);
+
+		// Increment usage count if newly created
+		if (entitlement.createdAt.getTime() === entitlement.updatedAt.getTime()) {
+			await bank.incrementUsage();
+		}
+
+		res.json({
+			success: true,
+			message: 'Free question bank purchased successfully',
+			order: {
+				id: order._id,
+				bankId: bank._id,
+				bankTitle: bank.title,
+				amount: 0,
+				status: 'completed',
+			},
+			entitlement: {
+				bankId: bank._id,
+				bankTitle: bank.title,
+				accessType: entitlement.accessType,
+				grantedAt: entitlement.grantedAt,
+			},
+		});
+	} catch (error) {
+		console.error('Error processing free purchase:', error);
+		res.status(500).json({
+			error: 'Failed to process free purchase',
+			details: error.message,
+		});
+	}
+});
+
+// POST /api/public-banks/:id/attach - Add free bank to company (idempotent) - DEPRECATED, use /purchase instead
 router.post('/:id/attach', jwtAuth, async (req, res) => {
 	try {
 		const bank = await PublicBank.findOne({
@@ -416,7 +558,7 @@ router.post('/:id/buy-once', jwtAuth, async (req, res) => {
 					},
 				],
 				mode: 'payment',
-				success_url: `${process.env.CLIENT_URL || 'http://localhost:5051'}/admin/question-banks?tab=marketplace&payment=success&bank=${bank._id}`,
+				success_url: `${process.env.CLIENT_URL || 'http://localhost:5051'}/admin/checkout/confirmation?bank=${bank._id}&type=paid&payment=success`,
 				cancel_url: `${process.env.CLIENT_URL || 'http://localhost:5051'}/admin/question-banks?tab=marketplace&payment=cancelled`,
 				metadata: {
 					companyId: user.companyId.toString(),
@@ -433,7 +575,23 @@ router.post('/:id/buy-once', jwtAuth, async (req, res) => {
 				sessionId: session.id,
 			});
 		} else {
-			// Simulate purchase for development
+			// Simulate purchase for development - create order and entitlement
+			const order = new BankPurchase({
+				companyId: user.companyId,
+				bankId: bank._id,
+				type: 'oneTime',
+				status: 'completed',
+				amount: bank.priceOneTime,
+				currency: bank.currency || 'USD',
+				paymentMethod: 'stripe',
+				transactionId: 'simulated_' + Date.now(),
+				purchasedBy: user._id,
+				purchasedAt: new Date(),
+				notes: 'Simulated purchase (Stripe not configured)',
+			});
+
+			await order.save();
+
 			const entitlement = await Entitlement.findOneAndUpdate(
 				{ companyId: user.companyId, bankId: bank._id },
 				{
@@ -460,9 +618,18 @@ router.post('/:id/buy-once', jwtAuth, async (req, res) => {
 
 			await bank.incrementPurchaseCount();
 
+			// Redirect to confirmation page
+			const baseUrl = process.env.CLIENT_URL || 'http://localhost:5051';
 			res.json({
 				success: true,
-				message: 'Purchase simulated (Stripe not configured)',
+				checkoutUrl: `${baseUrl}/admin/checkout/confirmation?bank=${bank._id}&type=paid&payment=simulated`,
+				order: {
+					id: order._id,
+					bankId: bank._id,
+					bankTitle: bank.title,
+					amount: bank.priceOneTime,
+					status: 'completed',
+				},
 				entitlement: {
 					bankId: bank._id,
 					bankTitle: bank.title,
@@ -841,6 +1008,209 @@ router.post('/:id/import', jwtAuth, async (req, res) => {
 		console.error('Error importing public bank:', error);
 		res.status(500).json({
 			error: 'Failed to import question bank',
+			details: error.message,
+		});
+	}
+});
+
+// GET /api/public-banks/analytics/purchases - Get purchase analytics
+router.get('/analytics/purchases', jwtAuth, async (req, res) => {
+	try {
+		const { startDate, endDate, bankId, companyId } = req.query;
+
+		// Build filter for analytics
+		const filter = {};
+
+		if (startDate) {
+			filter.purchasedAt = { $gte: new Date(startDate) };
+		}
+		if (endDate) {
+			filter.purchasedAt = { ...filter.purchasedAt, $lte: new Date(endDate) };
+		}
+		if (bankId) {
+			filter.bankId = bankId;
+		}
+		if (companyId) {
+			filter.companyId = companyId;
+		}
+
+		// Get purchase statistics
+		const totalPurchases = await BankPurchase.countDocuments(filter);
+		const freePurchases = await BankPurchase.countDocuments({ 
+			...filter, 
+			amount: 0, 
+			paymentMethod: 'free' 
+		});
+		const paidPurchases = await BankPurchase.countDocuments({ 
+			...filter, 
+			amount: { $gt: 0 } 
+		});
+
+		// Get purchases by bank
+		const purchasesByBank = await BankPurchase.aggregate([
+			{ $match: filter },
+			{
+				$group: {
+					_id: '$bankId',
+					totalPurchases: { $sum: 1 },
+					freePurchases: {
+						$sum: {
+							$cond: [
+								{ $and: [{ $eq: ['$amount', 0] }, { $eq: ['$paymentMethod', 'free'] }] },
+								1,
+								0
+							]
+						}
+					},
+					paidPurchases: {
+						$sum: {
+							$cond: [{ $gt: ['$amount', 0] }, 1, 0]
+						}
+					},
+					totalRevenue: { $sum: '$amount' },
+				}
+			},
+			{
+				$lookup: {
+					from: 'publicbanks',
+					localField: '_id',
+					foreignField: '_id',
+					as: 'bank'
+				}
+			},
+			{
+				$unwind: '$bank'
+			},
+			{
+				$project: {
+					bankId: '$_id',
+					bankTitle: '$bank.title',
+					totalPurchases: 1,
+					freePurchases: 1,
+					paidPurchases: 1,
+					totalRevenue: 1,
+				}
+			},
+			{ $sort: { totalPurchases: -1 } }
+		]);
+
+		// Get purchases by company
+		const purchasesByCompany = await BankPurchase.aggregate([
+			{ $match: filter },
+			{
+				$group: {
+					_id: '$companyId',
+					totalPurchases: { $sum: 1 },
+					freePurchases: {
+						$sum: {
+							$cond: [
+								{ $and: [{ $eq: ['$amount', 0] }, { $eq: ['$paymentMethod', 'free'] }] },
+								1,
+								0
+							]
+						}
+					},
+					paidPurchases: {
+						$sum: {
+							$cond: [{ $gt: ['$amount', 0] }, 1, 0]
+						}
+					},
+					totalSpent: { $sum: '$amount' },
+				}
+			},
+			{
+				$lookup: {
+					from: 'companies',
+					localField: '_id',
+					foreignField: '_id',
+					as: 'company'
+				}
+			},
+			{
+				$unwind: '$company'
+			},
+			{
+				$project: {
+					companyId: '$_id',
+					companyName: '$company.name',
+					totalPurchases: 1,
+					freePurchases: 1,
+					paidPurchases: 1,
+					totalSpent: 1,
+				}
+			},
+			{ $sort: { totalPurchases: -1 } }
+		]);
+
+		// Get purchase trends over time (last 30 days by default)
+		const thirtyDaysAgo = new Date();
+		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+		
+		const trendFilter = {
+			...filter,
+			purchasedAt: { $gte: startDate ? new Date(startDate) : thirtyDaysAgo }
+		};
+
+		const purchaseTrends = await BankPurchase.aggregate([
+			{ $match: trendFilter },
+			{
+				$group: {
+					_id: {
+						year: { $year: '$purchasedAt' },
+						month: { $month: '$purchasedAt' },
+						day: { $dayOfMonth: '$purchasedAt' }
+					},
+					totalPurchases: { $sum: 1 },
+					freePurchases: {
+						$sum: {
+							$cond: [
+								{ $and: [{ $eq: ['$amount', 0] }, { $eq: ['$paymentMethod', 'free'] }] },
+								1,
+								0
+							]
+						}
+					},
+					paidPurchases: {
+						$sum: {
+							$cond: [{ $gt: ['$amount', 0] }, 1, 0]
+						}
+					},
+					revenue: { $sum: '$amount' }
+				}
+			},
+			{
+				$project: {
+					date: {
+						$dateFromParts: {
+							year: '$_id.year',
+							month: '$_id.month',
+							day: '$_id.day'
+						}
+					},
+					totalPurchases: 1,
+					freePurchases: 1,
+					paidPurchases: 1,
+					revenue: 1
+				}
+			},
+			{ $sort: { date: 1 } }
+		]);
+
+		res.json({
+			summary: {
+				totalPurchases,
+				freePurchases,
+				paidPurchases,
+				freePercentage: totalPurchases > 0 ? Math.round((freePurchases / totalPurchases) * 100) : 0,
+			},
+			purchasesByBank,
+			purchasesByCompany,
+			purchaseTrends,
+		});
+	} catch (error) {
+		console.error('Error fetching purchase analytics:', error);
+		res.status(500).json({
+			error: 'Failed to fetch purchase analytics',
 			details: error.message,
 		});
 	}
