@@ -11,6 +11,7 @@ import PublicBanks from './components/pages/PublicBanks';
 import PublicBankDetailPage from './components/pages/PublicBankDetailPage';
 import Overview from './components/pages/Overview';
 import Companies from './components/pages/Companies';
+import Users from './components/pages/Users';
 import Transactions from './components/pages/Transactions';
 import Audit from './components/pages/Audit';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -158,6 +159,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 	const navigation = [
 		{ name: 'Overview', path: '/overview' },
 		{ name: 'Companies', path: '/companies' },
+		{ name: 'Users', path: '/users' },
 		{ name: 'Public Banks', path: '/public-banks' },
 		{ name: 'Transactions', path: '/transactions' },
 		{ name: 'Audit', path: '/audit' },
@@ -371,6 +373,26 @@ function App() {
 						<ProtectedRoute>
 							<Layout>
 								<Companies />
+							</Layout>
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/users"
+					element={
+						<ProtectedRoute>
+							<Layout>
+								<Users />
+							</Layout>
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/users/:userId"
+					element={
+						<ProtectedRoute>
+							<Layout>
+								<Users />
 							</Layout>
 						</ProtectedRoute>
 					}

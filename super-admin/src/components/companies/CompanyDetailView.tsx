@@ -234,12 +234,9 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 		try {
 			const token = localStorage.getItem('sa_token');
 			if (!token) {
-				console.log('No token found');
 				setUsersLoading(false);
 				return;
 			}
-
-			console.log('Loading users for company:', company._id);
 
 			const response = await fetch(`/api/sa/companies/${company._id}/users`, {
 				headers: {
@@ -248,15 +245,11 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 				},
 			});
 
-			console.log('Response status:', response.status, 'OK:', response.ok);
-
 			if (response.ok) {
 				const contentType = response.headers.get('content-type');
-				console.log('Content-Type:', contentType);
 
 				if (contentType && contentType.includes('application/json')) {
 					const data = await response.json();
-					console.log('Users API response:', data);
 
 					if (data.success && Array.isArray(data.data)) {
 						const normalizedUsers = data.data.map((user: any) => ({
@@ -272,18 +265,14 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 							mustChangePassword: user.mustChangePassword || false,
 						}));
 
-						console.log('Successfully loaded users:', normalizedUsers.length);
 						setUsers(normalizedUsers);
 					} else {
-						console.log('No users found in response');
 						setUsers([]);
 					}
 				} else {
-					console.log('Response is not JSON');
 					setUsers([]);
 				}
 			} else {
-				console.log('API request failed with status:', response.status);
 				setUsers([]);
 			}
 		} catch (error) {

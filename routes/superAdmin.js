@@ -282,7 +282,7 @@ router.get(
 		}
 
 		// Build query - ensure companyId is ObjectId
-		const query = { companyId: mongoose.Types.ObjectId(companyId) };
+		const query = { companyId: new mongoose.Types.ObjectId(companyId) };
 
 		if (search) {
 			query.$or = [
@@ -299,9 +299,6 @@ router.get(
 			query.isActive = isActive === 'true';
 		}
 
-		// Debug logging
-		console.log(`[DEBUG] Searching for users with query:`, JSON.stringify(query));
-
 		// Execute query
 		const skip = (page - 1) * limit;
 		const users = await User.find(query)
@@ -312,17 +309,6 @@ router.get(
 			.lean();
 
 		const total = await User.countDocuments(query);
-
-		console.log(
-			`[DEBUG] Found ${total} users for company ${companyId}:`,
-			users.map(u => ({
-				_id: u._id,
-				name: u.name,
-				email: u.email,
-				role: u.role,
-				companyId: u.companyId,
-			}))
-		);
 
 		res.json({
 			success: true,
