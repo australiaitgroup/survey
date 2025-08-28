@@ -1,0 +1,7 @@
+nohup: ignoring input
+Stripe not initialized - missing or placeholder API key
+Server running on http://localhost:5050
+Error: ENOENT: no such file or directory, stat '/workspace/client/dist/index.html'
+Authentication failed: invalid signature
+Error: ENOENT: no such file or directory, stat '/workspace/client/dist/index.html'
+✗ MongoDB connection failed: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017
