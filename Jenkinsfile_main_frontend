@@ -206,7 +206,7 @@ pipeline {
             steps {
                 echo 'Deploying main frontend to S3 root path...'
                 withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
-                    sh 'aws s3 rb s3://uat-sigma.jiangren.com.au --force'
+                    sh 'aws s3 rb s3://sigma.jiangren.com.au --force'
 
 					// dir('client') {
                     //     sh '''
