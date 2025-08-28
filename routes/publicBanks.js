@@ -1013,6 +1013,88 @@ router.post('/:id/import', jwtAuth, async (req, res) => {
 	}
 });
 
+// GET /api/public-banks/recommendations - Get random recommended public banks
+router.get('/recommendations', jwtAuth, async (req, res) => {
+	try {
+		const { limit = 3 } = req.query;
+		const limitNum = Math.min(parseInt(limit), 10); // Max 10 recommendations
+
+		const resolveUser = async (req, select) => {
+			const raw = req.user && (req.user.id || req.user._id || req.user);
+			if (!raw) return null;
+			if (mongoose.Types.ObjectId.isValid(raw)) {
+				return await User.findById(raw).select(select);
+			}
+			return await User.findOne({ $or: [{ email: raw }, { username: raw }] }).select(select);
+		};
+		const user = await resolveUser(req, 'companyId subscription');
+
+		// Get user's entitlements to exclude already owned banks
+		let entitlements = [];
+		if (user && user.companyId) {
+			entitlements = await Entitlement.find({
+				companyId: user.companyId,
+				status: 'active',
+				$or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
+			}).select('bankId');
+		}
+
+		const ownedBankIds = entitlements.map(e => e.bankId.toString());
+
+		// Get all active public banks that the user doesn't already own
+		const allBanks = await PublicBank.find({
+			isActive: true,
+			isPublished: true,
+			_id: { $nin: ownedBankIds },
+		})
+			.select('title description tags questionCount type priceOneTime currency updatedAt')
+			.lean();
+
+		// Randomly shuffle the banks
+		const shuffledBanks = allBanks.sort(() => Math.random() - 0.5);
+
+		// Take the requested number of banks
+		const recommendedBanks = shuffledBanks.slice(0, limitNum);
+
+		// Transform to the expected format
+		const transformedBanks = recommendedBanks.map(bank => {
+			let entitlement = 'Locked';
+
+			// Check if it's free (should be available but not owned)
+			if (bank.type === 'free') {
+				entitlement = 'Available';
+			}
+			// Check if user has premium subscription that includes paid banks
+			else if (user && user.subscription && user.subscription.plan === 'premium') {
+				entitlement = 'Included';
+			}
+
+			return {
+				_id: bank._id,
+				title: bank.title,
+				description: bank.description,
+				tags: bank.tags,
+				questionCount: bank.questionCount,
+				lastUpdated: bank.updatedAt,
+				type: bank.type === 'free' ? 'FREE' : 'PAID',
+				price: bank.type === 'paid' ? bank.priceOneTime : undefined,
+				entitlement,
+			};
+		});
+
+		res.json({
+			recommendations: transformedBanks,
+			total: transformedBanks.length,
+		});
+	} catch (error) {
+		console.error('Error fetching recommendations:', error);
+		res.status(500).json({
+			error: 'Failed to fetch recommendations',
+			details: error.message,
+		});
+	}
+});
+
 // GET /api/public-banks/analytics/purchases - Get purchase analytics
 router.get('/analytics/purchases', jwtAuth, async (req, res) => {
 	try {
