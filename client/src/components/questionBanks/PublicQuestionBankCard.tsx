@@ -190,7 +190,8 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 		);
 
 		if (bank.type === 'FREE') {
-			if (localEntitlement === 'Included' || localEntitlement === 'Owned') {
+			if (localEntitlement === 'Owned') {
+				// Already purchased free bank - show "Use now"
 				buttons.push(
 					<button
 						key='use'
@@ -201,6 +202,7 @@ const PublicQuestionBankCard: React.FC<PublicQuestionBankCardProps> = ({
 					</button>
 				);
 			} else {
+				// Free bank not yet purchased - show "Purchase" button
 				buttons.push(
 					<button
 						key='purchase'

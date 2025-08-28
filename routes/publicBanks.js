@@ -106,13 +106,13 @@ router.get('/', jwtAuth, async (req, res) => {
 			if (accessType) {
 				entitlement = 'Owned';
 			}
-			// Check if it's free
-			else if (bank.type === 'free') {
-				entitlement = 'Included';
-			}
 			// Check if user has premium subscription that includes paid banks
 			else if (user && user.subscription && user.subscription.plan === 'premium') {
 				entitlement = 'Included';
+			}
+			// Free banks are locked until purchased (go through checkout flow)
+			else if (bank.type === 'free') {
+				entitlement = 'Locked';
 			}
 
 			return {
@@ -1060,13 +1060,13 @@ router.get('/recommendations', jwtAuth, async (req, res) => {
 		const transformedBanks = recommendedBanks.map(bank => {
 			let entitlement = 'Locked';
 
-			// Check if it's free (should be available but not owned)
-			if (bank.type === 'free') {
-				entitlement = 'Available';
-			}
 			// Check if user has premium subscription that includes paid banks
-			else if (user && user.subscription && user.subscription.plan === 'premium') {
+			if (user && user.subscription && user.subscription.plan === 'premium') {
 				entitlement = 'Included';
+			}
+			// Free banks are locked until purchased (consistent with marketplace)
+			else if (bank.type === 'free') {
+				entitlement = 'Locked';
 			}
 
 			return {
