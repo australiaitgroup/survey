@@ -1,0 +1,8 @@
+✓ Created uploads directory: /Users/miro/JR/survey/uploads/images
+Stripe not initialized - missing or placeholder API key
+Warning: connect.session() MemoryStore is not
+designed for a production environment, as it will leak
+memory, and will not scale past a single process.
+Server running on http://localhost:5050
+Proxying to: http://uat-sigma.jiangren.com.au.s3-website-ap-southeast-2.amazonaws.com/super-admin/index.html
+✗ MongoDB connection failed: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017

@@ -1,0 +1,126 @@
+pipeline {
+    agent any
+
+    parameters {
+        choice(
+            name: 'TARGET_ENV',
+            choices: ['uat', 'prod'],
+            description: 'Select target environment'
+        )
+    }
+
+    environment {
+        // UAT Environment
+        UAT_SERVER = 'ubuntu@13.211.147.113'
+        UAT_TARGET_PATH = '/home/ubuntu/survey-backend'
+
+        // Production Environment
+        PROD_SERVER = 'ubuntu@54.153.254.26'
+        PROD_TARGET_PATH = '/home/ubuntu/survey-backend'
+
+        // Dynamic variables based on TARGET_ENV
+        TARGET_SERVER = "${params.TARGET_ENV == 'prod' ? env.PROD_SERVER : env.UAT_SERVER}"
+        TARGET_PATH = "${params.TARGET_ENV == 'prod' ? env.PROD_TARGET_PATH : env.UAT_TARGET_PATH}"
+    }
+
+    stages {
+        stage('Build Super Admin Frontend') {
+            steps {
+                script {
+                    dir('super-admin') {
+                        echo "Building Super Admin for ${params.TARGET_ENV} environment..."
+
+                        // Install dependencies
+                        sh 'npm ci'
+
+                        // Build for production
+                        sh 'npm run build'
+
+                        // Verify build output
+                        sh 'ls -la dist/'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Backend Server') {
+            steps {
+                script {
+                    echo "Deploying Super Admin to ${params.TARGET_ENV} server: ${TARGET_SERVER}"
+
+                    dir('super-admin') {
+                        // Create remote directory if it doesn't exist
+                        sh """
+                            ssh -o StrictHostKeyChecking=no ${TARGET_SERVER} '
+                                mkdir -p ${TARGET_PATH}/super-admin
+                            '
+                        """
+
+                        // Sync built files to remote server
+                        sh """
+                            rsync -avz --delete \\
+                                --exclude='node_modules' \\
+                                --exclude='.git' \\
+                                --exclude='src' \\
+                                --exclude='*.md' \\
+                                dist/ ${TARGET_SERVER}:${TARGET_PATH}/super-admin/dist/
+                        """
+
+                        // Copy public directory if exists
+                        sh """
+                            if [ -d "public" ]; then
+                                rsync -avz public/ ${TARGET_SERVER}:${TARGET_PATH}/super-admin/public/
+                            fi
+                        """
+
+                        // Restart backend service to pick up new files
+                        sh """
+                            ssh -o StrictHostKeyChecking=no ${TARGET_SERVER} '
+                                cd ${TARGET_PATH} && \\
+                                sudo systemctl restart survey-backend || \\
+                                (sudo pkill -f "node.*server.js" && nohup node server.js > server.log 2>&1 &)
+                            '
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                script {
+                    def baseUrl = params.TARGET_ENV == 'prod' ? 'https://sigma.jiangren.com.au' : 'https://uat-sigma.jiangren.com.au'
+
+                    echo "Verifying deployment at: ${baseUrl}/super-admin/"
+
+                    // Wait a moment for service to restart
+                    sleep(10)
+
+                    // Test super-admin endpoint
+                    sh """
+                        curl -f ${baseUrl}/super-admin/ || \\
+                        (echo "Super Admin endpoint test failed" && exit 1)
+                    """
+
+                    echo "✅ Super Admin successfully deployed to ${params.TARGET_ENV} environment"
+                    echo "🌐 Access URL: ${baseUrl}/super-admin/"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "🎉 Super Admin deployment to ${params.TARGET_ENV} completed successfully!"
+        }
+        failure {
+            echo "❌ Super Admin deployment to ${params.TARGET_ENV} failed. Check logs above."
+        }
+        always {
+            // Clean up build artifacts
+            dir('super-admin') {
+                sh 'rm -rf node_modules || true'
+            }
+        }
+    }
+}

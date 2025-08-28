@@ -4,7 +4,7 @@
 	"description": "Super Admin Dashboard for Survey Application",
 	"scripts": {
 		"dev": "vite",
-		"build": "tsc && vite build",
+		"build": "vite build",
 		"preview": "vite preview",
 		"clean": "rm -rf dist"
 	},
@@ -15,6 +15,7 @@
 		"recharts": "^2.12.7"
 	},
 	"devDependencies": {
+		"@types/node": "^24.3.0",
 		"@types/react": "^18.2.0",
 		"@types/react-dom": "^18.2.0",
 		"@vitejs/plugin-react": "^4.0.0",

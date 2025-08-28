@@ -1,0 +1,163 @@
+pipeline {
+    agent any
+
+    environment {
+        // Application configuration
+        APP_NAME = 'survey-super-admin'
+
+        // S3 Configuration - Deploy only to UAT bucket
+        S3_BUCKET_NAME = 'uat-sigma.jiangren.com.au'
+        AWS_REGION = 'ap-southeast-2'
+
+        // Super Admin specific configuration
+        SUPER_ADMIN_PATH = 'super-admin'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out source code...'
+                checkout scm
+            }
+        }
+
+        stage('Configure S3 Website') {
+            steps {
+                echo 'Configuring S3 static website hosting for SPA...'
+                withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
+                    sh '''
+                        echo "🌐 Configuring static website hosting for SPA support..."
+                        aws s3 website s3://${S3_BUCKET_NAME}/ --index-document index.html --error-document index.html --region ${AWS_REGION}
+
+                        echo "✅ S3 website configuration completed"
+                        echo "📄 Website endpoint: http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/super-admin"
+                    '''
+                }
+            }
+        }
+
+        stage('Setup Node.js & Install Dependencies') {
+            steps {
+                echo 'Setting up Node.js and installing Super Admin dependencies...'
+                    sh '''
+                        cd super-admin
+                        rm -rf node_modules package-lock.json
+                        npm install
+                        cd ../client
+                        rm -rf node_modules package-lock.json
+                        npm install
+                    '''
+            }
+        }
+
+        stage('Build Super Admin') {
+            steps {
+                echo 'Building Super Admin application...'
+                dir('super-admin') {
+                    sh '''
+                        # Build for production
+                        NODE_ENV=production npm run build
+
+                        # Verify build output
+                        if [ ! -d "dist" ]; then
+                            echo "❌ Build failed - dist directory not found"
+                            exit 1
+                        fi
+
+                        echo "✅ Build completed successfully"
+                        echo "Build contents:"
+                        ls -la dist/
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to S3') {
+            steps {
+                echo 'Deploying Super Admin to UAT S3 bucket...'
+                withVault(configuration: [timeout: 60, vaultCredentialId: 'Vault Credential', vaultUrl: 'https://vault.jiangren.com.au'], vaultSecrets: [[path: 'secret_aws/aws_prod', secretValues: [[vaultKey: 'AWS_ACCESS_KEY_ID'], [vaultKey: 'AWS_SECRET_ACCESS_KEY']]]]) {
+                    dir('super-admin') {
+                        sh '''
+                            echo "🚀 Deploying Super Admin to UAT environment..."
+                            echo "📦 Target bucket: ${S3_BUCKET_NAME}"
+                            echo "� Target path: /${SUPER_ADMIN_PATH}/"
+
+                            # Upload static assets (JS, CSS, images) with long cache
+                            aws s3 sync dist/ s3://${S3_BUCKET_NAME}/${SUPER_ADMIN_PATH}/ \
+                                --region ${AWS_REGION} \
+                                --delete \
+                                --cache-control "public, max-age=31536000" \
+                                --exclude "*.html" \
+                                --exclude "*.json"
+
+                            # Upload HTML and JSON files with no cache
+                            aws s3 sync dist/ s3://${S3_BUCKET_NAME}/${SUPER_ADMIN_PATH}/ \
+                                --region ${AWS_REGION} \
+                                --include "*.html" \
+                                --include "*.json" \
+                                --cache-control "no-cache, no-store, must-revalidate"
+
+                            # Ensure index.html has correct content type and cache headers
+                            aws s3 cp s3://${S3_BUCKET_NAME}/${SUPER_ADMIN_PATH}/index.html \
+                                s3://${S3_BUCKET_NAME}/${SUPER_ADMIN_PATH}/index.html \
+                                --region ${AWS_REGION} \
+                                --content-type "text/html" \
+                                --cache-control "no-cache, no-store, must-revalidate" \
+                                --metadata-directive REPLACE
+
+                            echo "✅ Deployment to UAT completed successfully!"
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                echo 'Performing deployment health check...'
+                script {
+                    // Brief wait for S3 to update
+                    sleep 5
+
+                    sh '''
+                        echo "🔍 Running health check for Super Admin..."
+
+                        # Check S3 website endpoint
+                        S3_ENDPOINT="http://${S3_BUCKET_NAME}.s3-website-${AWS_REGION}.amazonaws.com/${SUPER_ADMIN_PATH}/"
+                        echo "S3 endpoint: ${S3_ENDPOINT}"
+
+                        # Check domain endpoint
+                        DOMAIN_ENDPOINT="https://uat-sigma.jiangren.com.au/${SUPER_ADMIN_PATH}/"
+                        echo "Domain endpoint: ${DOMAIN_ENDPOINT}"
+
+                        echo "✅ Health check completed"
+                        echo "🎯 Super Admin is accessible at the domain endpoint"
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline execution completed'
+            cleanWs()
+        }
+        success {
+            echo '🎉 Super Admin deployment successful!'
+            echo ''
+            echo '📍 Access URL:'
+            echo '   https://uat-sigma.jiangren.com.au/super-admin/'
+            echo ''
+            echo '💡 Note: Only main entry point is supported (no sub-routes)'
+        }
+        failure {
+            echo '❌ Super Admin deployment failed!'
+            echo ''
+            echo 'Troubleshooting:'
+            echo '  1. Check Jenkins credentials configuration'
+            echo '  2. Verify S3 bucket permissions'
+            echo '  3. Ensure build process completed successfully'
+        }
+    }
+}

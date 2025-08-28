@@ -136,10 +136,10 @@ function Layout({ children }: { children: React.ReactNode }) {
 	}, []);
 
 	const handleLogout = () => {
-		localStorage.removeItem('sa_token');
-		localStorage.removeItem('sa_user');
-		navigate('/login');
-	};
+		localStorage.removeItem('sa_token')
+		localStorage.removeItem('sa_user')
+		navigate('/')
+	}
 
 	const navigation = [
 		{ name: 'Overview', path: '/overview' },
@@ -246,84 +246,57 @@ function AuthenticatedRoot() {
 
 // Main App Component
 function App() {
+	// Get the base URL for router - in production it will be '/super-admin'
+	const basename = process.env.NODE_ENV === 'production' ? '/super-admin' : ''
+
 	return (
-		<Router>
+		<Router basename={basename}>
 			<Routes>
+				<Route path="/overview" element={
+					<ProtectedRoute>
+						<Layout><Overview /></Layout>
+					</ProtectedRoute>
+				} />
+				<Route path="/companies" element={
+					<ProtectedRoute>
+						<Layout><Companies /></Layout>
+					</ProtectedRoute>
+				} />
+				<Route path="/companies/:companyId" element={
+					<ProtectedRoute>
+						<Layout><Companies /></Layout>
+					</ProtectedRoute>
+				} />
+				<Route path="/public-banks" element={
+					<ProtectedRoute>
+						<Layout><PublicBanks /></Layout>
+					</ProtectedRoute>
+				} />
+				<Route path="/public-banks/:id" element={
+					<ProtectedRoute>
+						<Layout><PublicBankDetailPage /></Layout>
+					</ProtectedRoute>
+				} />
+				<Route path="/transactions" element={
+					<ProtectedRoute>
+						<Layout><Transactions /></Layout>
+					</ProtectedRoute>
+				} />
+				<Route path="/audit" element={
+					<ProtectedRoute>
+						<Layout><Audit /></Layout>
+					</ProtectedRoute>
+				} />
 				<Route path="/login" element={<Login />} />
-				<Route
-					path="/overview"
-					element={
-						<ProtectedRoute>
-							<Layout>
-								<Overview />
-							</Layout>
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/companies"
-					element={
-						<ProtectedRoute>
-							<Layout>
-								<Companies />
-							</Layout>
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/companies/:companyId"
-					element={
-						<ProtectedRoute>
-							<Layout>
-								<Companies />
-							</Layout>
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/public-banks"
-					element={
-						<ProtectedRoute>
-							<Layout>
-								<PublicBanks />
-							</Layout>
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/public-banks/:id"
-					element={
-						<ProtectedRoute>
-							<Layout>
-								<PublicBankDetailPage />
-							</Layout>
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/transactions"
-					element={
-						<ProtectedRoute>
-							<Layout>
-								<Transactions />
-							</Layout>
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path="/audit"
-					element={
-						<ProtectedRoute>
-							<Layout>
-								<Audit />
-							</Layout>
-						</ProtectedRoute>
-					}
-				/>
-				<Route path="/" element={<AuthenticatedRoot />} />
+				<Route path="/" element={
+					<ProtectedRoute>
+						<Layout><Overview /></Layout>
+					</ProtectedRoute>
+				} />
+				<Route path="/" element={<Login />} />
 			</Routes>
 		</Router>
-	);
+	)
 }
 
 export default App;

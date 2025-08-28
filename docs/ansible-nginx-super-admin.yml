@@ -1,0 +1,46 @@
+# Ansible Playbook: nginx-super-admin.yml
+---
+- name: Update Nginx configuration for Super Admin
+  hosts: web_servers
+  become: yes
+  tasks:
+    - name: Backup existing nginx config
+      copy:
+        src: /etc/nginx/sites-available/sigma.jiangren.com.au
+        dest: /etc/nginx/sites-available/sigma.jiangren.com.au.backup.{{ ansible_date_time.epoch }}
+        remote_src: yes
+
+    - name: Add Super Admin location block
+      blockinfile:
+        path: /etc/nginx/sites-available/sigma.jiangren.com.au
+        marker: "# {mark} SUPER ADMIN CONFIGURATION"
+        insertbefore: "^}"  # Insert before the last closing brace
+        block: |
+          # Super Admin 应用代理到 S3
+          location /super-admin/ {
+              proxy_pass http://jr-sigma-survey-prod.s3-website-ap-southeast-2.amazonaws.com/super-admin/;
+              proxy_set_header Host jr-sigma-survey-prod.s3-website-ap-southeast-2.amazonaws.com;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto $scheme;
+              proxy_intercept_errors on;
+              error_page 404 = @super_admin_spa;
+          }
+
+          location = /super-admin {
+              return 301 $scheme://$host/super-admin/;
+          }
+
+          location @super_admin_spa {
+              proxy_pass http://jr-sigma-survey-prod.s3-website-ap-southeast-2.amazonaws.com/super-admin/index.html;
+              proxy_set_header Host jr-sigma-survey-prod.s3-website-ap-southeast-2.amazonaws.com;
+          }
+
+    - name: Test nginx configuration
+      nginx_config:
+        test: yes
+
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
