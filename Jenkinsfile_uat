@@ -90,37 +90,39 @@ pipeline {
 						]
 					]]
 				]) {
-					parallel {
-						'Deploy Client to S3': {
-							dir('client') {
-								sh '''
-									echo "=== Deploying client to S3 ==="
-									export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
-									export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
-									aws s3 sync dist/ s3://${CLIENT_S3_BUCKET}/ --delete --region ${AWS_DEFAULT_REGION}
+					script {
+						parallel(
+							'Deploy Client to S3': {
+								dir('client') {
+									sh '''
+										echo "=== Deploying client to S3 ==="
+										export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
+										export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
+										aws s3 sync dist/ s3://${CLIENT_S3_BUCKET}/ --delete --region ${AWS_DEFAULT_REGION}
 
-									echo "=== Setting S3 website configuration ==="
-									aws s3 website s3://${CLIENT_S3_BUCKET}/ --index-document index.html --error-document index.html --region ${AWS_DEFAULT_REGION}
+										echo "=== Setting S3 website configuration ==="
+										aws s3 website s3://${CLIENT_S3_BUCKET}/ --index-document index.html --error-document index.html --region ${AWS_DEFAULT_REGION}
 
-									echo "✅ Client deployed successfully to S3"
-								'''
+										echo "✅ Client deployed successfully to S3"
+									'''
+								}
+							},
+							'Deploy Super Admin to S3': {
+								dir('super-admin') {
+									sh '''
+										echo "=== Deploying super admin to S3 ==="
+										export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
+										export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
+										aws s3 sync dist/ s3://${SUPER_ADMIN_S3_BUCKET}/ --delete --region ${AWS_DEFAULT_REGION}
+
+										echo "=== Setting S3 website configuration ==="
+										aws s3 website s3://${SUPER_ADMIN_S3_BUCKET}/ --index-document index.html --error-document index.html --region ${AWS_DEFAULT_REGION}
+
+										echo "✅ Super admin deployed successfully to S3"
+									'''
+								}
 							}
-						},
-						'Deploy Super Admin to S3': {
-							dir('super-admin') {
-								sh '''
-									echo "=== Deploying super admin to S3 ==="
-									export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
-									export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
-									aws s3 sync dist/ s3://${SUPER_ADMIN_S3_BUCKET}/ --delete --region ${AWS_DEFAULT_REGION}
-
-									echo "=== Setting S3 website configuration ==="
-									aws s3 website s3://${SUPER_ADMIN_S3_BUCKET}/ --index-document index.html --error-document index.html --region ${AWS_DEFAULT_REGION}
-
-									echo "✅ Super admin deployed successfully to S3"
-								'''
-							}
-						}
+						)
 					}
 				}
 			}
