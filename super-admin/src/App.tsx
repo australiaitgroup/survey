@@ -238,7 +238,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 					{/* Desktop Sidebar Footer */}
 					<div className="p-4 border-t border-gray-200 bg-gray-50">
 						<div className="text-center">
-							<img src="/SigmaQ-logo.svg" alt="SigmaQ" className="h-6 mx-auto mb-2" />
+							<img src="/super-admin/SigmaQ-logo.svg" alt="SigmaQ" className="h-6 mx-auto mb-2" />
 							<p className="text-xs text-gray-500 mb-1">Powered by</p>
 							<a
 								href="https://jracademy.ai"
@@ -280,7 +280,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 					{/* Mobile Sidebar Footer */}
 					<div className="p-4 border-t border-gray-200 bg-gray-50">
 						<div className="text-center">
-							<img src="/SigmaQ-logo.svg" alt="SigmaQ" className="h-6 mx-auto mb-2" />
+							<img src="/super-admin/SigmaQ-logo.svg" alt="SigmaQ" className="h-6 mx-auto mb-2" />
 							<p className="text-xs text-gray-500 mb-1">Powered by</p>
 							<a
 								href="https://jracademy.ai"
@@ -345,7 +345,7 @@ function AuthenticatedRoot() {
 // Main App Component
 function App() {
 	return (
-		<Router>
+		<Router basename="/super-admin">
 			<Routes>
 				<Route path="/login" element={<Login />} />
 				<Route
