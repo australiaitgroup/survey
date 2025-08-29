@@ -7,6 +7,7 @@ import {
 	useNavigate,
 	useLocation,
 } from 'react-router-dom';
+import API_ENDPOINTS from './config/api';
 import PublicBanks from './components/pages/PublicBanks';
 import PublicBankDetailPage from './components/pages/PublicBankDetailPage';
 import Overview from './components/pages/Overview';
@@ -30,7 +31,7 @@ function Login() {
 		setError('');
 
 		try {
-			const response = await fetch('/api/admin/login', {
+			const response = await fetch(API_ENDPOINTS.LOGIN, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -239,9 +240,9 @@ function Layout({ children }: { children: React.ReactNode }) {
 						<div className="text-center">
 							<img src="/SigmaQ-logo.svg" alt="SigmaQ" className="h-6 mx-auto mb-2" />
 							<p className="text-xs text-gray-500 mb-1">Powered by</p>
-							<a 
-								href="https://jracademy.ai" 
-								target="_blank" 
+							<a
+								href="https://jracademy.ai"
+								target="_blank"
 								rel="noopener noreferrer"
 								className="text-xs text-blue-600 hover:text-blue-700 font-medium"
 							>
@@ -281,9 +282,9 @@ function Layout({ children }: { children: React.ReactNode }) {
 						<div className="text-center">
 							<img src="/SigmaQ-logo.svg" alt="SigmaQ" className="h-6 mx-auto mb-2" />
 							<p className="text-xs text-gray-500 mb-1">Powered by</p>
-							<a 
-								href="https://jracademy.ai" 
-								target="_blank" 
+							<a
+								href="https://jracademy.ai"
+								target="_blank"
 								rel="noopener noreferrer"
 								className="text-xs text-blue-600 hover:text-blue-700 font-medium"
 							>
