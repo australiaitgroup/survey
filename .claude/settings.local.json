@@ -76,7 +76,8 @@
       "Bash(PORT=5051 npm start)",
       "Bash(PORT=5052 npm start)",
       "Bash(npx eslint:*)",
-      "WebFetch(domain:uat.sigmaq.co)"
+      "WebFetch(domain:uat.sigmaq.co)",
+      "WebFetch(domain:uat.sigmaq.co.s3-website-ap-southeast-2.amazonaws.com)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
