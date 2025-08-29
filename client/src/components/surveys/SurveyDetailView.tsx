@@ -474,7 +474,7 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 					/>
 				)}
 				{tabLocal === TAB_TYPES.INVITATIONS && (
-					<SurveyInvitationsTab surveyId={survey._id} companySlug={companySlug} />
+					<SurveyInvitationsTab surveyId={survey._id} surveySlug={survey.slug} companySlug={companySlug} />
 				)}
 				{/* Preview tab removed in favor of inline toggle in Assessment Details */}
 				{/* Only show modal when showInviteModal is true */}
@@ -484,6 +484,7 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 						onClose={() => setShowInviteModal(false)}
 						surveyId={survey._id}
 						surveyTitle={survey.title}
+						surveySlug={survey.slug}
 					/>
 				)}
 

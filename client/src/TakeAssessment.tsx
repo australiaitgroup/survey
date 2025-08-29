@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAntiCheating } from './hooks/useAntiCheating';
 import { useSimpleAntiCheating } from './hooks/useSimpleAntiCheating';
@@ -39,6 +39,8 @@ type StepType = 'instructions' | 'questions' | 'results';
 const TakeAssessment: React.FC = () => {
 	const { slug, companySlug } = useParams<{ slug: string; companySlug?: string }>();
 	const navigate = useNavigate();
+	const [searchParams] = useSearchParams();
+	const invitationCode = searchParams.get('invitation');
 
 	// Helper function to generate API paths with multi-tenant support
 	const getApiPath = (path: string) => {
@@ -219,6 +221,7 @@ const TakeAssessment: React.FC = () => {
 			const startResp = await axios.post(getApiPath(`/assessment/${slug}/start`), {
 				name: form.name,
 				email: form.email,
+				...(invitationCode && { invitationCode }),
 			});
 			setQuestions(startResp.data.questions || []);
 			setQuestionsLoaded(true);
@@ -395,6 +398,7 @@ const TakeAssessment: React.FC = () => {
 				answerDurations: Object.fromEntries(
 					Object.entries(finalQuestionTimings).map(([idx, v]) => [idx, v.duration || 0])
 				),
+				...(invitationCode && { invitationCode }),
 			};
 
 			console.log('Submitting to API', {

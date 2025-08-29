@@ -7,6 +7,7 @@ interface InviteAssessmentModalProps {
 	onClose: () => void;
 	surveyId: string;
 	surveyTitle: string;
+	surveySlug: string;
 }
 
 const PAGE_SIZE = 10;
@@ -16,6 +17,7 @@ const InviteAssessmentModal: React.FC<InviteAssessmentModalProps> = ({
 	onClose,
 	surveyId,
 	surveyTitle,
+	surveySlug,
 }) => {
 	const [emails, setEmails] = useState('');
 	const [expiresInDays, setExpiresInDays] = useState(7);
@@ -114,7 +116,7 @@ const InviteAssessmentModal: React.FC<InviteAssessmentModalProps> = ({
 	// 复制链接
 	const handleCopy = (token: string) => {
 		const basePath = companySlug ? `/${companySlug}` : '';
-		const url = `${window.location.origin}${basePath}/assessment/${token}`;
+		const url = `${window.location.origin}${basePath}/assessment/${surveySlug}?invitation=${token}`;
 		navigator.clipboard.writeText(url);
 	};
 

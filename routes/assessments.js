@@ -59,10 +59,28 @@ router.post(
 	'/assessment/:slug/start',
 	asyncHandler(async (req, res) => {
 		const { slug } = req.params;
-		const { name, email, attempt, resume } = req.body || {};
+		const { name, email, attempt, resume, invitationCode } = req.body || {};
 
 		if (!email || !name) {
 			throw new AppError('Missing required fields: name, email', HTTP_STATUS.BAD_REQUEST);
+		}
+
+		// If invitation code is provided, validate it
+		if (invitationCode) {
+			const Invitation = require('../models/Invitation');
+			const invitation = await Invitation.findOne({ invitationCode });
+			
+			if (!invitation) {
+				throw new AppError('Invalid invitation code', HTTP_STATUS.BAD_REQUEST);
+			}
+			
+			if (!invitation.isValid()) {
+				throw new AppError('Invitation has expired or is no longer valid', HTTP_STATUS.BAD_REQUEST);
+			}
+			
+			if (!invitation.canAccess(null, email)) {
+				throw new AppError('You do not have access to this assessment', HTTP_STATUS.FORBIDDEN);
+			}
 		}
 
 		let survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE });
@@ -299,7 +317,20 @@ router.post(
 			timeSpent = 0,
 			answerDurations = {},
 			isAutoSubmit = false,
+			invitationCode,
 		} = req.body || {};
+
+		// If invitation code is provided, validate it and mark as completed
+		if (invitationCode) {
+			const Invitation = require('../models/Invitation');
+			const invitation = await Invitation.findOne({ invitationCode });
+			
+			if (invitation && invitation.isValid()) {
+				// Mark invitation as completed
+				invitation.currentResponses = (invitation.currentResponses || 0) + 1;
+				await invitation.save();
+			}
+		}
 
 		if (!responseId) {
 			throw new AppError('Missing responseId', HTTP_STATUS.BAD_REQUEST);
