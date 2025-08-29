@@ -28,7 +28,15 @@ router.get(
 	asyncHandler(async (req, res) => {
 		const { slug } = req.params;
 
-		let survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE }).lean();
+		// Try multiple ways to find the survey
+		let survey = null;
+		
+		// First try by slug (if slug exists and is not empty)
+		if (slug) {
+			survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE }).lean();
+		}
+		
+		// If not found and slug looks like ObjectId, try by _id
 		if (!survey && mongoose.Types.ObjectId.isValid(slug)) {
 			survey = await Survey.findOne({ _id: slug, status: SURVEY_STATUS.ACTIVE }).lean();
 		}
@@ -74,7 +82,15 @@ router.post(
 			throw new AppError('Missing required fields: name, email', HTTP_STATUS.BAD_REQUEST);
 		}
 
-		let survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE });
+		// Try multiple ways to find the survey
+		let survey = null;
+		
+		// First try by slug (if slug exists and is not empty)
+		if (slug) {
+			survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE });
+		}
+		
+		// If not found and slug looks like ObjectId, try by _id
 		if (!survey && mongoose.Types.ObjectId.isValid(slug)) {
 			survey = await Survey.findOne({ _id: slug, status: SURVEY_STATUS.ACTIVE });
 		}
@@ -323,7 +339,15 @@ router.post(
 			throw new AppError('Missing responseId', HTTP_STATUS.BAD_REQUEST);
 		}
 
-		let survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE });
+		// Try multiple ways to find the survey
+		let survey = null;
+		
+		// First try by slug (if slug exists and is not empty)
+		if (slug) {
+			survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE });
+		}
+		
+		// If not found and slug looks like ObjectId, try by _id
 		if (!survey && mongoose.Types.ObjectId.isValid(slug)) {
 			survey = await Survey.findOne({ _id: slug, status: SURVEY_STATUS.ACTIVE });
 		}
