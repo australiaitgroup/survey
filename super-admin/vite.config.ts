@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
 	plugins: [react()],
-	base: '/super-admin/',
+	base: '/', // 修改为根目录，因为现在部署到S3根目录
 	server: {
 		port: 3000,
 		fs: {
