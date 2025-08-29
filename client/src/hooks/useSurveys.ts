@@ -154,22 +154,12 @@ export const useSurveys = () => {
 				isActive: surveyData.status === 'active',
 			};
 
-			// Debug: Log what we're sending to API
-			console.log('🚀 Sending to API:', {
-				surveyId,
-				securitySettings: dataToSend.securitySettings,
-				antiCheatEnabled: dataToSend.securitySettings?.antiCheatEnabled
-			});
+
 
 			const response = await api.put(`/admin/surveys/${surveyId}`, dataToSend);
 			const updatedSurvey = response.data;
-			
-			// Debug: Log what we got back from API
-			console.log('📨 Received from API:', {
-				surveyId: updatedSurvey._id,
-				securitySettings: updatedSurvey.securitySettings,
-				antiCheatEnabled: updatedSurvey.securitySettings?.antiCheatEnabled
-			});
+
+
 
 			setSurveys(surveys.map(s => (s._id === surveyId ? updatedSurvey : s)));
 			if (selectedSurvey?._id === surveyId) {
@@ -237,35 +227,18 @@ export const useSurveys = () => {
 	};
 
 	const openEditModal = (survey: Survey) => {
-		// Debug: Log the survey data to check questionBankId and securitySettings
-		console.log('🔍 Opening edit modal for survey:', {
-			id: survey._id,
-			title: survey.title,
-			type: survey.type,
-			securitySettings: survey.securitySettings,
-			antiCheatEnabled: survey.securitySettings?.antiCheatEnabled
-		});
-		console.log('questionBankId type:', typeof survey.questionBankId);
-		console.log('questionBankId value:', survey.questionBankId);
-
 		// Extract the ID if questionBankId is an object
 		let questionBankId = survey.questionBankId;
 		if (questionBankId && typeof questionBankId === 'object') {
 			// If it's an object with _id property
 			questionBankId = (questionBankId as any)._id || (questionBankId as any).id;
-			console.log('Extracted questionBankId:', questionBankId);
 		}
 
 		const securitySettings = survey.securitySettings || {
 			antiCheatEnabled: false,
 		};
 
-		// Debug: Log what we're setting in editForm
-		console.log('🔧 Setting editForm securitySettings:', {
-			fromSurvey: survey.securitySettings,
-			settingTo: securitySettings,
-			antiCheatEnabled: securitySettings.antiCheatEnabled
-		});
+
 
 		setEditForm({
 			title: survey.title,

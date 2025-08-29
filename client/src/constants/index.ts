@@ -70,6 +70,7 @@ export type SourceType = (typeof SOURCE_TYPE)[keyof typeof SOURCE_TYPE];
 export const TYPES_REQUIRING_ANSWERS: SurveyType[] = [
 	SURVEY_TYPE.ASSESSMENT,
 	SURVEY_TYPE.LIVE_QUIZ,
+	SURVEY_TYPE.ONBOARDING,
 ];
 
 // All valid types and statuses

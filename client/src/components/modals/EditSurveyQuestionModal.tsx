@@ -215,73 +215,71 @@ const EditSurveyQuestionModal: React.FC<EditSurveyQuestionModalProps> = ({
 						{form.type !== QUESTION_TYPE.SHORT_TEXT &&
 							isAssessmentType &&
 							form.options &&
-							form.options.filter(opt =>
-								typeof opt === 'string' ? opt.trim() : opt.text && opt.text.trim()
-							).length >= 2 && (
-							<div>
-								<label className='block text-sm font-medium text-gray-700 mb-2'>
+							form.options.length >= 2 && (
+								<div>
+									<label className='block text-sm font-medium text-gray-700 mb-2'>
 										Select Correct Answer(s) *
-								</label>
-								<div className='space-y-2'>
-									{form.options.map((opt, idx) => {
-										const optionText =
+									</label>
+									<div className='space-y-2'>
+										{form.options.map((opt, idx) => {
+											const optionText =
 												typeof opt === 'string' ? opt : opt?.text || '';
-										const optionImage =
+											const optionImage =
 												typeof opt === 'string' ? null : opt?.imageUrl;
 
-										if (!optionText.trim() && !optionImage) return null;
+											// 显示所有选项，包括空选项
 
-										const isCorrect = Array.isArray(form.correctAnswer)
-											? form.correctAnswer.includes(idx)
-											: form.correctAnswer === idx;
-										return (
-											<div key={idx} className='flex items-center gap-2'>
-												<button
-													type='button'
-													onClick={() => toggleCorrectAnswer(idx)}
-													className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-														isCorrect
-															? 'bg-green-500 border-green-500 text-white'
-															: 'border-gray-300 hover:border-green-400'
-													}`}
-												>
-													{isCorrect && (
-														<svg
-															className='w-3 h-3'
-															fill='currentColor'
-															viewBox='0 0 20 20'
-														>
-															<path
-																fillRule='evenodd'
-																d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
-																clipRule='evenodd'
+											const isCorrect = Array.isArray(form.correctAnswer)
+												? form.correctAnswer.includes(idx)
+												: form.correctAnswer === idx;
+											return (
+												<div key={idx} className='flex items-center gap-2'>
+													<button
+														type='button'
+														onClick={() => toggleCorrectAnswer(idx)}
+														className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+															isCorrect
+																? 'bg-green-500 border-green-500 text-white'
+																: 'border-gray-300 hover:border-green-400'
+														}`}
+													>
+														{isCorrect && (
+															<svg
+																className='w-3 h-3'
+																fill='currentColor'
+																viewBox='0 0 20 20'
+															>
+																<path
+																	fillRule='evenodd'
+																	d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
+																	clipRule='evenodd'
+																/>
+															</svg>
+														)}
+													</button>
+													<div className='flex items-center gap-2'>
+														<span className='text-sm text-gray-700'>
+															{optionText || `Option ${idx + 1}`}
+														</span>
+														{optionImage && (
+															<img
+																src={optionImage}
+																alt={`Option ${idx + 1}`}
+																className='w-8 h-8 object-cover rounded border'
 															/>
-														</svg>
-													)}
-												</button>
-												<div className='flex items-center gap-2'>
-													<span className='text-sm text-gray-700'>
-														{optionText || `Option ${idx + 1}`}
-													</span>
-													{optionImage && (
-														<img
-															src={optionImage}
-															alt={`Option ${idx + 1}`}
-															className='w-8 h-8 object-cover rounded border'
-														/>
-													)}
+														)}
+													</div>
 												</div>
-											</div>
-										);
-									})}
+											);
+										})}
+									</div>
+									<div className='text-xs text-gray-500 mt-1'>
+										{form.type === QUESTION_TYPE.SINGLE_CHOICE
+											? 'Click to select the single correct answer'
+											: 'Click the checkboxes to select multiple correct answers'}
+									</div>
 								</div>
-								<div className='text-xs text-gray-500 mt-1'>
-									{form.type === QUESTION_TYPE.SINGLE_CHOICE
-										? 'Click to select the single correct answer'
-										: 'Click the checkboxes to select multiple correct answers'}
-								</div>
-							</div>
-						)}
+							)}
 
 						{isAssessmentType && isCustomScoringEnabled && (
 							<div>
@@ -338,11 +336,11 @@ const EditSurveyQuestionModal: React.FC<EditSurveyQuestionModalProps> = ({
 											const optionText = isStringOption
 												? option
 												: (option as { text?: string; imageUrl?: string })
-													?.text || '';
+														?.text || '';
 											const optionImageUrl = isStringOption
 												? undefined
 												: (option as { text?: string; imageUrl?: string })
-													?.imageUrl;
+														?.imageUrl;
 
 											return (
 												<div
@@ -361,9 +359,9 @@ const EditSurveyQuestionModal: React.FC<EditSurveyQuestionModalProps> = ({
 																const newOption = isStringOption
 																	? e.target.value
 																	: {
-																		...option,
-																		text: e.target.value,
-																	};
+																			...option,
+																			text: e.target.value,
+																		};
 																onOptionChange(
 																	index,
 																	newOption as any
@@ -372,16 +370,16 @@ const EditSurveyQuestionModal: React.FC<EditSurveyQuestionModalProps> = ({
 														/>
 														{form.options &&
 															form.options.length > 2 && (
-															<button
-																className='btn-secondary btn-small text-red-600 hover:bg-red-50'
-																onClick={() =>
-																	onRemoveOption(index)
-																}
-																type='button'
-															>
+																<button
+																	className='btn-secondary btn-small text-red-600 hover:bg-red-50'
+																	onClick={() =>
+																		onRemoveOption(index)
+																	}
+																	type='button'
+																>
 																	Remove
-															</button>
-														)}
+																</button>
+															)}
 													</div>
 
 													<div>
@@ -393,22 +391,22 @@ const EditSurveyQuestionModal: React.FC<EditSurveyQuestionModalProps> = ({
 															onImageUpload={url => {
 																const newOption = isStringOption
 																	? {
-																		text: optionText,
-																		imageUrl: url,
-																	}
+																			text: optionText,
+																			imageUrl: url,
+																		}
 																	: {
-																		...(option as any),
-																		imageUrl: url,
-																	};
+																			...(option as any),
+																			imageUrl: url,
+																		};
 																onOptionChange(index, newOption);
 															}}
 															onImageRemove={() => {
 																const newOption = isStringOption
 																	? optionText
 																	: {
-																		...(option as any),
-																		imageUrl: undefined,
-																	};
+																			...(option as any),
+																			imageUrl: undefined,
+																		};
 																onOptionChange(index, newOption);
 															}}
 															placeholder='Add image for this option'
