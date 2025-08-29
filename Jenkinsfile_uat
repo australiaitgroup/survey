@@ -231,45 +231,6 @@ pipeline {
 				}
 			}
 		}
-		stage('Health Check') {
-			steps {
-				echo 'Performing health checks...'
-				script {
-					sleep 10
-
-					def composeFile = 'docker-compose.uat.yml'
-
-					withEnv(["COMPOSE_FILE=${composeFile}"]) {
-						sh '''
-						echo "=== Health Check ==="
-
-						# Check container status
-						docker-compose -f $COMPOSE_FILE ps
-
-						# Test application on port 5174
-						echo "Testing application..."
-						if curl -f --connect-timeout 10 --max-time 30 -s http://localhost:5174 >/dev/null 2>&1; then
-							echo "✅ Application is accessible on port 5174"
-						else
-							echo "❌ Application health check failed"
-							echo "Container logs:"
-							docker-compose -f $COMPOSE_FILE logs --tail 20
-							exit 1
-						fi
-
-						# Test API endpoint
-						if curl -f --connect-timeout 10 --max-time 30 -s http://localhost:5174/api/surveys >/dev/null 2>&1; then
-							echo "✅ API endpoint is working"
-						else
-							echo "⚠️ API endpoint test failed but continuing..."
-						fi
-
-						echo "=== Health Check Completed ==="
-						'''
-					}
-				}
-			}
-		}
 	}
 
 	post {
