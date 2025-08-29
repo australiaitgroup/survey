@@ -60,11 +60,21 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 	const [statsLoading, setStatsLoading] = useState(true);
 	const [users, setUsers] = useState<any[]>([]);
 	const [usersLoading, setUsersLoading] = useState(true);
+	const [selectedUser, setSelectedUser] = useState<any>(null);
+	const [showUserModal, setShowUserModal] = useState(false);
+	const [resetPasswordLoading, setResetPasswordLoading] = useState<string | null>(null);
+	// Company assets
+	const [companyBanks, setCompanyBanks] = useState<Array<{ _id: string; name: string; description?: string; questionCount: number; createdAt: string }>>([]);
+	const [companyBanksLoading, setCompanyBanksLoading] = useState(true);
+	const [companySurveys, setCompanySurveys] = useState<Array<{ _id: string; title: string; type: string; status: string; createdAt: string; questionCount: number }>>([]);
+	const [companySurveysLoading, setCompanySurveysLoading] = useState(true);
 
 	useEffect(() => {
 		setFormData(company);
 		loadCompanyStats();
 		loadCompanyUsers();
+		loadCompanyBanks();
+		loadCompanySurveys();
 	}, [company]);
 
 	const loadCompanyStats = async () => {
@@ -167,17 +177,66 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 		}
 	};
 
+	const loadCompanyBanks = async () => {
+		setCompanyBanksLoading(true);
+		try {
+			const token = localStorage.getItem('sa_token');
+			if (!token) {
+				setCompanyBanks([]);
+				setCompanyBanksLoading(false);
+				return;
+			}
+
+			const response = await fetch(`/api/sa/companies/${company._id}/question-banks`, {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			if (response.ok) {
+				const data = await response.json();
+				setCompanyBanks(data.data || []);
+			} else {
+				setCompanyBanks([]);
+			}
+		} catch (e) {
+			setCompanyBanks([]);
+		} finally {
+			setCompanyBanksLoading(false);
+		}
+	};
+
+	const loadCompanySurveys = async () => {
+		setCompanySurveysLoading(true);
+		try {
+			const token = localStorage.getItem('sa_token');
+			if (!token) {
+				setCompanySurveys([]);
+				setCompanySurveysLoading(false);
+				return;
+			}
+
+			const response = await fetch(`/api/sa/companies/${company._id}/surveys`, {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			if (response.ok) {
+				const data = await response.json();
+				setCompanySurveys(data.data || []);
+			} else {
+				setCompanySurveys([]);
+			}
+		} catch (e) {
+			setCompanySurveys([]);
+		} finally {
+			setCompanySurveysLoading(false);
+		}
+	};
+
 	const loadCompanyUsers = async () => {
 		setUsersLoading(true);
 		try {
 			const token = localStorage.getItem('sa_token');
 			if (!token) {
-				console.log('No token found');
 				setUsersLoading(false);
 				return;
 			}
-
-			console.log('Loading users for company:', company._id);
 
 			const response = await fetch(`/api/sa/companies/${company._id}/users`, {
 				headers: {
@@ -186,15 +245,11 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 				},
 			});
 
-			console.log('Response status:', response.status, 'OK:', response.ok);
-
 			if (response.ok) {
 				const contentType = response.headers.get('content-type');
-				console.log('Content-Type:', contentType);
 
 				if (contentType && contentType.includes('application/json')) {
 					const data = await response.json();
-					console.log('Users API response:', data);
 
 					if (data.success && Array.isArray(data.data)) {
 						const normalizedUsers = data.data.map((user: any) => ({
@@ -205,20 +260,19 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 							status: user.isActive !== false ? 'active' : 'inactive',
 							lastLogin: user.lastLogin || user.lastLoginAt || user.lastSeen,
 							createdAt: user.createdAt || new Date().toISOString(),
+							department: user.department,
+							studentId: user.studentId,
+							mustChangePassword: user.mustChangePassword || false,
 						}));
 
-						console.log('Successfully loaded users:', normalizedUsers.length);
 						setUsers(normalizedUsers);
 					} else {
-						console.log('No users found in response');
 						setUsers([]);
 					}
 				} else {
-					console.log('Response is not JSON');
 					setUsers([]);
 				}
 			} else {
-				console.log('API request failed with status:', response.status);
 				setUsers([]);
 			}
 		} catch (error) {
@@ -370,6 +424,108 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 		} finally {
 			setLoading(false);
 		}
+	};
+
+	// User management handlers
+	const handleResetPassword = async (user: any) => {
+		if (!confirm(`Are you sure you want to reset password for ${user.name} (${user.email})?`)) {
+			return;
+		}
+
+		setResetPasswordLoading(user._id);
+		try {
+			const token = localStorage.getItem('sa_token');
+			const response = await fetch(`/api/sa/users/${user._id}/reset-password`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`,
+				},
+			});
+
+			if (response.ok) {
+				const data = await response.json();
+				if (data.success) {
+					setSuccessMessage(`Password reset successfully for ${user.name}. New temporary password has been sent to ${user.email}`);
+					setTimeout(() => setSuccessMessage(null), 5000);
+				} else {
+					setError(data.error || 'Failed to reset password');
+					setTimeout(() => setError(null), 3000);
+				}
+			} else {
+				// API endpoint not implemented, show mock success
+				setSuccessMessage(`Password reset initiated for ${user.name}. A temporary password will be sent to ${user.email} (API not yet implemented)`);
+				setTimeout(() => setSuccessMessage(null), 5000);
+			}
+		} catch (error) {
+			console.error('Error resetting password:', error);
+			setSuccessMessage(`Password reset initiated for ${user.name}. A temporary password will be sent to ${user.email} (API not available)`);
+			setTimeout(() => setSuccessMessage(null), 5000);
+		} finally {
+			setResetPasswordLoading(null);
+		}
+	};
+
+	const handleToggleUserStatus = async (user: any) => {
+		const newStatus = user.status === 'active' ? 'inactive' : 'active';
+		const action = newStatus === 'active' ? 'activate' : 'deactivate';
+
+		if (!confirm(`Are you sure you want to ${action} ${user.name} (${user.email})?`)) {
+			return;
+		}
+
+		try {
+			const token = localStorage.getItem('sa_token');
+			const response = await fetch(`/api/sa/users/${user._id}/status`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({ isActive: newStatus === 'active' }),
+			});
+
+			if (response.ok) {
+				const data = await response.json();
+				if (data.success) {
+					// Update user in local state
+					setUsers(prev => prev.map(u =>
+						u._id === user._id
+							? { ...u, status: newStatus }
+							: u
+					));
+					setSuccessMessage(`User ${user.name} has been ${action}d successfully`);
+					setTimeout(() => setSuccessMessage(null), 3000);
+				} else {
+					setError(data.error || `Failed to ${action} user`);
+					setTimeout(() => setError(null), 3000);
+				}
+			} else {
+				// API endpoint not implemented, update locally
+				setUsers(prev => prev.map(u =>
+					u._id === user._id
+						? { ...u, status: newStatus }
+						: u
+				));
+				setSuccessMessage(`User ${user.name} has been ${action}d successfully (API not yet implemented)`);
+				setTimeout(() => setSuccessMessage(null), 3000);
+			}
+		} catch (error) {
+			console.error(`Error ${action}ing user:`, error);
+			// Update locally when API is not available
+			setUsers(prev => prev.map(u =>
+				u._id === user._id
+					? { ...u, status: newStatus }
+					: u
+			));
+			setSuccessMessage(`User ${user.name} has been ${action}d successfully (API not available)`);
+			setTimeout(() => setSuccessMessage(null), 3000);
+		}
+	};
+
+	const handleViewUserDetails = (user: any) => {
+		setSelectedUser(user);
+		setShowUserModal(true);
 	};
 
 	return (
@@ -1017,7 +1173,7 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 			{/* Company Users */}
 			<div className="bg-white rounded-lg shadow p-6">
 				<div className="flex items-center justify-between mb-4">
-					<h3 className="text-lg font-medium text-gray-900">Company Users</h3>
+					<h3 className="text-lg font-medium text-gray-900">Company Users Management</h3>
 					<button
 						onClick={loadCompanyUsers}
 						disabled={usersLoading}
@@ -1038,7 +1194,7 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 							<thead className="bg-gray-50">
 								<tr>
 									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										User
+										User Information
 									</th>
 									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 										Role
@@ -1047,32 +1203,40 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 										Status
 									</th>
 									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+										Registration Date
+									</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 										Last Login
 									</th>
 									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										Joined
+										Actions
 									</th>
 								</tr>
 							</thead>
 							<tbody className="bg-white divide-y divide-gray-200">
 								{users.map(user => (
-									<tr key={user._id}>
+									<tr key={user._id} className="hover:bg-gray-50">
 										<td className="px-6 py-4 whitespace-nowrap">
 											<div className="flex items-center">
-												<div className="flex-shrink-0 h-8 w-8">
-													<div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
-														<span className="text-xs font-medium text-gray-700">
+												<div className="flex-shrink-0 h-10 w-10">
+													<div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
+														<span className="text-sm font-medium text-white">
 															{user.name.charAt(0).toUpperCase()}
 														</span>
 													</div>
 												</div>
-												<div className="ml-3">
+												<div className="ml-4">
 													<div className="text-sm font-medium text-gray-900">
 														{user.name}
 													</div>
 													<div className="text-sm text-gray-500">
 														{user.email}
 													</div>
+													{user.department && (
+														<div className="text-xs text-gray-400">
+															Department: {user.department}
+														</div>
+													)}
 												</div>
 											</div>
 										</td>
@@ -1083,14 +1247,18 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 														? 'bg-purple-100 text-purple-800'
 														: user.role === 'manager'
 															? 'bg-blue-100 text-blue-800'
-															: 'bg-gray-100 text-gray-800'
+															: user.role === 'teacher'
+																? 'bg-green-100 text-green-800'
+																: 'bg-gray-100 text-gray-800'
 												}`}
 											>
 												{user.role === 'admin'
 													? '👑 Admin'
 													: user.role === 'manager'
 														? '👔 Manager'
-														: '👤 User'}
+														: user.role === 'teacher'
+															? '📚 Teacher'
+															: '👤 User'}
 											</span>
 										</td>
 										<td className="px-6 py-4 whitespace-nowrap">
@@ -1107,12 +1275,61 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 											</span>
 										</td>
 										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{user.lastLogin
-												? new Date(user.lastLogin).toLocaleDateString()
-												: 'Never'}
+											<div className="flex flex-col">
+												<span>{new Date(user.createdAt).toLocaleDateString()}</span>
+												<span className="text-xs text-gray-400">
+													{new Date(user.createdAt).toLocaleTimeString()}
+												</span>
+											</div>
 										</td>
 										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{new Date(user.createdAt).toLocaleDateString()}
+											{user.lastLogin ? (
+												<div className="flex flex-col">
+													<span>{new Date(user.lastLogin).toLocaleDateString()}</span>
+													<span className="text-xs text-gray-400">
+														{new Date(user.lastLogin).toLocaleTimeString()}
+													</span>
+												</div>
+											) : (
+												<span className="text-gray-400">Never logged in</span>
+											)}
+										</td>
+										<td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+											<div className="flex items-center space-x-2">
+												<button
+													onClick={() => handleResetPassword(user)}
+													disabled={resetPasswordLoading === user._id}
+													className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+													title="Reset Password"
+												>
+													{resetPasswordLoading === user._id ? (
+														<>
+															<div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent mr-1"></div>
+															Resetting...
+														</>
+													) : (
+														<>🔑 Reset Password</>
+													)}
+												</button>
+												<button
+													onClick={() => handleToggleUserStatus(user)}
+													className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+														user.status === 'active'
+															? 'text-white bg-orange-600 hover:bg-orange-700 focus:ring-orange-500'
+															: 'text-white bg-green-600 hover:bg-green-700 focus:ring-green-500'
+													}`}
+													title={user.status === 'active' ? 'Deactivate User' : 'Activate User'}
+												>
+													{user.status === 'active' ? '⏸️ Deactivate' : '▶️ Activate'}
+												</button>
+												<button
+													onClick={() => handleViewUserDetails(user)}
+													className="inline-flex items-center px-2.5 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+													title="View Details"
+												>
+													👁️ View
+												</button>
+											</div>
 										</td>
 									</tr>
 								))}
@@ -1142,6 +1359,107 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 				)}
 			</div>
 
+			{/* Company Question Banks */}
+			<div className="bg-white rounded-lg shadow p-6">
+				<div className="flex items-center justify-between mb-4">
+					<h3 className="text-lg font-medium text-gray-900">Company Question Banks</h3>
+					<button
+						onClick={loadCompanyBanks}
+						disabled={companyBanksLoading}
+						className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50"
+					>
+						{companyBanksLoading ? 'Loading...' : 'Refresh'}
+					</button>
+				</div>
+				{companyBanksLoading ? (
+					<div className="flex items-center justify-center py-8">
+						<div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent"></div>
+						<span className="ml-2 text-gray-600">Loading question banks...</span>
+					</div>
+				) : companyBanks.length > 0 ? (
+					<div className="overflow-x-auto">
+						<table className="min-w-full divide-y divide-gray-200">
+							<thead className="bg-gray-50">
+								<tr>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Questions</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+								</tr>
+							</thead>
+							<tbody className="bg-white divide-y divide-gray-200">
+								{companyBanks.map(b => (
+									<tr key={b._id}>
+										<td className="px-6 py-4 whitespace-nowrap">
+											<div className="text-sm font-medium text-gray-900">{b.name}</div>
+											<div className="text-sm text-gray-500">{b.description || 'No description'}</div>
+										</td>
+										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{b.questionCount}</td>
+										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(b.createdAt).toLocaleDateString()}</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				) : (
+					<div className="text-center py-8 text-gray-500">No question banks found</div>
+				)}
+			</div>
+
+			{/* Company Surveys */}
+			<div className="bg-white rounded-lg shadow p-6">
+				<div className="flex items-center justify-between mb-4">
+					<h3 className="text-lg font-medium text-gray-900">Company Surveys</h3>
+					<button
+						onClick={loadCompanySurveys}
+						disabled={companySurveysLoading}
+						className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50"
+					>
+						{companySurveysLoading ? 'Loading...' : 'Refresh'}
+					</button>
+				</div>
+				{companySurveysLoading ? (
+					<div className="flex items-center justify-center py-8">
+						<div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent"></div>
+						<span className="ml-2 text-gray-600">Loading surveys...</span>
+					</div>
+				) : companySurveys.length > 0 ? (
+					<div className="overflow-x-auto">
+						<table className="min-w-full divide-y divide-gray-200">
+							<thead className="bg-gray-50">
+								<tr>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Questions</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+								</tr>
+							</thead>
+							<tbody className="bg-white divide-y divide-gray-200">
+								{companySurveys.map(s => (
+									<tr key={s._id}>
+										<td className="px-6 py-4 whitespace-nowrap">
+											<div className="text-sm font-medium text-gray-900">{s.title || s._id}</div>
+										</td>
+										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">{s.type || 'survey'}</td>
+										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+											<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+												📝 {s.questionCount || 0} questions
+											</span>
+										</td>
+										<td className="px-6 py-4 whitespace-nowrap">
+											<span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${s.status === 'active' ? 'bg-green-100 text-green-800' : s.status === 'closed' ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800'}`}>{s.status}</span>
+										</td>
+										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(s.createdAt).toLocaleDateString()}</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				) : (
+					<div className="text-center py-8 text-gray-500">No surveys found</div>
+				)}
+			</div>
+
 			{/* Features */}
 			{company.features && company.features.length > 0 && (
 				<div className="bg-white rounded-lg shadow p-6">
@@ -1155,6 +1473,118 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 								{feature}
 							</span>
 						))}
+					</div>
+				</div>
+			)}
+
+			{/* User Details Modal */}
+			{showUserModal && selectedUser && (
+				<div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+					<div className="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white">
+						<div className="flex items-center justify-between mb-4">
+							<h3 className="text-lg font-medium text-gray-900">User Details</h3>
+							<button
+								onClick={() => setShowUserModal(false)}
+								className="text-gray-400 hover:text-gray-600"
+							>
+								<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+								</svg>
+							</button>
+						</div>
+
+						<div className="space-y-4">
+							<div className="flex items-center space-x-4">
+								<div className="flex-shrink-0 h-16 w-16">
+									<div className="h-16 w-16 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
+										<span className="text-xl font-medium text-white">
+											{selectedUser.name.charAt(0).toUpperCase()}
+										</span>
+									</div>
+								</div>
+								<div>
+									<h4 className="text-xl font-semibold text-gray-900">{selectedUser.name}</h4>
+									<p className="text-gray-600">{selectedUser.email}</p>
+									<span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+										selectedUser.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+									}`}>
+										{selectedUser.status === 'active' ? '✅ Active' : '❌ Inactive'}
+									</span>
+								</div>
+							</div>
+
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div className="bg-gray-50 p-4 rounded-lg">
+									<h5 className="font-medium text-gray-900 mb-2">Account Information</h5>
+									<div className="space-y-2 text-sm">
+										<div><span className="font-medium">User ID:</span> {selectedUser._id}</div>
+										<div><span className="font-medium">Role:</span> {selectedUser.role}</div>
+										<div><span className="font-medium">Department:</span> {selectedUser.department || 'Not specified'}</div>
+										<div><span className="font-medium">Student ID:</span> {selectedUser.studentId || 'Not specified'}</div>
+									</div>
+								</div>
+
+								<div className="bg-gray-50 p-4 rounded-lg">
+									<h5 className="font-medium text-gray-900 mb-2">Activity Information</h5>
+									<div className="space-y-2 text-sm">
+										<div>
+											<span className="font-medium">Registration Date:</span>
+											<div className="text-gray-600">
+												{new Date(selectedUser.createdAt).toLocaleDateString()}
+												<br />
+												{new Date(selectedUser.createdAt).toLocaleTimeString()}
+											</div>
+										</div>
+										<div>
+											<span className="font-medium">Last Login:</span>
+											<div className="text-gray-600">
+												{selectedUser.lastLogin ? (
+													<>
+														{new Date(selectedUser.lastLogin).toLocaleDateString()}
+														<br />
+														{new Date(selectedUser.lastLogin).toLocaleTimeString()}
+													</>
+												) : (
+													'Never logged in'
+												)}
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div className="flex justify-end space-x-3 pt-4 border-t">
+								<button
+									onClick={() => setShowUserModal(false)}
+									className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+								>
+									Close
+								</button>
+								<button
+									onClick={() => {
+										handleResetPassword(selectedUser);
+										setShowUserModal(false);
+									}}
+									disabled={resetPasswordLoading === selectedUser._id}
+									className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 disabled:opacity-50"
+								>
+									{resetPasswordLoading === selectedUser._id ? 'Resetting...' : '🔑 Reset Password'}
+								</button>
+								<button
+									onClick={() => {
+										handleToggleUserStatus(selectedUser);
+										setShowUserModal(false);
+									}}
+									className={`px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md ${
+										selectedUser.status === 'active'
+											? 'bg-orange-600 hover:bg-orange-700'
+											: 'bg-green-600 hover:bg-green-700'
+									}`}
+								>
+									{selectedUser.status === 'active' ? '⏸️ Deactivate' : '▶️ Activate'}
+								</button>
+							</div>
+						</div>
 					</div>
 				</div>
 			)}

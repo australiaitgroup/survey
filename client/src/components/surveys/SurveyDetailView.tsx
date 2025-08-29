@@ -227,6 +227,10 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 			questionBankId = (questionBankId as any)._id || (questionBankId as any).id;
 		}
 
+		const securitySettings = survey.securitySettings || {
+			antiCheatEnabled: false,
+		};
+
 		setEditForm({
 			title: survey.title,
 			description: survey.description || '',
@@ -243,6 +247,7 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 			questionCount: survey.questionCount,
 			multiQuestionBankConfig: survey.multiQuestionBankConfig || [],
 			selectedQuestions: survey.selectedQuestions || [],
+			securitySettings: securitySettings,
 			scoringSettings: survey.scoringSettings || {
 				scoringMode: SCORING_MODE.PERCENTAGE,
 				totalPoints: 0,

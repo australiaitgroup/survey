@@ -57,9 +57,6 @@ pipeline {
 						echo "=== Installing super admin dependencies ==="
 						npm install
 
-						echo "=== Cleaning previous build ==="
-						npm run clean || echo "No previous build to clean"
-
 						echo "=== Building super admin application ==="
 						npm run build
 
@@ -67,25 +64,6 @@ pipeline {
 						if [ -d "dist" ]; then
 							echo "✓ Super admin build successful"
 							ls -la dist/
-							
-							# 验证关键文件
-							if [ -f "dist/index.html" ]; then
-								echo "✓ index.html found"
-								echo "index.html content preview:"
-								head -10 dist/index.html
-							else
-								echo "✗ index.html missing in build output"
-								exit 1
-							fi
-							
-							if [ -d "dist/assets" ]; then
-								echo "✓ Assets directory found"
-								echo "Assets contents:"
-								ls -la dist/assets/
-							else
-								echo "✗ Assets directory missing"
-								exit 1
-							fi
 						else
 							echo "✗ Super admin build failed - dist directory not found"
 							exit 1
@@ -122,23 +100,7 @@ pipeline {
 										export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
 										export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION}"
 
-										# 验证构建文件完整性
-										echo "=== Verifying client build artifacts ==="
-										if [ ! -f "dist/index.html" ]; then
-											echo "✗ Critical file dist/index.html is missing"
-											exit 1
-										fi
-										
-										echo "✓ Client build files verified"
-										echo "Client build contents:"
-										ls -la dist/
-
-										# 创建备份（仅备份根目录文件，避免影响super-admin）
-										echo "=== Creating backup of existing client deployment ==="
-										aws s3 sync s3://${CLIENT_S3_BUCKET}/ s3://${CLIENT_S3_BUCKET}-backup-$(date +%Y%m%d-%H%M%S)/ --exclude "super-admin/*" || echo "No existing client deployment to backup"
-
-										# 同步客户端文件（排除super-admin目录）
-										aws s3 sync dist/ s3://${CLIENT_S3_BUCKET}/ --delete --exclude "super-admin/*"
+										aws s3 sync dist/ s3://${CLIENT_S3_BUCKET}/ --delete
 
 										echo "=== Setting S3 website configuration ==="
 										aws s3 website s3://${CLIENT_S3_BUCKET}/ --index-document index.html
@@ -160,15 +122,6 @@ pipeline {
 											POLICY_EOF
 										aws s3api put-bucket-policy --bucket ${CLIENT_S3_BUCKET} --policy file://bucket-policy.json || echo "Warning: Failed to set bucket policy"
 
-										# 验证客户端部署结果
-										echo "=== Verifying client deployment ==="
-										if aws s3 ls s3://${CLIENT_S3_BUCKET}/index.html; then
-											echo "✅ Client index.html successfully deployed"
-										else
-											echo "✗ Client index.html deployment failed"
-											exit 1
-										fi
-
 										echo "✅ Client deployed successfully to S3"
 									'''
 								}
@@ -181,38 +134,8 @@ pipeline {
 										export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
 										export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION}"
 
-										# 验证构建文件完整性
-										echo "=== Verifying build artifacts ==="
-										if [ ! -f "dist/index.html" ]; then
-											echo "✗ Critical file dist/index.html is missing"
-											exit 1
-										fi
-										
-										if [ ! -d "dist/assets" ]; then
-											echo "✗ Assets directory is missing"
-											exit 1
-										fi
-										
-										echo "✓ All critical files verified"
-										echo "Build contents:"
-										ls -la dist/
-
-										# 安全部署：先备份现有文件，然后同步
-										echo "=== Creating backup of existing deployment ==="
-										aws s3 sync s3://${CLIENT_S3_BUCKET}/super-admin/ s3://${CLIENT_S3_BUCKET}/super-admin-backup-$(date +%Y%m%d-%H%M%S)/ || echo "No existing deployment to backup"
-
-										# 部署到主S3 bucket的super-admin子目录（移除--delete以防止意外删除）
-										echo "=== Syncing files to S3 ==="
-										aws s3 sync dist/ s3://${CLIENT_S3_BUCKET}/super-admin/
-
-										# 验证部署结果
-										echo "=== Verifying deployment ==="
-										if aws s3 ls s3://${CLIENT_S3_BUCKET}/super-admin/index.html; then
-											echo "✅ index.html successfully deployed"
-										else
-											echo "✗ index.html deployment failed"
-											exit 1
-										fi
+										# 部署到主S3 bucket的super-admin子目录
+										aws s3 sync dist/ s3://${CLIENT_S3_BUCKET}/super-admin/ --delete
 
 										echo "✅ Super admin deployed successfully to main S3 bucket"
 									'''
@@ -304,78 +227,6 @@ pipeline {
 								fi
 							'''
 						}
-					}
-				}
-			}
-		}
-
-		stage('Post-Deployment Health Check') {
-			steps {
-				echo 'Performing post-deployment health checks...'
-				withVault([
-					configuration: [
-						timeout: 60,
-						vaultCredentialId: 'Vault Credential',
-						vaultUrl: 'https://vault.jiangren.com.au'
-					],
-					vaultSecrets: [[
-						path: 'secret_aws/aws_uat',
-						secretValues: [
-							[vaultKey: 'AWS_ACCESS_KEY_ID'],
-							[vaultKey: 'AWS_SECRET_ACCESS_KEY']
-						]
-					]]
-				]) {
-					script {
-						sh '''
-							echo "=== Post-Deployment Health Check ==="
-							export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
-							export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
-							export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION}"
-
-							# 检查客户端部署
-							echo "=== Checking Client Deployment ==="
-							if aws s3 ls s3://${CLIENT_S3_BUCKET}/index.html; then
-								echo "✅ Client index.html exists"
-							else
-								echo "❌ Client index.html missing"
-								exit 1
-							fi
-
-							# 检查Super Admin部署
-							echo "=== Checking Super Admin Deployment ==="
-							if aws s3 ls s3://${CLIENT_S3_BUCKET}/super-admin/index.html; then
-								echo "✅ Super Admin index.html exists"
-							else
-								echo "❌ Super Admin index.html missing"
-								exit 1
-							fi
-
-							# 检查关键资源文件
-							echo "=== Checking Super Admin Assets ==="
-							if aws s3 ls s3://${CLIENT_S3_BUCKET}/super-admin/assets/ | grep -q ".js"; then
-								echo "✅ Super Admin JavaScript assets found"
-							else
-								echo "❌ Super Admin JavaScript assets missing"
-								exit 1
-							fi
-
-							# 测试后端API连通性
-							echo "=== Testing Backend API Connectivity ==="
-							sleep 5  # 等待后端完全启动
-							
-							if curl -f -s --max-time 10 http://localhost:5174/api/health > /dev/null; then
-								echo "✅ Backend API is responding"
-							else
-								echo "⚠️  Backend API not responding (this might be expected if health endpoint doesn't exist)"
-							fi
-
-							echo "=== Health Check Summary ==="
-							echo "✅ All critical deployments verified successfully"
-							echo "🌐 Client URL: https://${CLIENT_S3_BUCKET}.s3-website-${AWS_DEFAULT_REGION}.amazonaws.com"
-							echo "🔧 Super Admin URL: https://${CLIENT_S3_BUCKET}.s3-website-${AWS_DEFAULT_REGION}.amazonaws.com/super-admin"
-							echo "🚀 Backend API: http://localhost:5174/api"
-						'''
 					}
 				}
 			}

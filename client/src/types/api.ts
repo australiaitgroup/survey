@@ -140,6 +140,7 @@ export interface Question {
 	points?: number;
 	tags?: string[];
 	difficulty?: QuestionDifficulty;
+	isRequired?: boolean;
 }
 
 export interface QuestionCreateRequest {
@@ -154,6 +155,7 @@ export interface QuestionCreateRequest {
 	points?: number;
 	tags?: string[];
 	difficulty?: QuestionDifficulty;
+	isRequired?: boolean;
 }
 
 export interface QuestionUpdateRequest extends Partial<QuestionCreateRequest> {}

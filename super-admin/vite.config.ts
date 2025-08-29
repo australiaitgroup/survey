@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
 	plugins: [react()],
+	base: '/super-admin/', // 恢复正确的路径
 	server: {
 		port: 3000,
 		fs: {

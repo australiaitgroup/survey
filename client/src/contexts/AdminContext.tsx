@@ -178,6 +178,9 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 		questionCount: undefined,
 		multiQuestionBankConfig: [],
 		selectedQuestions: [],
+		securitySettings: {
+			antiCheatEnabled: false,
+		},
 		scoringSettings: {
 			scoringMode: 'percentage',
 			totalPoints: 0,
@@ -208,6 +211,9 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 		questionCount: undefined,
 		multiQuestionBankConfig: [],
 		selectedQuestions: [],
+		securitySettings: {
+			antiCheatEnabled: false,
+		},
 		scoringSettings: {
 			scoringMode: 'percentage',
 			totalPoints: 0,
@@ -221,6 +227,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 			},
 		},
 	});
+
 
 	const [questionBankForm, setQuestionBankForm] = useState<QuestionBankForm>({
 		name: '',

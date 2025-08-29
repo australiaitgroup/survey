@@ -1,370 +1,360 @@
-# Survey AI - Modern Survey Application
+# SigmaQ - AI-Powered Assessment & Survey Platform
 
-A modern, full-stack survey application built with Node.js, Express, MongoDB, React, TypeScript, and Tailwind CSS.
+**SigmaQ** ([sigmaq.co](https://sigmaq.co)) is a comprehensive, enterprise-grade survey and assessment platform built for modern organizations. It combines powerful question bank management, AI-driven features, and flexible survey types to deliver professional assessment experiences.
 
-## Features
+*SigmaQ is proudly developed by **[JR Academy](https://jracademy.ai)** - Building the future of learning and assessment technology.*
 
-### 🎨 Modern UI/UX
+## 🚀 Platform Overview
 
-- **Tailwind CSS**: Beautiful, responsive design with modern styling
-- **Gradient backgrounds**: Eye-catching visual appeal
-- **Card-based layout**: Clean and organized interface
-- **Loading states**: Smooth user experience with loading indicators
-- **Error handling**: User-friendly error messages
+SigmaQ is designed as a multi-tenant SaaS platform that enables organizations to:
 
-### 📱 Independent Survey URLs
+- **Create Professional Assessments**: Build skill-based assessments, knowledge tests, and employee evaluations
+- **Manage Question Banks**: Organize reusable question libraries with advanced categorization
+- **Collect Survey Data**: Gather feedback through surveys, onboarding flows, and live quizzes  
+- **Analyze Results**: Get actionable insights with built-in analytics and reporting
+- **Scale Operations**: Support multiple companies with role-based access control
 
-- **Unique URLs**: Each survey has its own dedicated URL (e.g., `/survey/customer-feedback`)
-- **QR Code Generation**: Generate QR codes for easy mobile access
-- **Shareable Links**: Copy survey URLs to clipboard for easy sharing
-- **Direct Access**: Users can access surveys directly via URL without selecting from a list
+## 🎯 Core Features
 
-### 🔧 Admin Dashboard
+### 📚 Question Bank Management
+- **Centralized Library**: Organize questions by topic, difficulty, and tags
+- **Required Questions**: Mark questions as mandatory for assessments
+- **Import/Export**: CSV import with validation and bulk operations
+- **Public Marketplace**: Access and share question banks across organizations
+- **Rich Content**: Support for markdown descriptions and image attachments
 
-- **Survey Management**: Create, edit, delete, and activate/deactivate surveys
-- **Question Management**: Add multiple choice questions to surveys
-- **Statistics**: View response statistics and analytics
-- **QR Code Display**: Show QR codes for each survey
-- **URL Management**: Copy survey URLs for sharing
+### 🎯 Assessment Types
+- **Skills Assessment**: Technical and professional skill evaluation
+- **Knowledge Tests**: Quiz-style assessments with automatic scoring
+- **Survey Collection**: Feedback and opinion gathering
+- **Onboarding Flows**: New hire and customer onboarding processes
+- **Live Quizzes**: Real-time interactive question sessions
 
-### 📊 Survey Features
+### 🎨 Survey Builder
+- **Flexible Sources**: Create from question banks, manual selection, or multi-bank combinations
+- **Question Types**: Single choice, multiple choice, and short text responses
+- **Smart Selection**: Automatic question selection with required question enforcement
+- **Custom Scoring**: Configurable scoring systems and passing thresholds
+- **Anti-Cheat Protection**: Built-in security measures for assessment integrity
 
-- **Multiple Choice Questions**: Support for radio button questions
-- **User Information**: Collect name and email from respondents
-- **Response Tracking**: Store and analyze survey responses
-- **Active/Inactive Status**: Control survey availability
+### 📊 Analytics & Insights
+- **Real-time Results**: Live response tracking and statistics
+- **Candidate Profiles**: Detailed individual performance analysis
+- **Response Analytics**: Question-level performance metrics
+- **Export Capabilities**: Download results in multiple formats
+- **Visual Charts**: Interactive data visualization with Recharts
 
-## Tech Stack
+### 🛡️ Security & Administration
+- **Multi-tenant Architecture**: Complete data isolation between organizations
+- **Role-based Access**: Admin, user, and super-admin permission levels
+- **JWT Authentication**: Secure token-based authentication system
+- **Audit Logging**: Comprehensive activity tracking and compliance
+- **Anti-cheat Features**: Tab switching detection and time monitoring
 
-### Backend
+## 🏗️ Technical Architecture
 
-- **Node.js** with Express.js
-- **MongoDB** with Mongoose ODM
-- **Session-based authentication** for admin access
-- **RESTful API** design
+### Backend Stack
+- **Runtime**: Node.js 20+ with Express.js framework
+- **Database**: MongoDB with Mongoose ODM for data modeling
+- **Authentication**: JWT-based auth with bcrypt password hashing
+- **File Upload**: Multer for file handling with Cloudinary integration
+- **Email Service**: Nodemailer for transactional emails
+- **Payment Processing**: Stripe integration for subscription billing
+- **Validation**: Zod schemas for runtime type checking
 
-### Frontend
+### Frontend Stack
+- **Framework**: React 18 with TypeScript for type safety
+- **Build Tool**: Vite for fast development and optimized builds
+- **Styling**: Tailwind CSS with custom component library
+- **Routing**: React Router v6 with protected routes
+- **State Management**: React Context API with custom hooks
+- **Forms**: React Hook Form with validation resolvers
+- **Rich Text**: TipTap editor for markdown content creation
+- **Drag & Drop**: DnD Kit for question reordering
+- **Charts**: Recharts for data visualization
+- **Icons**: Heroicons for consistent iconography
+- **Animations**: Framer Motion for smooth transitions
 
-- **React 18** with TypeScript
-- **React Router** for navigation
-- **Tailwind CSS** for styling
-- **Axios** for API communication
-- **QRCode** library for QR code generation
-- **React Hook Form** for form handling
+### Additional Tools
+- **Internationalization**: i18next for multi-language support (EN/中文)
+- **Code Quality**: ESLint + Prettier for consistent code formatting
+- **Type Safety**: Full TypeScript coverage across frontend and backend APIs
+- **Development**: Hot reload, source maps, and development proxy setup
 
-## Public Website (Landing)
+## 📁 Project Structure
 
-- Routes:
-    - `/` Home (Hero, How It Works, Product Suite, Features, Question Banks, AI, Pricing, Testimonials)
-    - `/features` All features overview（AI authoring, analytics, automation, product suite）
-    - `/pricing` Plans with Question Banks highlight and resale/monetization intro
-    - `/about` Brand story, mission, values, milestones, team, customers
-    - `/contact` Contact channels + contact form（stored in DB）
-    - `/case-studies` Case studies overview
-- Responsive by default（Tailwind grid and breakpoints）
-- Internationalization: English/中文（i18next）
-
-### Google Analytics (optional)
-
-The site supports GA4. If not configured, builds still work and analytics is skipped.
-
-1. Add an env variable to the frontend (optional):
-
-```bash
-cd client
-echo "VITE_GA_MEASUREMENT_ID=G-XXXXXXXX" >> .env
+```
+sigmaq/
+├── client/                     # Frontend React Application
+│   ├── src/
+│   │   ├── components/         # Reusable UI components
+│   │   │   ├── surveys/        # Survey management components
+│   │   │   ├── questionBanks/  # Question bank components
+│   │   │   ├── collections/    # Collection management
+│   │   │   ├── modals/         # Modal dialogs
+│   │   │   ├── layout/         # Layout components
+│   │   │   ├── landing/        # Public website pages
+│   │   │   └── common/         # Shared components
+│   │   ├── contexts/           # React Context providers
+│   │   ├── hooks/              # Custom React hooks
+│   │   ├── types/              # TypeScript type definitions
+│   │   ├── utils/              # Utility functions
+│   │   └── constants/          # Application constants
+│   ├── public/                 # Static assets and localization files
+│   └── dist/                   # Production build output
+├── super-admin/                # Super Admin Dashboard (Separate React App)
+│   ├── src/
+│   │   ├── components/         # Admin-specific components
+│   │   ├── types/              # Admin type definitions
+│   │   └── api/                # Admin API clients
+│   └── dist/                   # Admin build output
+├── models/                     # MongoDB Schema Definitions
+│   ├── Survey.js              # Survey model with multi-source support
+│   ├── QuestionBank.js        # Question bank with required questions
+│   ├── Response.js            # Response model with scoring
+│   ├── Collection.js          # Survey collections
+│   ├── Company.js             # Multi-tenant company model
+│   ├── User.js                # User model with roles
+│   └── PublicBank.js          # Public question bank marketplace
+├── routes/                    # Express API Routes
+│   ├── surveys.js            # Public survey endpoints
+│   ├── assessments.js        # Assessment-specific logic
+│   ├── questionBanks.js      # Question bank management
+│   ├── collections.js        # Collection management
+│   ├── publicBanks.js        # Public marketplace
+│   ├── invitations.js        # Survey invitations
+│   ├── superAdmin.js         # Super admin endpoints
+│   └── admin/                # Admin-specific routes
+├── controllers/              # Business logic controllers
+├── middlewares/              # Express middleware (auth, validation, etc.)
+├── services/                 # Business service layer
+├── schemas/                  # Validation schemas
+├── scripts/                  # Utility and setup scripts
+├── docs/                     # Comprehensive documentation
+├── shared/                   # Shared constants and utilities
+└── server.js                 # Main application entry point
 ```
 
-2. Deploy as usual. Page views will be sent on route changes.
+## 🌐 Application Architecture
+
+### Multi-Tenant Design
+SigmaQ uses a **domain-based multi-tenancy** approach:
+- Each organization gets a subdomain: `{company}.sigmaq.co`
+- Complete data isolation between tenants
+- Shared infrastructure with tenant-specific routing
+- Cross-tenant administration through super-admin interface
+
+### Survey Source Types
+The platform supports multiple question sources:
+
+1. **Manual Creation** (`manual`): Questions created directly in the survey
+2. **Question Bank** (`question_bank`): Select from existing question banks
+3. **Multi-Bank Selection** (`multi_question_bank`): Combine multiple banks with filters
+4. **Manual Selection** (`manual_selection`): Cherry-pick specific questions
+
+### Question Bank Features
+- **Hierarchical Organization**: Categories, tags, and difficulty levels
+- **Required Questions**: Enforce specific questions in all assessments
+- **Import/Export**: CSV-based bulk operations with validation
+- **Public Marketplace**: Share and discover question banks
+- **Rich Content**: Markdown descriptions and image support
+
+### Assessment Logic
+- **Smart Selection**: Automatically include required questions
+- **Randomization**: Shuffle questions while respecting constraints  
+- **Scoring Engine**: Flexible scoring with percentage and point-based systems
+- **Anti-cheat**: Tab switching detection and time limit enforcement
+- **Response Tracking**: Detailed candidate journey analytics
+
+## 🚀 Quick Start
+
+### Prerequisites
+- **Node.js** 20+ (recommended: 20.11.0 LTS)
+- **MongoDB** 7+ (local instance or MongoDB Atlas)
+- **npm** or **yarn** package manager
+
+### Environment Setup
+
+1. **Clone and Install**
+   ```bash
+   git clone <repository-url>
+   cd sigmaq
+   npm install
+   cd client && npm install
+   cd ../super-admin && npm install
+   ```
+
+2. **Environment Configuration**
+   Create `.env` file in root:
+   ```env
+   # Database
+   MONGODB_URI=mongodb://localhost:27017/sigmaq
+   
+   # Authentication
+   JWT_SECRET=your-super-secure-jwt-secret
+   ADMIN_USERNAME=admin
+   ADMIN_PASSWORD=your-admin-password
+   
+   # Server
+   PORT=5050
+   NODE_ENV=development
+   
+   # Services (Optional)
+   STRIPE_SECRET_KEY=sk_test_...
+   CLOUDINARY_CLOUD_NAME=your-cloud
+   CLOUDINARY_API_KEY=your-api-key
+   CLOUDINARY_API_SECRET=your-secret
+   
+   # Email (Optional)
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
+   EMAIL_USER=your-email
+   EMAIL_PASS=your-password
+   ```
+
+3. **Start Development**
+   ```bash
+   # Terminal 1: Backend server
+   npm start
+   
+   # Terminal 2: Frontend development
+   cd client && npm run dev
+   
+   # Terminal 3: Super Admin dashboard (optional)
+   cd super-admin && npm run dev
+   ```
+
+### Access Points
+- **Public Website**: http://localhost:5173
+- **Admin Dashboard**: http://localhost:5173/admin
+- **Super Admin**: http://localhost:5051/super-admin
+- **API Endpoints**: http://localhost:5050/api
+
+## 📋 API Overview
+
+### Public Endpoints
+```
+GET    /api/surveys                    # List active surveys
+GET    /api/survey/:slug              # Get survey details  
+POST   /api/surveys/:id/responses     # Submit response
+GET    /api/assessment/:slug          # Get assessment metadata
+POST   /api/assessment/:slug/start    # Start assessment session
+POST   /api/assessment/:slug/submit   # Submit assessment
+POST   /api/contact                   # Contact form submission
+```
+
+### Admin Endpoints (JWT Required)
+```
+POST   /api/admin/login               # Admin authentication
+GET    /api/admin/profile            # Admin profile
+GET    /api/admin/surveys            # List all surveys
+POST   /api/admin/surveys            # Create survey
+PUT    /api/admin/surveys/:id        # Update survey  
+DELETE /api/admin/surveys/:id        # Delete survey
+GET    /api/admin/question-banks     # List question banks
+POST   /api/admin/question-banks     # Create question bank
+GET    /api/admin/collections        # List collections
+```
+
+### Super Admin Endpoints (Super Admin Role Required)
+```
+GET    /api/sa/stats                 # System statistics
+GET    /api/sa/companies            # List all companies
+PUT    /api/sa/companies/:id        # Update company
+GET    /api/sa/public-banks         # Manage public banks
+GET    /api/sa/audit               # System audit logs
+POST   /api/sa/impersonate         # User impersonation
+```
+
+## 🎯 Usage Examples
+
+### Creating an Assessment
+1. **Set up Question Bank**:
+   - Navigate to Question Banks tab
+   - Create new bank or import from CSV
+   - Mark important questions as "Required"
+
+2. **Build Assessment**:
+   - Create new survey with type "Assessment"
+   - Select question bank as source
+   - Set question count and passing threshold
+   - Configure scoring and security settings
+
+3. **Deploy & Monitor**:
+   - Activate survey to enable access
+   - Share assessment URL with candidates
+   - Monitor real-time results in admin dashboard
+
+### Multi-Bank Assessments
+```javascript
+// Example configuration for combining multiple question banks
+{
+  "sourceType": "multi_question_bank",
+  "multiQuestionBankConfig": [
+    {
+      "questionBankId": "bank1_id",
+      "questionCount": 5,
+      "filters": {
+        "difficulty": "hard",
+        "tags": ["javascript", "backend"]
+      }
+    },
+    {
+      "questionBankId": "bank2_id", 
+      "questionCount": 3,
+      "filters": {
+        "questionTypes": ["multiple_choice"]
+      }
+    }
+  ]
+}
+```
+
+## 🔒 Security Features
+
+- **Data Isolation**: Complete tenant separation in multi-tenant environment
+- **Authentication**: JWT-based with secure password hashing  
+- **Authorization**: Role-based access control (admin, user, superAdmin)
+- **Input Validation**: Zod schema validation on all API endpoints
+- **XSS Protection**: Sanitized HTML rendering and content security
+- **CSRF Protection**: Token-based request validation
+- **Rate Limiting**: API rate limiting to prevent abuse
+- **Audit Trail**: Comprehensive logging for compliance requirements
 
 ## 📚 Documentation
 
-详细的系统文档请查看 [docs/](./docs/) 目录：
+Comprehensive documentation is available in the `/docs` directory:
 
-- **📖 [文档索引](./docs/README.md)** - 完整的文档导航和分类
-- **🔐 [管理员功能](./docs/admin/)** - 管理员注册、个人资料等功能
-- **⚡ [功能特性](./docs/features/)** - 调查类型、评估系统等功能
-- **🔧 [实现细节](./docs/implementation/)** - 技术实现和架构说明
-- **🧪 [测试相关](./docs/testing/)** - 测试用例和结果
-- **🚀 [部署相关](./docs/deployment/)** - Docker部署和云服务配置
-- **💻 [开发相关](./docs/development/)** - 开发规范和AI助手配置
+- **[📖 Documentation Index](./docs/README.md)** - Complete navigation
+- **[🔐 Admin Features](./docs/admin/)** - Administrative functionality
+- **[⚡ Platform Features](./docs/features/)** - Core platform capabilities  
+- **[🔧 Implementation](./docs/implementation/)** - Technical architecture
+- **[🧪 Testing](./docs/testing/)** - Test strategies and results
+- **[🚀 Deployment](./docs/deployment/)** - Production deployment guides
 
-## Getting Started
+## 🤝 Contributing
 
-### Prerequisites
+We welcome contributions to SigmaQ! Please see our contributing guidelines:
 
-- Node.js (v20 or higher)
-- MongoDB (local or cloud instance)
-- npm or yarn
+1. **Fork** the repository
+2. **Create** feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to branch (`git push origin feature/amazing-feature`)  
+5. **Open** pull request
 
-### Installation
+### Development Standards
+- **TypeScript**: Maintain type safety across all components
+- **Testing**: Add tests for new features and bug fixes
+- **Documentation**: Update docs for any API or feature changes
+- **Code Style**: Follow ESLint and Prettier configurations
+- **Commit Messages**: Use conventional commit format
 
-1. **Clone the repository**
+## 📄 License
 
-    ```bash
-    git clone <repository-url>
-    cd survey_ai
-    ```
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
-2. **Install backend dependencies**
+---
 
-    ```bash
-    npm install
-    ```
+**SigmaQ** ([sigmaq.co](https://sigmaq.co)) - Empowering organizations with intelligent assessment solutions.
 
-3. **Install frontend dependencies**
-
-    ```bash
-    cd client
-    npm install
-    ```
-
-4. **Set up environment variables**
-   Create a `.env` file in the root directory:
-
-    ```env
-    MONGODB_URI=mongodb://localhost:27017/survey
-    ADMIN_USERNAME=admin
-    ADMIN_PASSWORD=password
-    PORT=5050
-    ```
-
-    Optional (frontend analytics): in `client/.env` you can set
-
-    ```env
-    VITE_GA_MEASUREMENT_ID=G-XXXXXXXX
-    ```
-
-5. **Start the backend server**
-
-    ```bash
-    npm start
-    ```
-
-6. **Start the frontend development server**
-
-    ```bash
-    cd client
-    npm run dev
-    ```
-
-7. **Access the application**
-    - Frontend: http://localhost:5173
-    - Backend API: http://localhost:5050
-    - Admin Dashboard: http://localhost:5173/admin
-    - Super Admin Dashboard: http://localhost:5050/super-admin
-
-## Usage
-
-### For Administrators
-
-1. **Login to Admin Dashboard**
-    - Navigate to `/admin`
-    - Use default credentials: `admin` / `password`
-    - Or set custom credentials in environment variables
-
-2. **Create a Survey**
-    - Fill in survey title and description
-    - Click "Create Survey"
-    - Add questions with multiple choice options
-
-3. **Manage Surveys**
-    - View all created surveys
-    - Activate/deactivate surveys
-    - Delete surveys (with confirmation)
-    - Copy survey URLs
-    - Generate QR codes for mobile access
-
-4. **View Statistics**
-    - Click "View Statistics" for any survey
-    - See response counts for each question option
-
-### For Survey Respondents
-
-1. **Access Survey**
-    - Use direct URL: `http://localhost:5173/survey/[survey-slug]`
-    - Or scan QR code with mobile device
-    - Or select from available surveys on homepage
-
-2. **Complete Survey**
-    - Enter name and email
-    - Answer all questions (required)
-    - Submit responses
-
-3. **Confirmation**
-    - Receive confirmation message
-    - Option to take another survey
-
-### For Super Administrators
-
-1. **Access Super Admin Dashboard**
-    - Navigate to `http://localhost:5050/super-admin`
-    - You will be redirected to the login page
-    - Login with a user account that has `superAdmin` role
-    - After successful login, you'll access the dashboard at `/super-admin/dashboard`
-
-2. **Super Admin Features**
-    - **Overview**: System-wide statistics and health monitoring with real-time charts
-    - **Companies**: Complete company management with user lists, status modification, and plan details
-    - **Public Banks**: Full question bank management with bottom-sliding drawer interface
-    - **Transactions**: Financial transaction monitoring and analysis
-    - **Audit Logs**: Comprehensive system activity audit trail
-
-3. **Default Super Admin Account**
-
-    The system comes with a default super admin account for initial setup:
-
-    ```
-    Email: superadmin@system.com
-    Password: SuperAdmin@2024!
-    ```
-
-    **To initialize the default account, run:**
-
-    ```bash
-    node scripts/init-super-admin.js
-    ```
-
-    ⚠️ **IMPORTANT**: Change the password immediately after first login!
-
-4. **Creating Additional Super Admin Users**
-
-    **Option 1: Using the provided script**
-
-    ```bash
-    node scripts/create-super-admin.js admin@example.com
-    ```
-
-    **Option 2: Manually in MongoDB**
-
-    ```javascript
-    // Connect to MongoDB and run:
-    db.users.updateOne({ email: 'admin@example.com' }, { $set: { role: 'superAdmin' } });
-    ```
-
-5. **Technology Stack**
-    - **Frontend**: React 18 with TypeScript, Vite build tool
-    - **Routing**: React Router v6 with protected routes
-    - **Styling**: Tailwind CSS with responsive design
-    - **Charts**: Recharts for data visualization
-    - **Authentication**: JWT-based with automatic session management
-
-6. **Security Notes**
-    - Super Admin dashboard requires authentication with JWT tokens
-    - Session is stored in localStorage with `sa_token` and `sa_user` keys
-    - Automatic redirect to login if not authenticated or not superAdmin
-    - All Super Admin API calls require the superAdmin role
-    - Cross-tenant data access controls for system-wide management
-
-## API Endpoints
-
-### Public Endpoints
-
-- `GET /api/surveys` - List all active surveys
-- `GET /api/survey/:slug` - Get survey by slug
-- `POST /api/surveys/:id/responses` - Submit survey response
-- `POST /api/contact` - Submit a contact message (stored in DB)
-
-### Admin Endpoints (require authentication)
-
-- `POST /api/admin/login` - Admin login
-- `GET /api/admin/logout` - Admin logout
-- `GET /api/admin/surveys` - List all surveys (admin)
-- `POST /api/admin/surveys` - Create new survey
-- `PUT /api/admin/surveys/:id` - Update survey
-- `DELETE /api/admin/surveys/:id` - Delete survey
-- `PUT /api/admin/surveys/:id/questions` - Add question to survey
-- `GET /api/admin/surveys/:id/statistics` - Get survey statistics
-
-### Super Admin Endpoints (require superAdmin role)
-
-- `GET /api/sa/companies` - List all companies (cross-tenant)
-- `GET /api/sa/companies/:id` - Get company details
-- `PUT /api/sa/companies/:id/suspend` - Suspend/unsuspend company
-- `GET /api/sa/stats` - Get system-wide statistics
-- `GET /api/sa/audit` - View audit logs
-- `POST /api/sa/impersonate` - Impersonate another user
-- `GET /api/sa/public-banks` - Manage public question banks
-- `GET /api/sa/transactions` - View all transactions
-
-## Project Structure
-
-```
-survey_ai/
-├── client/                 # Frontend React application
-│   ├── src/
-│   │   ├── components/     # React components
-│   │   ├── main.tsx        # App entry point
-│   │   ├── Admin.tsx       # Admin dashboard
-│   │   ├── TakeSurvey.tsx  # Survey taking interface
-│   │   └── styles.css      # Tailwind CSS styles
-│   ├── package.json
-│   └── tailwind.config.js  # Tailwind configuration
-├── super-admin/           # Super Admin dashboard (React + TypeScript)
-│   ├── src/
-│   │   ├── index.tsx          # Entry point (React app root)
-│   │   ├── App.tsx            # Main app component with routing
-│   │   ├── components/        # React components
-│   │   │   ├── pages/         # Page components (Overview, Companies, etc.)
-│   │   │   ├── companies/     # Company management components
-│   │   │   ├── publicBanks/   # Public banks feature modules
-│   │   │   └── ProtectedRoute.tsx # Authentication guard
-│   │   ├── types/             # TypeScript type definitions
-│   │   └── api/               # API client modules
-│   ├── index.html             # HTML entry point
-│   ├── vite.config.ts         # Vite configuration
-│   └── package.json           # Dependencies and scripts
-├── models/                 # MongoDB models
-│   ├── Survey.js          # Survey schema
-│   └── Response.js        # Response schema
-├── routes/                 # Express routes
-│   ├── admin.js           # Admin routes
-│   ├── surveys.js         # Survey routes
-│   ├── responses.js       # Response routes
-│   └── superAdmin.js      # Super Admin routes
-├── server.js              # Express server
-└── package.json
-```
-
-## Features in Detail
-
-### Independent Survey URLs
-
-Each survey gets a unique slug based on its title, creating URLs like:
-
-- `http://localhost:5173/survey/customer-feedback`
-- `http://localhost:5173/survey/employee-satisfaction`
-
-This allows for:
-
-- Direct sharing via email, messaging, or social media
-- QR code generation for mobile access
-- Easy integration into existing websites
-- Better tracking and analytics
-
-### QR Code Generation
-
-- Automatically generates QR codes for each survey URL
-- Click "Show QR" in admin dashboard to display
-- Mobile users can scan to access survey directly
-- Perfect for in-person events, posters, or printed materials
-
-### Modern UI Components
-
-- **Cards**: Clean, organized layout with shadows and borders
-- **Buttons**: Consistent styling with hover effects
-- **Forms**: Modern input fields with focus states
-- **Loading States**: Spinners and disabled states during operations
-- **Error Handling**: User-friendly error messages and validation
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License.
+*Proudly developed by [JR Academy](https://jracademy.ai) - Building the future of learning and assessment technology.*

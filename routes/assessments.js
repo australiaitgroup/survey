@@ -34,13 +34,6 @@ router.get(
 		}
 		if (!survey) throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
 
-		// Debug: Log survey security settings
-		console.log('📋 Assessment GET response:', {
-			surveyId: survey._id,
-			securitySettings: survey.securitySettings,
-			antiCheatEnabled: survey.securitySettings?.antiCheatEnabled
-		});
-
 		// Ensure it is an assessment-type survey
 		if (survey.type !== SURVEY_TYPE.ASSESSMENT) {
 			throw new AppError('Not an assessment', HTTP_STATUS.BAD_REQUEST);
@@ -48,7 +41,16 @@ router.get(
 
 		// Never include questions in this metadata response
 		survey.questions = [];
-		res.json(survey);
+		
+		// Ensure securitySettings is included in the response
+		const response = {
+			...survey,
+			securitySettings: survey.securitySettings || {
+				antiCheatEnabled: false
+			}
+		};
+		
+		res.json(response);
 	})
 );
 
@@ -92,12 +94,28 @@ router.post(
 				if (!questionBank) {
 					throw new AppError('Question bank not found', HTTP_STATUS.NOT_FOUND);
 				}
-				const questionCount = Math.min(
+				
+				// Separate required and optional questions
+				const requiredQuestions = questionBank.questions.filter(q => q.isRequired);
+				const optionalQuestions = questionBank.questions.filter(q => !q.isRequired);
+				
+				const maxQuestionCount = Math.min(
 					survey.questionCount || questionBank.questions.length,
 					questionBank.questions.length
 				);
-				const shuffled = [...questionBank.questions].sort(() => 0.5 - Math.random());
-				selectedQuestions = shuffled.slice(0, questionCount);
+				
+				// Always include all required questions
+				selectedQuestions = [...requiredQuestions];
+				
+				// Fill remaining slots with optional questions if there's space
+				const remainingSlots = Math.max(0, maxQuestionCount - requiredQuestions.length);
+				if (remainingSlots > 0 && optionalQuestions.length > 0) {
+					const shuffledOptional = optionalQuestions.sort(() => 0.5 - Math.random());
+					selectedQuestions.push(...shuffledOptional.slice(0, remainingSlots));
+				}
+				
+				// Shuffle the final question order
+				selectedQuestions = selectedQuestions.sort(() => 0.5 - Math.random());
 			} else if (survey.sourceType === SOURCE_TYPE.MULTI_QUESTION_BANK) {
 				if (
 					!survey.multiQuestionBankConfig ||
@@ -117,6 +135,8 @@ router.post(
 						);
 					}
 					let bankQuestions = [...questionBank.questions];
+					
+					// Apply filters
 					if (config.filters) {
 						if (config.filters.tags && config.filters.tags.length > 0) {
 							bankQuestions = bankQuestions.filter(q =>
@@ -137,12 +157,21 @@ router.post(
 							);
 						}
 					}
-					const shuffled = bankQuestions.sort(() => 0.5 - Math.random());
-					const selected = shuffled.slice(
-						0,
-						Math.min(config.questionCount, shuffled.length)
-					);
-					selectedQuestions.push(...selected);
+					
+					// Separate required and optional questions from this bank
+					const requiredFromBank = bankQuestions.filter(q => q.isRequired);
+					const optionalFromBank = bankQuestions.filter(q => !q.isRequired);
+					
+					// Always include required questions from this bank
+					selectedQuestions.push(...requiredFromBank);
+					
+					// Fill remaining slots for this bank with optional questions
+					const remainingSlotsForBank = Math.max(0, config.questionCount - requiredFromBank.length);
+					if (remainingSlotsForBank > 0 && optionalFromBank.length > 0) {
+						const shuffledOptional = optionalFromBank.sort(() => 0.5 - Math.random());
+						const selectedOptional = shuffledOptional.slice(0, remainingSlotsForBank);
+						selectedQuestions.push(...selectedOptional);
+					}
 				}
 				// After pooling questions from all banks, shuffle globally so questions are interleaved
 				// This ensures users see a mixed order rather than grouped by question bank
@@ -186,6 +215,7 @@ router.post(
 						points: q.points,
 						tags: q.tags,
 						difficulty: q.difficulty,
+						isRequired: q.isRequired,
 					},
 				})),
 				metadata: {
@@ -349,6 +379,7 @@ router.post(
 					points: question.points || 1,
 					tags: question.tags || [],
 					difficulty: question.difficulty || 'medium',
+					isRequired: question.isRequired || false,
 				},
 				userAnswer: userAnswer ?? null,
 				scoring: {

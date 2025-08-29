@@ -154,12 +154,8 @@ export const useSurveys = () => {
 				isActive: surveyData.status === 'active',
 			};
 
-
-
 			const response = await api.put(`/admin/surveys/${surveyId}`, dataToSend);
 			const updatedSurvey = response.data;
-
-
 
 			setSurveys(surveys.map(s => (s._id === surveyId ? updatedSurvey : s)));
 			if (selectedSurvey?._id === surveyId) {
@@ -237,8 +233,6 @@ export const useSurveys = () => {
 		const securitySettings = survey.securitySettings || {
 			antiCheatEnabled: false,
 		};
-
-
 
 		setEditForm({
 			title: survey.title,

@@ -10,6 +10,17 @@ const AdminFooter: React.FC = () => {
 					<div className='flex items-center space-x-6'>
 						<img src='/SigmaQ-logo.svg' alt='SigmaQ' className='h-6' />
 						<span>© {currentYear} SigmaQ. All rights reserved.</span>
+						<span className='text-xs text-gray-500'>
+							by{' '}
+							<a 
+								href='https://jracademy.ai' 
+								target='_blank' 
+								rel='noopener noreferrer'
+								className='text-blue-600 hover:text-blue-700 font-medium'
+							>
+								JR Academy
+							</a>
+						</span>
 					</div>
 					
 					<div className='flex items-center space-x-6 mt-4 md:mt-0'>

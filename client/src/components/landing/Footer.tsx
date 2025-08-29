@@ -26,9 +26,29 @@ const Footer: React.FC = () => {
 				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12'>
 					<div className='lg:col-span-2'>
 						<img src='/SigmaQ-logo.svg' alt='SigmaQ' className='h-12 mb-6' />
-						<p className='text-[#767676] mb-8 max-w-md text-lg leading-relaxed'>
+						<p className='text-[#767676] mb-6 max-w-md text-lg leading-relaxed'>
 							{t('appName')} - Smarter assessments for smarter teams.
 						</p>
+						<div className='mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100'>
+							<p className='text-sm text-[#484848] mb-2'>
+								Proudly developed by
+							</p>
+							<a 
+								href='https://jracademy.ai' 
+								target='_blank' 
+								rel='noopener noreferrer'
+								className='inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold text-lg transition-colors duration-200'
+							>
+								<span className='mr-2'>🚀</span>
+								JR Academy
+								<svg className='w-4 h-4 ml-1' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+									<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14' />
+								</svg>
+							</a>
+							<p className='text-xs text-[#767676] mt-1'>
+								Building the future of learning and assessment technology
+							</p>
+						</div>
 						<div className='mb-4'>
 							<LanguageSwitcher />
 						</div>

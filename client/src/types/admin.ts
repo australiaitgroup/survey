@@ -88,6 +88,7 @@ export interface QuestionForm {
 	explanation?: string;
 	tags?: string[];
 	difficulty?: 'easy' | 'medium' | 'hard';
+	isRequired?: boolean;
 }
 
 export interface LoginForm {

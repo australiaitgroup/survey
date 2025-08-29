@@ -48,6 +48,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 		type: 'single_choice' as const,
 		correctAnswer: undefined,
 		points: 1,
+		isRequired: false,
 	});
 	// Removed local edit question bank state; rely on context state instead
 	// Local state for CSV import
@@ -69,6 +70,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 		type: 'single_choice' as const,
 		correctAnswer: undefined,
 		points: 1,
+		isRequired: false,
 	};
 
 	const handleQuestionBankBackToList = () => {
@@ -90,6 +92,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 				type: 'single_choice' as const,
 				correctAnswer: undefined,
 				points: 1,
+				isRequired: false,
 			};
 
 			const updatedForm = { ...currentForm, [field]: value };
@@ -187,6 +190,7 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 			tags: question.tags || [],
 			explanation: question.explanation || '',
 			difficulty: question.difficulty || 'medium',
+			isRequired: question.isRequired || false,
 		});
 
 		setEditingQuestionIndex(questionIndex);
@@ -485,6 +489,11 @@ const QuestionBankDetailView: React.FC<QuestionBankDetailViewProps> = ({ questio
 															}`}
 														>
 															{q.difficulty}
+														</span>
+													)}
+													{q.isRequired && (
+														<span className='text-xs bg-red-100 text-red-800 px-2 py-1 rounded font-semibold'>
+															{t('question.required', '必做题')}
 														</span>
 													)}
 													{q.tags &&
