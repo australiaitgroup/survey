@@ -84,8 +84,8 @@ router.post(
 						createdBy,
 					});
 
-					// 生成 assessment 专属链接 - 使用 survey slug 而不是 invitation code
-					const link = `${process.env.BASE_URL || 'http://localhost:5173'}/assessment/${survey.slug}?invitation=${invitation.invitationCode}`;
+					// 生成 assessment 专属链接
+					const link = `${process.env.BASE_URL || 'http://localhost:5173'}/assessment/${invitation.invitationCode}`;
 					const expireText = expiresAt
 						? `此链接将在 ${new Date(expiresAt).toLocaleDateString()} 过期。`
 						: '';

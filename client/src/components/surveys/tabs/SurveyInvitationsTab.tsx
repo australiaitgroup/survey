@@ -3,13 +3,12 @@ import api from '../../../utils/axiosConfig';
 
 interface Props {
 	surveyId: string;
-	surveySlug: string;
 	companySlug: string;
 }
 
 const PAGE_SIZE = 10;
 
-const SurveyInvitationsTab: React.FC<Props> = ({ surveyId, surveySlug, companySlug }) => {
+const SurveyInvitationsTab: React.FC<Props> = ({ surveyId, companySlug }) => {
 	const [invitations, setInvitations] = useState<any[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [page, setPage] = useState(1);
@@ -54,7 +53,7 @@ const SurveyInvitationsTab: React.FC<Props> = ({ surveyId, surveySlug, companySl
 
 	const handleCopy = (token: string) => {
 		const basePath = companySlug ? `/${companySlug}` : '';
-		const url = `${window.location.origin}${basePath}/assessment/${surveySlug}?invitation=${token}`;
+		const url = `${window.location.origin}${basePath}/assessment/${token}`;
 		navigator.clipboard.writeText(url);
 	};
 

@@ -336,15 +336,6 @@ const surveySchema = new mongoose.Schema({
 	},
 });
 
-// Pre-save middleware to generate slug if not provided
-surveySchema.pre('save', async function (next) {
-	// Only generate slug if it's not already set and we have a title
-	if (!this.slug && this.title) {
-		this.slug = await this.constructor.generateSlug(this.title, this._id);
-	}
-	next();
-});
-
 // Helper function to generate unique slug
 surveySchema.statics.generateSlug = async function (title, excludeId = null) {
 	let baseSlug = title
