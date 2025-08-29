@@ -31,7 +31,7 @@ pipeline {
 				dir('client') {
 					sh '''
 						echo "=== Installing client dependencies ==="
-						npm ci
+						npm install
 
 						echo "=== Building client application ==="
 						npm run build
@@ -55,7 +55,7 @@ pipeline {
 				dir('super-admin') {
 					sh '''
 						echo "=== Installing super admin dependencies ==="
-						npm ci
+						npm install
 
 						echo "=== Building super admin application ==="
 						npm run build
