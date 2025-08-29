@@ -140,8 +140,7 @@ router.post(
 				},
 			});
 		} catch (error) {
-			console.error('Login error:', error);
-			res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+				res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
 				success: false,
 				error: 'Login failed. Please try again.',
 			});
@@ -157,15 +156,10 @@ router.post(
 router.post(
 	'/register',
 	asyncHandler(async (req, res) => {
-		const { name, email, password, companyName } = req.body;
+		const { name, email, password, companyName, verificationCode } = req.body;
+		
+		const VerificationCode = require('../../models/VerificationCode');
 
-		console.log('Registration request received:', {
-			name,
-			email: email ? email.toLowerCase() : 'undefined',
-			companyName,
-			hasPassword: !!password,
-			passwordLength: password ? password.length : 0,
-		});
 
 		// Validation
 		if (!name || !email || !password) {
@@ -181,30 +175,42 @@ router.post(
 				error: 'Password must be at least 8 characters long',
 			});
 		}
+		
+		// Email verification check
+		if (!verificationCode) {
+			return res.status(HTTP_STATUS.BAD_REQUEST).json({
+				success: false,
+				error: 'Email verification code is required',
+			});
+		}
+
+		// Check the verification code (don't mark as used yet)
+		const checkResult = await VerificationCode.checkCode(email.toLowerCase(), verificationCode);
+		if (!checkResult.success) {
+			return res.status(HTTP_STATUS.BAD_REQUEST).json({
+				success: false,
+				error: checkResult.message,
+				errorType: 'email_verification_failed',
+			});
+		}
 
 		// Check if user already exists
-		console.log('Checking for existing user with email:', email.toLowerCase());
 		const existingUser = await User.findOne({ email: email.toLowerCase() });
 		if (existingUser) {
-			console.log('User already exists with this email');
 			return res.status(HTTP_STATUS.BAD_REQUEST).json({
 				success: false,
 				error: 'An account with this email already exists',
 				errorType: 'user_exists',
 			});
 		}
-		console.log('No existing user found, proceeding with registration');
 
 		try {
 			// Hash password
-			console.log('Hashing password...');
 			const hashedPassword = await bcrypt.hash(password, 12);
-			console.log('Password hashing successful');
 
 			// Create company if provided
 			let company = null;
 			if (companyName) {
-				console.log('Creating company:', companyName);
 				// Generate a slug from the company name
 				const baseSlug = companyName
 					.toLowerCase()
@@ -220,28 +226,14 @@ router.post(
 					counter++;
 				}
 
-				console.log('Generated slug:', slug);
 				company = new Company({
 					name: companyName,
 					slug: slug,
 				});
 				await company.save();
-				console.log(
-					'Company created successfully with ID:',
-					company._id,
-					'and slug:',
-					slug
-				);
 			}
 
 			// Create user
-			console.log('Creating user with data:', {
-				name,
-				email: email.toLowerCase(),
-				role: 'admin',
-				companyId: company ? company._id : undefined,
-				hasHashedPassword: !!hashedPassword,
-			});
 
 			const user = new User({
 				name,
@@ -251,12 +243,9 @@ router.post(
 				companyId: company ? company._id : undefined,
 			});
 
-			console.log('Saving user to database...');
 			await user.save();
-			console.log('User saved successfully with ID:', user._id);
 
 			// Generate JWT token
-			console.log('Generating JWT token for user:', user._id);
 			const token = jwt.sign(
 				{
 					id: user._id,
@@ -266,9 +255,9 @@ router.post(
 				JWT_SECRET,
 				{ expiresIn: '7d' }
 			);
-			console.log('JWT token generated successfully');
 
-			console.log('Registration completed successfully, sending response');
+			// Mark verification code as used (only after successful registration)
+			await VerificationCode.verifyCode(email.toLowerCase(), verificationCode);
 			res.status(HTTP_STATUS.CREATED).json({
 				success: true,
 				token,
@@ -280,14 +269,7 @@ router.post(
 				},
 			});
 		} catch (error) {
-			console.error('Registration error:', error);
-			console.error('Error details:', {
-				message: error.message,
-				name: error.name,
-				code: error.code,
-				stack: error.stack,
-			});
-
+	
 			// More specific error messages
 			let errorMessage = 'Registration failed. Please try again.';
 			let errorType = 'registration_failed';
@@ -300,9 +282,6 @@ router.post(
 				} else if (error.message.includes('companies') && error.message.includes('slug')) {
 					errorMessage = 'Database configuration issue. Please contact support.';
 					errorType = 'database_index_error';
-					console.error(
-						'Company slug index error detected. Run: node scripts/fix_production_company_slug.js'
-					);
 				} else {
 					errorMessage = 'Duplicate data detected. Please check your input.';
 					errorType = 'duplicate_key_error';
@@ -315,7 +294,6 @@ router.post(
 					const validationErrors = Object.keys(error.errors).map(
 						field => `${field}: ${error.errors[field].message}`
 					);
-					console.error('Validation errors:', validationErrors);
 					errorMessage += ' (' + validationErrors.join(', ') + ')';
 				}
 			} else if (error.message && error.message.includes('bcrypt')) {

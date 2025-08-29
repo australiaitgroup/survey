@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>{{subject}}</title>
+		<style>
+			body {
+				font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+				line-height: 1.6;
+				color: #333;
+				margin: 0;
+				padding: 0;
+				background-color: #f5f5f5;
+			}
+			.container {
+				max-width: 600px;
+				margin: 40px auto;
+				background: white;
+				border-radius: 12px;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+				overflow: hidden;
+			}
+			.header {
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				color: #333;
+				padding: 40px 30px;
+				text-align: center;
+			}
+			.header h1 {
+				margin: 0;
+				font-size: 28px;
+				font-weight: 300;
+			}
+			.content {
+				padding: 40px 30px;
+			}
+			.greeting {
+				font-size: 18px;
+				margin-bottom: 20px;
+				color: #333;
+			}
+			.message {
+				margin-bottom: 30px;
+				color: #666;
+				font-size: 16px;
+			}
+			.code-container {
+				background: #f8f9fa;
+				border: 2px solid #667eea;
+				padding: 30px;
+				text-align: center;
+				margin: 30px 0;
+				border-radius: 10px;
+			}
+			.code-label {
+				font-size: 14px;
+				color: #666;
+				margin-bottom: 10px;
+				text-transform: uppercase;
+				letter-spacing: 1px;
+			}
+			.code-text {
+				font-size: 36px;
+				font-weight: bold;
+				color: #667eea;
+				letter-spacing: 8px;
+				font-family: 'Courier New', monospace;
+			}
+			.warning {
+				background: #fff3cd;
+				border: 1px solid #ffeaa7;
+				color: #856404;
+				padding: 20px;
+				border-radius: 8px;
+				margin: 20px 0;
+				font-size: 14px;
+			}
+			.footer {
+				background: #f8f9fa;
+				text-align: center;
+				color: #666;
+				font-size: 14px;
+				padding: 30px;
+				border-top: 1px solid #eee;
+			}
+			.footer-links {
+				margin-top: 20px;
+			}
+			.footer-links a {
+				color: #667eea;
+				text-decoration: none;
+				margin: 0 15px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="header">
+				<h1>{{title}}</h1>
+			</div>
+			<div class="content">
+				<div class="greeting">{{greeting}}</div>
+				<div class="message">{{message}}</div>
+				<div class="code-container">
+					<div class="code-label">{{codeLabel}}</div>
+					<div class="code-text">{{code}}</div>
+				</div>
+				<div class="warning">
+					⚠️ <strong>{{warningTitle}}</strong><br />
+					{{#each warningItems}} • {{{this}}}<br />
+					{{/each}}
+				</div>
+				<div class="message">{{disclaimer}}</div>
+			</div>
+			<div class="footer">
+				<p>{{footerText}}</p>
+				<div class="footer-links">
+					{{#each footerLinks}}
+					<a href="#">{{this}}</a>
+					{{/each}}
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

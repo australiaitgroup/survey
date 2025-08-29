@@ -150,6 +150,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 		password: '',
 		confirmPassword: '',
 		companyName: '',
+		verificationCode: '',
 	});
 
 	// Data state
@@ -319,14 +320,12 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 				}
 
 				const response = await api.get('/admin/check-auth');
-				console.log('Auth check response:', response);
 				setLoggedIn(true);
 				// Load profile data if already logged in and not already loaded
 				if (!profileData) {
 					await loadProfile();
 				}
 			} catch (err) {
-				console.log('Auth check failed:', err);
 				setLoggedIn(false);
 				// Remove invalid token
 				localStorage.removeItem('adminToken');
@@ -423,6 +422,7 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 					password: '',
 					confirmPassword: '',
 					companyName: '',
+					verificationCode: '',
 				});
 				// Load profile data after successful registration
 				if (!profileData) {
@@ -450,7 +450,6 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 			setTab('list');
 			navigate('/admin');
 		} catch (err) {
-			console.error('Logout error:', err);
 		}
 	};
 
@@ -476,7 +475,6 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 					companyData = companyResponse.data.company;
 				}
 			} catch (companyErr) {
-				console.log('Using admin profile company data as fallback');
 			}
 
 			setCompanyForm({
@@ -513,7 +511,6 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 				}
 			}
 		} catch (err) {
-			console.error('Load profile error:', err);
 			setError('Failed to load profile');
 		} finally {
 			setLoading(false);
@@ -536,7 +533,6 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 			setError('');
 			alert('Profile updated successfully!');
 		} catch (err: unknown) {
-			console.error('Update profile error:', err);
 			setError(err.response?.data?.error || 'Failed to update profile');
 		} finally {
 			setLoading(false);
@@ -557,7 +553,6 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 			setError('');
 			alert('Password updated successfully!');
 		} catch (err: unknown) {
-			console.error('Update password error:', err);
 			setError(err.response?.data?.error || 'Failed to update password');
 		} finally {
 			setLoading(false);
@@ -606,7 +601,6 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 			setError('');
 			alert('Company information updated successfully!');
 		} catch (err: unknown) {
-			console.error('Update company error:', err);
 			setError(err.response?.data?.error || 'Failed to update company information');
 		} finally {
 			setLoading(false);
