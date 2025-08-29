@@ -75,7 +75,8 @@
       "Bash(NODE_ENV=production npm start)",
       "Bash(PORT=5051 npm start)",
       "Bash(PORT=5052 npm start)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "WebFetch(domain:uat.sigmaq.co)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
