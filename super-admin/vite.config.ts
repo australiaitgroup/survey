@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
 	plugins: [react()],
-	base: './', // 使用相对路径，这样在本地测试时也能正常工作
+	base: '/super-admin/', // 恢复正确的路径
 	server: {
 		port: 3000,
 		fs: {
