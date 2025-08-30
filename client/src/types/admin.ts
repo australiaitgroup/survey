@@ -1,4 +1,4 @@
-// 导入并重用api.ts中的类型定义
+// Import and reuse type definitions from api.ts
 import type {
 	Survey as ApiSurvey,
 	Question as ApiQuestion,
@@ -16,16 +16,16 @@ import type {
 	MultiQuestionBankConfig,
 } from './api';
 
-// 前端特有的Survey接口，继承API接口
+// Frontend-specific Survey interface, extending API interface
 export interface Survey extends ApiSurvey {
-	// 可以在这里添加前端特有的属性
+	// Frontend-specific attributes can be added here
 	createdAt: string;
 	isActive: boolean;
 	lastActivity?: string;
 	responseCount?: number;
 }
 
-// 重用API接口定义
+// Reuse API interface definitions
 export interface QuestionBank extends ApiQuestionBank {}
 export interface Question extends ApiQuestion {}
 export interface Company extends ApiCompany {}
@@ -102,6 +102,7 @@ export interface RegisterForm {
 	password: string;
 	confirmPassword: string;
 	companyName?: string;
+	verificationCode?: string;
 }
 
 export interface NewSurveyForm {

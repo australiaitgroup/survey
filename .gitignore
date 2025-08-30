@@ -5,3 +5,4 @@ super-admin/node_modules
 super-admin/dist
 responses.json
 survey.db
+.env

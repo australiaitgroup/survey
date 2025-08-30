@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
@@ -19,6 +20,7 @@ const superAdminRouter = require('./routes/superAdmin');
 const publicBanksRouter = require('./routes/publicBanks');
 const contactRouter = require('./routes/contact');
 const webhooksRouter = require('./routes/webhooks');
+const verificationRouter = require('./routes/verification');
 const errorHandler = require('./middlewares/errorHandler');
 const { extractTenantFromUrl, multiTenant } = require('./middlewares/multiTenant');
 
@@ -73,6 +75,8 @@ app.use('/api', assessmentsRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/admin/users', usersRouter);
 app.use('/api/admin/question-banks', questionBanksRouter);
+// Verification API
+app.use('/api/verification', verificationRouter);
 app.use('/api/invitations', invitationsRouter);
 app.use('/api/subscription', subscriptionRouter);
 app.use('/api/companies', companiesRouter);
