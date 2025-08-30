@@ -148,7 +148,9 @@ const CLIENT_BUILD_PATH = path.join(__dirname, 'client', 'dist');
 app.use(express.static(CLIENT_BUILD_PATH));
 
 // Handle React routing, return all requests to React app
+// IMPORTANT: This catch-all route catches non-API routes for SPA routing
 app.get('*', (req, res) => {
+	// This should only catch frontend routes, API routes are already handled above
 	res.sendFile(path.join(CLIENT_BUILD_PATH, 'index.html'));
 });
 
