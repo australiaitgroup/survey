@@ -105,7 +105,7 @@ pipeline {
 										export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
 										export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION}"
 
-										aws s3 sync dist/ s3://${CLIENT_S3_BUCKET}/ --delete
+										aws s3 sync dist/ s3://${CLIENT_S3_BUCKET}/ --delete --exclude "super-admin/*"
 
 										echo "=== Setting S3 website configuration ==="
 										aws s3 website s3://${CLIENT_S3_BUCKET}/ --index-document index.html
@@ -123,7 +123,7 @@ pipeline {
 										export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION}"
 
 										# 部署到主S3 bucket的super-admin子目录
-										aws s3 sync dist/ s3://${CLIENT_S3_BUCKET}/super-admin/ --delete
+										aws s3 sync dist/ s3://${CLIENT_S3_BUCKET}/super-admin/
 
 										echo "✅ Super admin deployed successfully to main production S3 bucket"
 									'''
