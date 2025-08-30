@@ -16,6 +16,8 @@ import ProfileView from './profile/ProfileView';
 import BillingView from './billing/BillingView';
 import CollectionsListView from './collections/CollectionsListView';
 import CollectionDetailView from './collections/CollectionDetailView';
+import CheckoutPage from './checkout/CheckoutPage';
+import OrderConfirmationPage from './checkout/OrderConfirmationPage';
 import CreateSurveyModal from './modals/CreateSurveyModal';
 import EditSurveyModal from './modals/EditSurveyModal';
 import ScoringModal from './modals/ScoringModal';
@@ -108,6 +110,15 @@ const AdminDashboard: React.FC = () => {
 			);
 		}
 
+		// Check if we're on checkout routes
+		if (location.pathname.includes('/checkout/confirmation')) {
+			return <OrderConfirmationPage />;
+		}
+
+		if (location.pathname.includes('/checkout')) {
+			return <CheckoutPage />;
+		}
+
 		// Check if we're on a candidate detail route
 		if (location.pathname.includes('/candidate/') && params.responseId && params.surveyId) {
 			return (
@@ -176,8 +187,18 @@ const AdminDashboard: React.FC = () => {
 		return <SurveyListView />;
 	};
 
-	// Check if we're on candidate detail route to adjust layout
+	// Check if we're on candidate detail route or checkout route to adjust layout
 	const isCandidateDetailRoute = location.pathname.includes('/candidate/');
+	const isCheckoutRoute = location.pathname.includes('/checkout');
+
+	// Special layout for checkout pages
+	if (isCheckoutRoute) {
+		return (
+			<div className='min-h-screen'>
+				{renderContent()}
+			</div>
+		);
+	}
 
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col'>
@@ -197,7 +218,7 @@ const AdminDashboard: React.FC = () => {
 				<QuestionBankModal />
 				<EditQuestionBankModal />
 			</div>
-			
+
 			{/* Footer - stays at bottom */}
 			<AdminFooter />
 		</div>

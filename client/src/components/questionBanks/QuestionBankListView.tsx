@@ -4,12 +4,14 @@ import { useAdmin } from '../../contexts/AdminContext';
 import QuestionBankCard from './QuestionBankCard';
 import PublicQuestionBankCard from './PublicQuestionBankCard';
 import { usePublicBanksForSurvey } from '../../hooks/usePublicBanksForSurvey';
+import { usePublicBankRecommendations } from '../../hooks/usePublicBankRecommendations';
 import { useTranslation } from 'react-i18next';
 
 const QuestionBankListView: React.FC = () => {
 	const { questionBanks } = useQuestionBanks();
 	const { setShowQuestionBankModal, navigate } = useAdmin();
 	const { authorized, locked } = usePublicBanksForSurvey();
+	const { recommendations: randomRecommendations, refresh: refreshRecommendations } = usePublicBankRecommendations(4); // Get 4 random recommendations
 	const { t, i18n } = useTranslation('admin');
 
 	React.useEffect(() => {
@@ -32,11 +34,13 @@ const QuestionBankListView: React.FC = () => {
 		entitlement: bank.accessType || 'Locked',
 	});
 
-	// Get purchased banks (owned/subscription only) and recommended banks (locked ones)
+	// Get purchased banks (owned/subscription only)
 	const purchasedBanks = authorized
 		.filter((b: any) => b.accessType === 'Owned' || b.accessType === 'Subscription')
 		.map(convertToPublicQuestionBank);
-	const recommendedBanks = locked.slice(0, 3).map(convertToPublicQuestionBank);
+
+	// Use random recommendations instead of just locked banks
+	const recommendedBanks = randomRecommendations;
 
 	const handleGoToMarketplace = () => {
 		navigate('/admin/question-banks?tab=marketplace');
@@ -102,26 +106,52 @@ const QuestionBankListView: React.FC = () => {
 					</div>
 
 					{/* Recommended Public Banks Section */}
-					{recommendedBanks.length > 0 && (
-						<div className='space-y-4'>
-							<div className='flex justify-between items-center'>
+					<div className='space-y-4'>
+						<div className='flex justify-between items-center'>
+							<div className='flex items-center gap-3'>
 								<h3 className='text-lg font-medium text-gray-800'>
-									Recommended Question Banks
+									推荐题库
 								</h3>
 								<button
-									className='text-blue-600 hover:text-blue-800 text-sm font-medium'
-									onClick={handleGoToMarketplace}
+									onClick={refreshRecommendations}
+									className='p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors'
+									title='刷新推荐'
 								>
-									View All →
+									<svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+										<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' />
+									</svg>
 								</button>
 							</div>
-							<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3 items-stretch'>
+							<button
+								className='text-blue-600 hover:text-blue-800 text-sm font-medium'
+								onClick={handleGoToMarketplace}
+							>
+								浏览更多 →
+							</button>
+						</div>
+						{recommendedBanks.length > 0 ? (
+							<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4 items-stretch'>
 								{recommendedBanks.map(bank => (
 									<PublicQuestionBankCard key={bank._id} bank={bank} />
 								))}
 							</div>
-						</div>
-					)}
+						) : (
+							<div className='text-center py-8 bg-gray-50 rounded-lg border border-gray-200'>
+								<div className='w-12 h-12 bg-gray-200 rounded-full mx-auto mb-3 flex items-center justify-center'>
+									<svg className='w-6 h-6 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+										<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' />
+									</svg>
+								</div>
+								<p className='text-gray-600 mb-3'>暂无推荐题库</p>
+								<button
+									onClick={handleGoToMarketplace}
+									className='text-blue-600 hover:text-blue-800 font-medium'
+								>
+									去市场看看 →
+								</button>
+							</div>
+						)}
+					</div>
 				</div>
 			) : (
 				<div className='space-y-8'>
@@ -163,24 +193,50 @@ const QuestionBankListView: React.FC = () => {
 					)}
 
 					{/* Recommended Public Banks Section */}
-					{recommendedBanks.length > 0 && (
-						<div className='space-y-4 border-t pt-6'>
-							<div className='flex justify-between items-center'>
+					<div className='space-y-4 border-t pt-6'>
+						<div className='flex justify-between items-center'>
+							<div className='flex items-center gap-3'>
 								<h3 className='text-lg font-medium text-gray-800'>推荐题库</h3>
 								<button
-									className='text-blue-600 hover:text-blue-800 text-sm font-medium'
-									onClick={handleGoToMarketplace}
+									onClick={refreshRecommendations}
+									className='p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors'
+									title='刷新推荐'
 								>
-									浏览市场 →
+									<svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+										<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' />
+									</svg>
 								</button>
 							</div>
-							<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3 items-stretch'>
+							<button
+								className='text-blue-600 hover:text-blue-800 text-sm font-medium'
+								onClick={handleGoToMarketplace}
+							>
+								浏览市场 →
+							</button>
+						</div>
+						{recommendedBanks.length > 0 ? (
+							<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4 items-stretch'>
 								{recommendedBanks.map(bank => (
 									<PublicQuestionBankCard key={bank._id} bank={bank} />
 								))}
 							</div>
-						</div>
-					)}
+						) : (
+							<div className='text-center py-8 bg-gray-50 rounded-lg border border-gray-200'>
+								<div className='w-12 h-12 bg-gray-200 rounded-full mx-auto mb-3 flex items-center justify-center'>
+									<svg className='w-6 h-6 text-gray-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+										<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' />
+									</svg>
+								</div>
+								<p className='text-gray-600 mb-3'>暂无推荐题库</p>
+								<button
+									onClick={handleGoToMarketplace}
+									className='text-blue-600 hover:text-blue-800 font-medium'
+								>
+									去市场看看 →
+								</button>
+							</div>
+						)}
+					</div>
 
 					{/* Show create prompt if no local banks */}
 					{localBanks.length === 0 && (
