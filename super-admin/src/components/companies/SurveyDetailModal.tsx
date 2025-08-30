@@ -104,7 +104,7 @@ const SurveyDetailModal: React.FC<SurveyDetailModalProps> = ({
 				setSuccessMessage('Survey updated successfully');
 				onUpdate(data.data);
 				setEditMode(false);
-				
+
 				// Clear success message after 3 seconds
 				setTimeout(() => setSuccessMessage(null), 3000);
 			} else {
@@ -224,8 +224,8 @@ const SurveyDetailModal: React.FC<SurveyDetailModalProps> = ({
 								</select>
 							) : (
 								<span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-									survey.status === 'active' ? 'bg-green-100 text-green-800' : 
-									survey.status === 'closed' ? 'bg-gray-100 text-gray-800' : 
+									survey.status === 'active' ? 'bg-green-100 text-green-800' :
+									survey.status === 'closed' ? 'bg-gray-100 text-gray-800' :
 									'bg-yellow-100 text-yellow-800'
 								}`}>
 									{survey.status}

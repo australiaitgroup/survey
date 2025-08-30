@@ -17,17 +17,17 @@ async function createSuperAdmin() {
 
         // Check if superadmin already exists
         const existingSuperAdmin = await User.findOne({ email: 'superadmin@system.com' });
-        
+
         if (existingSuperAdmin) {
             console.log('Super admin already exists!');
             console.log('Email:', existingSuperAdmin.email);
             console.log('Role:', existingSuperAdmin.role);
             console.log('ID:', existingSuperAdmin._id);
-            
+
             // Generate JWT token for testing
             const jwt = require('jsonwebtoken');
-            const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-here';
-            
+            const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_in_production';
+
             const token = jwt.sign(
                 {
                     id: existingSuperAdmin._id,
@@ -37,10 +37,10 @@ async function createSuperAdmin() {
                 JWT_SECRET,
                 { expiresIn: '24h' }
             );
-            
+
             console.log('\nTest token for API calls:');
             console.log(token);
-            
+
             return;
         }
 
@@ -67,8 +67,8 @@ async function createSuperAdmin() {
 
         // Generate JWT token for testing
         const jwt = require('jsonwebtoken');
-        const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-here';
-        
+        const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_in_production';
+
         const token = jwt.sign(
             {
                 id: superAdmin._id,
@@ -78,13 +78,13 @@ async function createSuperAdmin() {
             JWT_SECRET,
             { expiresIn: '24h' }
         );
-        
+
         console.log('\nTest token for API calls:');
         console.log(token);
 
         // Create some test users for testing user management
         console.log('\nCreating test users...');
-        
+
         const testUsers = [
             {
                 name: 'John Doe',

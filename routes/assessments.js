@@ -15,6 +15,17 @@ const {
 
 const router = express.Router();
 
+// Debug helper function
+function debugLog(message, data = null, forceLog = false) {
+	const shouldDebug = process.env.ASSESSMENT_DEBUG === 'true' || process.env.NODE_ENV === 'development' || forceLog;
+	if (shouldDebug) {
+		console.log(`[ASSESSMENT DEBUG] ${new Date().toISOString()} - ${message}`);
+		if (data) {
+			console.log(JSON.stringify(data, null, 2));
+		}
+	}
+}
+
 function maskQuestions(questions) {
 	return (questions || []).map(q => {
 		const { correctAnswer, explanation, ...rest } = q.toObject ? q.toObject() : q;
@@ -29,22 +40,50 @@ function maskQuestions(questions) {
  * @returns {Promise<Object|null>} Survey document or null
  */
 async function findSurveyWithCompat(slug, req) {
+	debugLog('Starting survey search', {
+		slug,
+		company: req.company ? {
+			name: req.company.name,
+			slug: req.company.slug,
+			id: req.company._id
+		} : null,
+		url: req.originalUrl,
+		method: req.method
+	});
+
 	let survey = null;
 	
 	if (req.company) {
 		// Multi-tenant mode: search within company first
 		const companyQuery = { slug, status: SURVEY_STATUS.ACTIVE, companyId: req.company._id };
+		debugLog('Searching within company', companyQuery);
 		survey = await Survey.findOne(companyQuery);
+		
+		if (survey) {
+			debugLog('Found survey in company', {
+				surveyId: survey._id,
+				title: survey.title,
+				type: survey.type,
+				companyId: survey.companyId
+			});
+		}
 		
 		// If not found by slug, try by ID within company
 		if (!survey && mongoose.Types.ObjectId.isValid(slug)) {
 			const idQuery = { _id: slug, status: SURVEY_STATUS.ACTIVE, companyId: req.company._id };
+			debugLog('Trying search by ID within company', idQuery);
 			survey = await Survey.findOne(idQuery);
+			if (survey) {
+				debugLog('Found survey by ID in company', {
+					surveyId: survey._id,
+					title: survey.title
+				});
+			}
 		}
 		
 		// Backward compatibility: if still not found, check legacy surveys (no companyId)
 		if (!survey) {
-			console.log(`Assessment not found in company ${req.company.slug}, checking legacy surveys...`);
+			debugLog(`Assessment not found in company ${req.company.slug}, checking legacy surveys...`);
 			const legacyQuery = { 
 				slug, 
 				status: SURVEY_STATUS.ACTIVE, 
@@ -53,21 +92,59 @@ async function findSurveyWithCompat(slug, req) {
 					{ companyId: null }
 				]
 			};
+			debugLog('Searching legacy surveys', legacyQuery);
 			survey = await Survey.findOne(legacyQuery);
 			if (survey) {
-				console.log(`Found legacy survey: ${survey.title}, consider migrating to company ${req.company.slug}`);
+				debugLog(`Found legacy survey: ${survey.title}, consider migrating to company ${req.company.slug}`, {
+					surveyId: survey._id,
+					title: survey.title,
+					companyId: survey.companyId
+				});
+			} else {
+				debugLog('No legacy surveys found');
+				
+				// Debug: Show all surveys with this slug to help troubleshoot
+				const allSurveysWithSlug = await Survey.find({ slug }).select('_id title slug companyId status type');
+				debugLog('All surveys with this slug in database', allSurveysWithSlug.map(s => ({
+					id: s._id,
+					title: s.title,
+					slug: s.slug,
+					companyId: s.companyId,
+					status: s.status,
+					type: s.type
+				})));
 			}
 		}
 	} else {
 		// Non-tenant mode: search globally (backward compatibility)
+		debugLog('Non-tenant mode: searching globally');
 		const globalQuery = { slug, status: SURVEY_STATUS.ACTIVE };
+		debugLog('Global search query', globalQuery);
 		survey = await Survey.findOne(globalQuery);
 		
 		if (!survey && mongoose.Types.ObjectId.isValid(slug)) {
 			const idQuery = { _id: slug, status: SURVEY_STATUS.ACTIVE };
+			debugLog('Trying global search by ID', idQuery);
 			survey = await Survey.findOne(idQuery);
 		}
+		
+		if (survey) {
+			debugLog('Found survey in global search', {
+				surveyId: survey._id,
+				title: survey.title,
+				companyId: survey.companyId
+			});
+		} else {
+			debugLog('No survey found in global search');
+		}
 	}
+	
+	debugLog('Survey search completed', {
+		found: !!survey,
+		surveyId: survey?._id,
+		title: survey?.title,
+		type: survey?.type
+	});
 	
 	return survey;
 }
@@ -78,11 +155,27 @@ router.get(
 	asyncHandler(async (req, res) => {
 		const { slug } = req.params;
 		
+		debugLog('GET /assessment/:slug called', {
+			slug,
+			originalUrl: req.originalUrl,
+			company: req.company?.slug,
+			userAgent: req.get('User-Agent'),
+			ip: req.ip
+		});
+		
 		let survey = await findSurveyWithCompat(slug, req);
-		if (!survey) throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+		if (!survey) {
+			debugLog('Survey not found - throwing 404', { slug });
+			throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+		}
 
 		// Ensure it is an assessment-type survey
 		if (survey.type !== SURVEY_TYPE.ASSESSMENT) {
+			debugLog('Survey found but not assessment type', {
+				surveyId: survey._id,
+				actualType: survey.type,
+				expectedType: SURVEY_TYPE.ASSESSMENT
+			});
 			throw new AppError('Not an assessment', HTTP_STATUS.BAD_REQUEST);
 		}
 
@@ -100,6 +193,23 @@ router.get(
 			}
 		};
 		
+		// Add debug headers if debug is enabled
+		if (process.env.ASSESSMENT_DEBUG === 'true') {
+			res.set({
+				'X-Debug-Survey-Id': survey._id.toString(),
+				'X-Debug-Company-Id': survey.companyId?.toString() || 'null',
+				'X-Debug-Survey-Type': survey.type,
+				'X-Debug-Company-Slug': req.company?.slug || 'none'
+			});
+		}
+		
+		debugLog('Returning assessment metadata', {
+			surveyId: survey._id,
+			title: survey.title,
+			type: survey.type,
+			hasQuestions: (survey.questions || []).length > 0
+		});
+		
 		res.json(response);
 	})
 );
@@ -111,13 +221,31 @@ router.post(
 		const { slug } = req.params;
 		const { name, email, attempt, resume } = req.body || {};
 
+		debugLog('POST /assessment/:slug/start called', {
+			slug,
+			originalUrl: req.originalUrl,
+			company: req.company?.slug,
+			body: { name, email, attempt, resume },
+			userAgent: req.get('User-Agent'),
+			ip: req.ip
+		});
+
 		if (!email || !name) {
+			debugLog('Missing required fields', { email: !!email, name: !!name });
 			throw new AppError('Missing required fields: name, email', HTTP_STATUS.BAD_REQUEST);
 		}
 
 		const survey = await findSurveyWithCompat(slug, req);
-		if (!survey) throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+		if (!survey) {
+			debugLog('Survey not found for start endpoint', { slug });
+			throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+		}
 		if (survey.type !== SURVEY_TYPE.ASSESSMENT) {
+			debugLog('Survey found but not assessment type for start', {
+				surveyId: survey._id,
+				actualType: survey.type,
+				expectedType: SURVEY_TYPE.ASSESSMENT
+			});
 			throw new AppError('Not an assessment', HTTP_STATUS.BAD_REQUEST);
 		}
 
@@ -561,5 +689,110 @@ router.post(
 		});
 	})
 );
+
+// Debug endpoint - only accessible when ASSESSMENT_DEBUG=true
+router.get('/debug/system-status', asyncHandler(async (req, res) => {
+	if (process.env.ASSESSMENT_DEBUG !== 'true') {
+		return res.status(404).json({ error: 'Debug endpoint not enabled' });
+	}
+
+	const Company = require('../models/Company');
+	
+	try {
+		// Get all companies
+		const companies = await Company.find().select('name slug _id');
+		
+		// Get survey counts by company
+		const surveyStats = await Survey.aggregate([
+			{
+				$group: {
+					_id: '$companyId',
+					totalSurveys: { $sum: 1 },
+					assessments: {
+						$sum: { $cond: [{ $eq: ['$type', 'assessment'] }, 1, 0] }
+					},
+					surveys: {
+						$sum: { $cond: [{ $eq: ['$type', 'survey'] }, 1, 0] }
+					},
+					activeSurveys: {
+						$sum: { $cond: [{ $eq: ['$status', 'active'] }, 1, 0] }
+					}
+				}
+			}
+		]);
+
+		// Get legacy surveys (no companyId)
+		const legacySurveys = await Survey.find({
+			$or: [
+				{ companyId: { $exists: false } },
+				{ companyId: null }
+			]
+		}).select('_id title slug type status');
+
+		// Get current request context
+		const requestContext = {
+			company: req.company ? {
+				name: req.company.name,
+				slug: req.company.slug,
+				id: req.company._id
+			} : null,
+			originalUrl: req.originalUrl,
+			baseUrl: req.baseUrl,
+			path: req.path,
+			method: req.method,
+			headers: {
+				'user-agent': req.get('User-Agent'),
+				'host': req.get('Host'),
+				'x-forwarded-for': req.get('X-Forwarded-For'),
+				'x-real-ip': req.get('X-Real-IP')
+			}
+		};
+
+		// Environment info
+		const envInfo = {
+			NODE_ENV: process.env.NODE_ENV,
+			ASSESSMENT_DEBUG: process.env.ASSESSMENT_DEBUG,
+			MONGODB_URI: process.env.MONGODB_URI ? '***masked***' : 'not set',
+			PORT: process.env.PORT,
+			uptime: Math.round(process.uptime())
+		};
+
+		const debugInfo = {
+			timestamp: new Date().toISOString(),
+			environment: envInfo,
+			requestContext,
+			database: {
+				companies: companies.map(c => ({
+					name: c.name,
+					slug: c.slug,
+					id: c._id,
+					surveys: surveyStats.find(s => s._id?.toString() === c._id.toString()) || { totalSurveys: 0, assessments: 0, surveys: 0, activeSurveys: 0 }
+				})),
+				legacySurveys: legacySurveys.map(s => ({
+					id: s._id,
+					title: s.title,
+					slug: s.slug,
+					type: s.type,
+					status: s.status
+				})),
+				totalLegacySurveys: legacySurveys.length
+			},
+			debugFeatures: {
+				loggingEnabled: process.env.ASSESSMENT_DEBUG === 'true' || process.env.NODE_ENV === 'development',
+				debugHeaders: process.env.ASSESSMENT_DEBUG === 'true',
+				detailedQueries: true
+			}
+		};
+
+		res.json(debugInfo);
+	} catch (error) {
+		debugLog('Debug endpoint error', { error: error.message }, true);
+		res.status(500).json({
+			error: 'Debug endpoint failed',
+			message: error.message,
+			timestamp: new Date().toISOString()
+		});
+	}
+}));
 
 module.exports = router;

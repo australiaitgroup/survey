@@ -77,7 +77,13 @@
       "Bash(PORT=5052 npm start)",
       "Bash(npx eslint:*)",
       "WebFetch(domain:uat.sigmaq.co)",
-      "WebFetch(domain:uat.sigmaq.co.s3-website-ap-southeast-2.amazonaws.com)"
+      "WebFetch(domain:uat.sigmaq.co.s3-website-ap-southeast-2.amazonaws.com)",
+      "Bash(__NEW_LINE__ echo -e \"\\n原始问题URL测试：\")",
+      "Bash(__NEW_LINE__ echo -e \"\\n✅ 基于测试结果，可以确认：\")",
+      "Bash(__NEW_LINE__ echo -e \"\\n🚀 建议进行的浏览器测试：\")",
+      "Bash(__NEW_LINE__ echo -e \"\\n📋 如果浏览器测试也正常，那么部署100%成功！\")",
+      "Bash(SKIP_EMAIL_VERIFICATION=true npm start)",
+      "Bash(ASSESSMENT_DEBUG=true NODE_ENV=development npm start)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

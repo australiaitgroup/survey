@@ -67,12 +67,12 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 	// Company assets
 	const [companyBanks, setCompanyBanks] = useState<Array<{ _id: string; name: string; description?: string; questionCount: number; createdAt: string }>>([]);
 	const [companyBanksLoading, setCompanyBanksLoading] = useState(true);
-	const [companySurveys, setCompanySurveys] = useState<Array<{ 
-		_id: string; 
-		title: string; 
-		type: string; 
-		status: string; 
-		createdAt: string; 
+	const [companySurveys, setCompanySurveys] = useState<Array<{
+		_id: string;
+		title: string;
+		type: string;
+		status: string;
+		createdAt: string;
 		questionCount: number;
 		description?: string;
 		timeLimit?: number;
@@ -252,7 +252,7 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 
 	const handleSurveyUpdate = (updatedSurvey: any) => {
 		// Update the survey in the local state
-		setCompanySurveys(prev => 
+		setCompanySurveys(prev =>
 			prev.map(s => s._id === updatedSurvey._id ? { ...s, ...updatedSurvey } : s)
 		);
 	};
@@ -1464,8 +1464,8 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 							</thead>
 							<tbody className="bg-white divide-y divide-gray-200">
 								{companySurveys.map(s => (
-									<tr 
-										key={s._id} 
+									<tr
+										key={s._id}
 										onClick={() => handleSurveyClick(s)}
 										className="cursor-pointer hover:bg-gray-50 transition-colors duration-150"
 									>

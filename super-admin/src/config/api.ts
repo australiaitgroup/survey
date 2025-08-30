@@ -1,9 +1,9 @@
 // API配置文件
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://uat.sigmaq.co';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 export const API_ENDPOINTS = {
     // 认证相关
-    LOGIN: `${API_BASE_URL}/api/admin/login`,
+    LOGIN: `${API_BASE_URL}/api/sa/login`,
 
     // Super Admin API
     SA_STATS: `${API_BASE_URL}/api/sa/stats`,

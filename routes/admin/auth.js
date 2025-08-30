@@ -176,22 +176,26 @@ router.post(
 			});
 		}
 		
-		// Email verification check
-		if (!verificationCode) {
-			return res.status(HTTP_STATUS.BAD_REQUEST).json({
-				success: false,
-				error: 'Email verification code is required',
-			});
-		}
+		// Email verification check (skip in development environment)
+		const skipEmailVerification = process.env.NODE_ENV === 'development' || process.env.SKIP_EMAIL_VERIFICATION === 'true';
+		
+		if (!skipEmailVerification) {
+			if (!verificationCode) {
+				return res.status(HTTP_STATUS.BAD_REQUEST).json({
+					success: false,
+					error: 'Email verification code is required',
+				});
+			}
 
-		// Check the verification code (don't mark as used yet)
-		const checkResult = await VerificationCode.checkCode(email.toLowerCase(), verificationCode);
-		if (!checkResult.success) {
-			return res.status(HTTP_STATUS.BAD_REQUEST).json({
-				success: false,
-				error: checkResult.message,
-				errorType: 'email_verification_failed',
-			});
+			// Check the verification code (don't mark as used yet)
+			const checkResult = await VerificationCode.checkCode(email.toLowerCase(), verificationCode);
+			if (!checkResult.success) {
+				return res.status(HTTP_STATUS.BAD_REQUEST).json({
+					success: false,
+					error: checkResult.message,
+					errorType: 'email_verification_failed',
+				});
+			}
 		}
 
 		// Check if user already exists
@@ -256,8 +260,10 @@ router.post(
 				{ expiresIn: '7d' }
 			);
 
-			// Mark verification code as used (only after successful registration)
-			await VerificationCode.verifyCode(email.toLowerCase(), verificationCode);
+			// Mark verification code as used (only after successful registration and if verification was required)
+			if (!skipEmailVerification) {
+				await VerificationCode.verifyCode(email.toLowerCase(), verificationCode);
+			}
 			res.status(HTTP_STATUS.CREATED).json({
 				success: true,
 				token,

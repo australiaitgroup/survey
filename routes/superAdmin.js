@@ -20,11 +20,88 @@ const ResalePolicy = require('../models/ResalePolicy');
 
 const router = express.Router();
 
-// Apply middleware to all routes
+// Apply middleware to all routes (except login)
+router.use(attachAuditContext);
+
+/**
+ * @route   POST /sa/login
+ * @desc    Super admin login
+ * @access  Public
+ */
+router.post(
+	'/login',
+	asyncHandler(async (req, res) => {
+		const { username, password } = req.body;
+
+		if (!username || !password) {
+			return res.status(400).json({
+				success: false,
+				error: 'Username and password are required',
+			});
+		}
+
+		// Find user by email (include password field)
+		const user = await User.findOne({ email: username }).select('+password');
+		if (!user) {
+			return res.status(401).json({
+				success: false,
+				error: 'Invalid credentials',
+			});
+		}
+
+		// Check if user is active and has superAdmin role
+		if (!user.isActive || user.role !== 'superAdmin') {
+			return res.status(401).json({
+				success: false,
+				error: 'Access denied. Super admin privileges required.',
+			});
+		}
+
+		// Verify password
+		const bcrypt = require('bcrypt');
+		const isValidPassword = await bcrypt.compare(password, user.password);
+		if (!isValidPassword) {
+			return res.status(401).json({
+				success: false,
+				error: 'Invalid credentials',
+			});
+		}
+
+		// Generate JWT token
+		const jwt = require('jsonwebtoken');
+		const { JWT_SECRET } = require('../middlewares/jwtAuth');
+
+		const token = jwt.sign(
+			{
+				id: user._id,
+				email: user.email,
+				role: user.role,
+			},
+			JWT_SECRET,
+			{ expiresIn: '24h' }
+		);
+
+		// Update last login
+		user.lastLoginAt = new Date();
+		await user.save();
+
+		res.json({
+			success: true,
+			message: 'Login successful',
+			token,
+			user: {
+				id: user._id,
+				name: user.name,
+				email: user.email,
+				role: user.role,
+			},
+		});
+	})
+);
+
+// Apply authentication and authorization middleware to protected routes
 router.use(authenticateUser);
 router.use(requireSuperAdmin);
-router.use(allowCrossTenantAccess);
-router.use(attachAuditContext);
 
 /**
  * @route   GET /sa/stats

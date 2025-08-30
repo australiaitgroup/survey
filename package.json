@@ -21,7 +21,9 @@
 		"deploy:pre": "scripts/pre-deploy.sh",
 		"deploy:post": "scripts/post-deploy.sh",
 		"deploy:uat": "DEPLOY_ENV=uat npm run deploy:pre && npm run deploy:post",
-		"deploy:prod": "DEPLOY_ENV=prod npm run deploy:pre && npm run deploy:post"
+		"deploy:prod": "DEPLOY_ENV=prod npm run deploy:pre && npm run deploy:post",
+		"verify:uat": "UAT_URL=https://uat.sigmaq.co node scripts/verify-uat-deployment.js",
+		"verify:prod": "UAT_URL=https://sigmaq.co node scripts/verify-uat-deployment.js"
 	},
 	"dependencies": {
 		"axios": "^1.10.0",
