@@ -111,10 +111,10 @@ app.get('/api/health', (req, res) => {
 	res.status(200).json(healthCheck);
 });
 
-app.use(errorHandler);
-
 // Serve uploaded images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use(errorHandler);
 
 // Super Admin routes
 // In development: Super Admin runs on port 3000 (npm run dev)
@@ -143,14 +143,15 @@ if (process.env.NODE_ENV === 'production') {
 	});
 }
 
+// IMPORTANT: Static files and catch-all routes MUST be after all API routes
+// Otherwise they will intercept API requests and return HTML instead of JSON
+
 // Serve static files from the React build
 const CLIENT_BUILD_PATH = path.join(__dirname, 'client', 'dist');
 app.use(express.static(CLIENT_BUILD_PATH));
 
-// Handle React routing, return all requests to React app
-// IMPORTANT: This catch-all route catches non-API routes for SPA routing
+// Handle React routing, return all requests to React app (SPA fallback)
 app.get('*', (req, res) => {
-	// This should only catch frontend routes, API routes are already handled above
 	res.sendFile(path.join(CLIENT_BUILD_PATH, 'index.html'));
 });
 
