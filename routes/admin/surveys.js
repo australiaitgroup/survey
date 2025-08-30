@@ -130,6 +130,11 @@ router.put(
 			updateData.status = updateData.isActive ? 'active' : 'draft';
 		}
 
+		// Generate slug if title is being updated and no slug is provided
+		if (updateData.title && (!updateData.slug || updateData.slug.trim() === '')) {
+			updateData.slug = await Survey.generateSlug(updateData.title, req.params.id);
+		}
+
 		const survey = await Survey.findOneAndUpdate(
 			{ _id: req.params.id, createdBy: req.user.id },
 			updateData,

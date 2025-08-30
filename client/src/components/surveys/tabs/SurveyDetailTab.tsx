@@ -199,14 +199,14 @@ const SurveyDetailTab: React.FC<Props> = ({
 										)}
 									</div>
 									<div className='text-sm text-gray-600 font-mono break-all'>
-										{getAssessmentUrl(s.slug, companySlug)}
+										{getAssessmentUrl(s.slug || s._id, companySlug)}
 									</div>
 									<div className='flex items-center gap-1 sm:gap-2'>
 										<button
 											className='btn-outline btn-small'
 											onClick={() =>
 												copyToClipboard(
-													getAssessmentUrl(s.slug, companySlug)
+													getAssessmentUrl(s.slug || s._id, companySlug)
 												)
 											}
 										>
@@ -216,7 +216,7 @@ const SurveyDetailTab: React.FC<Props> = ({
 											className='btn-outline btn-small'
 											onClick={() =>
 												window.open(
-													getAssessmentUrl(s.slug, companySlug),
+													getAssessmentUrl(s.slug || s._id, companySlug),
 													'_blank'
 												)
 											}
@@ -284,8 +284,8 @@ const SurveyDetailTab: React.FC<Props> = ({
 								<QRCodeComponent
 									url={
 										s.type === SURVEY_TYPE.ASSESSMENT
-											? getAssessmentUrl(s.slug, companySlug)
-											: getSurveyUrl(s.slug, companySlug)
+											? getAssessmentUrl(s.slug || s._id, companySlug)
+											: getSurveyUrl(s.slug || s._id, companySlug)
 									}
 								/>
 							</div>

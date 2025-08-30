@@ -28,9 +28,26 @@ router.get(
 	asyncHandler(async (req, res) => {
 		const { slug } = req.params;
 
-		let survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE }).lean();
+		// Try multiple ways to find the survey
+		let survey = null;
+		
+		// First try by slug (if slug exists and is not empty)
+		if (slug) {
+			survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE }).lean();
+		}
+		
+		// If not found and slug looks like ObjectId, try by _id
 		if (!survey && mongoose.Types.ObjectId.isValid(slug)) {
 			survey = await Survey.findOne({ _id: slug, status: SURVEY_STATUS.ACTIVE }).lean();
+		}
+		
+		// If still not found, try to find by invitation code (for backward compatibility)
+		if (!survey) {
+			const Invitation = require('../models/Invitation');
+			const invitation = await Invitation.findOne({ invitationCode: slug }).populate('surveyId');
+			if (invitation && invitation.surveyId && invitation.surveyId.status === SURVEY_STATUS.ACTIVE) {
+				survey = invitation.surveyId.toObject ? invitation.surveyId.toObject() : invitation.surveyId;
+			}
 		}
 		if (!survey) throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
 
@@ -65,9 +82,26 @@ router.post(
 			throw new AppError('Missing required fields: name, email', HTTP_STATUS.BAD_REQUEST);
 		}
 
-		let survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE });
+		// Try multiple ways to find the survey
+		let survey = null;
+		
+		// First try by slug (if slug exists and is not empty)
+		if (slug) {
+			survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE });
+		}
+		
+		// If not found and slug looks like ObjectId, try by _id
 		if (!survey && mongoose.Types.ObjectId.isValid(slug)) {
 			survey = await Survey.findOne({ _id: slug, status: SURVEY_STATUS.ACTIVE });
+		}
+		
+		// If still not found, try to find by invitation code (for backward compatibility)
+		if (!survey) {
+			const Invitation = require('../models/Invitation');
+			const invitation = await Invitation.findOne({ invitationCode: slug }).populate('surveyId');
+			if (invitation && invitation.surveyId && invitation.surveyId.status === SURVEY_STATUS.ACTIVE) {
+				survey = invitation.surveyId;
+			}
 		}
 		if (!survey) throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
 		if (survey.type !== SURVEY_TYPE.ASSESSMENT) {
@@ -305,9 +339,26 @@ router.post(
 			throw new AppError('Missing responseId', HTTP_STATUS.BAD_REQUEST);
 		}
 
-		let survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE });
+		// Try multiple ways to find the survey
+		let survey = null;
+		
+		// First try by slug (if slug exists and is not empty)
+		if (slug) {
+			survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE });
+		}
+		
+		// If not found and slug looks like ObjectId, try by _id
 		if (!survey && mongoose.Types.ObjectId.isValid(slug)) {
 			survey = await Survey.findOne({ _id: slug, status: SURVEY_STATUS.ACTIVE });
+		}
+		
+		// If still not found, try to find by invitation code (for backward compatibility)
+		if (!survey) {
+			const Invitation = require('../models/Invitation');
+			const invitation = await Invitation.findOne({ invitationCode: slug }).populate('surveyId');
+			if (invitation && invitation.surveyId && invitation.surveyId.status === SURVEY_STATUS.ACTIVE) {
+				survey = invitation.surveyId;
+			}
 		}
 		if (!survey) throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
 		if (survey.type !== SURVEY_TYPE.ASSESSMENT) {

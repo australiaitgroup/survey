@@ -16,23 +16,15 @@ async function migrateSlugs() {
 		console.log(`Found ${surveysWithoutSlug.length} surveys without slug`);
 
 		for (const survey of surveysWithoutSlug) {
-			// Generate slug from title
-			const slug = survey.title
-				.toLowerCase()
-				.replace(/[^a-z0-9]+/g, '-')
-				.replace(/(^-|-$)/g, '');
-
-			// Make sure slug is unique
-			let uniqueSlug = slug;
-			let counter = 1;
-			while (await Survey.findOne({ slug: uniqueSlug, _id: { $ne: survey._id } })) {
-				uniqueSlug = `${slug}-${counter}`;
-				counter++;
+			if (survey.title) {
+				// Use the Survey model's generateSlug method for consistency
+				const uniqueSlug = await Survey.generateSlug(survey.title, survey._id);
+				survey.slug = uniqueSlug;
+				await survey.save();
+				console.log(`Updated survey "${survey.title}" with slug: ${uniqueSlug}`);
+			} else {
+				console.log(`Skipping survey ${survey._id} - no title`);
 			}
-
-			survey.slug = uniqueSlug;
-			await survey.save();
-			console.log(`Updated survey "${survey.title}" with slug: ${uniqueSlug}`);
 		}
 
 		console.log('Migration completed successfully');
