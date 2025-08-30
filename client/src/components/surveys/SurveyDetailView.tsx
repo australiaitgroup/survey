@@ -96,6 +96,7 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 		loadStats,
 		duplicateSurvey,
 		loadSurveys,
+		refreshSingleSurvey,
 	} = useSurveys();
 
 	const { questionBanks } = useQuestionBanks();
@@ -458,6 +459,7 @@ const SurveyDetailView: React.FC<SurveyDetailViewProps> = ({ survey }) => {
 						onDuplicate={duplicateSurvey}
 						onDelete={deleteSurvey}
 						onOpenScoringModal={() => setShowScoringModal(true)}
+						onRefresh={() => refreshSingleSurvey(s._id)}
 					/>
 				)}
 				{tabLocal === TAB_TYPES.STATISTICS && (

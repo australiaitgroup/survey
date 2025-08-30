@@ -30,6 +30,7 @@ interface Props {
 	onDuplicate: () => void;
 	onDelete: () => void;
 	onOpenScoringModal: () => void;
+	onRefresh?: () => void;
 }
 
 const SurveyDetailTab: React.FC<Props> = ({
@@ -54,6 +55,7 @@ const SurveyDetailTab: React.FC<Props> = ({
 	onDuplicate,
 	onDelete,
 	onOpenScoringModal,
+	onRefresh,
 }) => {
 	return (
 		<div className={showInlinePreview ? 'flex flex-col lg:flex-row gap-4 items-stretch' : ''}>
@@ -182,9 +184,20 @@ const SurveyDetailTab: React.FC<Props> = ({
 						<div className='space-y-3'>
 							{s.type === SURVEY_TYPE.ASSESSMENT ? (
 								<div className='flex flex-col items-start gap-2'>
-									<label className='block text-sm font-medium text-gray-700'>
-										Enhanced Assessment URL
-									</label>
+									<div className='flex items-center justify-between w-full'>
+										<label className='block text-sm font-medium text-gray-700'>
+											Enhanced Assessment URL
+										</label>
+										{onRefresh && (
+											<button
+												className='text-xs text-blue-600 hover:text-blue-800 underline'
+												onClick={onRefresh}
+												title='Refresh survey data to get latest slug'
+											>
+												🔄 Refresh
+											</button>
+										)}
+									</div>
 									<div className='text-sm text-gray-600 font-mono break-all'>
 										{getAssessmentUrl(s.slug, companySlug)}
 									</div>

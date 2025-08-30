@@ -96,6 +96,21 @@ export const useSurveys = () => {
 		surveysLoadedRef.current = true;
 	};
 
+	const refreshSingleSurvey = async (surveyId: string) => {
+		try {
+			const response = await api.get(`/admin/surveys/${surveyId}`);
+			const updatedSurvey = response.data;
+
+			setSurveys(surveys.map(s => (s._id === surveyId ? updatedSurvey : s)));
+			if (selectedSurvey?._id === surveyId) {
+				setSelectedSurvey(updatedSurvey);
+			}
+		} catch (err) {
+			console.error('Error refreshing survey:', err);
+			setError('Failed to refresh survey');
+		}
+	};
+
 	const createSurvey = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setLoading(true);
@@ -505,6 +520,7 @@ export const useSurveys = () => {
 		// Functions
 		loadSurveys,
 		refreshSurveys,
+		refreshSingleSurvey,
 		createSurvey,
 		updateSurvey,
 		deleteSurvey,
