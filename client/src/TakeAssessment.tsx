@@ -60,7 +60,6 @@ const TakeAssessment: React.FC = () => {
 	const [submitted, setSubmitted] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
-	const [debugInfo, setDebugInfo] = useState<any>(null);
 	const [assessmentResults, setAssessmentResults] = useState<AssessmentResult[]>([]);
 	const [scoringResult, setScoringResult] = useState<ScoringResult | null>(null);
 	const [assessmentMeta, setAssessmentMeta] = useState<{ responseId?: string }>({});
@@ -180,58 +179,14 @@ const TakeAssessment: React.FC = () => {
 			setLoading(true);
 			const apiUrl = getApiPath(`/assessment/${slug}`);
 			
-			// Enable debug mode if URL contains debug parameter or hostname includes localhost
-			const isDebugMode = new URLSearchParams(window.location.search).has('debug') || 
-								window.location.hostname === 'localhost' ||
-								window.location.hostname.includes('uat');
-			
-			console.log('Assessment API Request:', {
-				apiUrl,
-				companySlug,
-				slug,
-				currentUrl: window.location.href,
-				debugMode: isDebugMode
-			});
 			
 			axios
 				.get<Survey>(apiUrl)
 				.then(res => {
-					console.log('Assessment API Response:', res);
-					
-					// Collect debug information
-					const debugData = {
-						apiUrl,
-						companySlug,
-						slug,
-						currentUrl: window.location.href,
-						responseStatus: res.status,
-						responseHeaders: res.headers,
-						responseData: res.data,
-						timestamp: new Date().toISOString(),
-						userAgent: navigator.userAgent
-					};
-					
-					if (isDebugMode) {
-						setDebugInfo(debugData);
-					}
-					
-					// Check if response is HTML (indicating routing issue)
-					if (typeof res.data === 'string' && res.data.includes('<!DOCTYPE html>')) {
-						setError('API returned HTML instead of JSON - this indicates a routing configuration issue');
-						setDebugInfo(debugData);
-						return;
-					}
 					
 					// Verify it's an assessment type
 					if (res.data.type !== 'assessment') {
-						const errorMsg = `Survey type mismatch: expected 'assessment', got '${res.data.type}'`;
 						setError('This is not an assessment. Please use the survey interface instead.');
-						setDebugInfo({
-							...debugData,
-							error: errorMsg,
-							expectedType: 'assessment',
-							actualType: res.data.type
-						});
 						return;
 					}
 					setSurvey(res.data);
@@ -249,25 +204,6 @@ const TakeAssessment: React.FC = () => {
 				})
 				.catch((error) => {
 					console.error('Assessment API Error:', error);
-					
-					const errorDebugData = {
-						apiUrl,
-						companySlug,
-						slug,
-						currentUrl: window.location.href,
-						error: {
-							message: error.message,
-							status: error.response?.status,
-							statusText: error.response?.statusText,
-							headers: error.response?.headers,
-							data: error.response?.data
-						},
-						timestamp: new Date().toISOString(),
-						userAgent: navigator.userAgent
-					};
-					
-					// Always show debug info on error
-					setDebugInfo(errorDebugData);
 					setError('Assessment not found');
 				})
 				.finally(() => setLoading(false));
@@ -509,67 +445,6 @@ const TakeAssessment: React.FC = () => {
 		return (
 			<div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
 				<ErrorCard message={error} onHome={() => navigate('/')} />
-				
-				{/* Debug Information Panel */}
-				{debugInfo && (
-					<div className="mt-8 w-full max-w-4xl">
-						<details className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-							<summary className="cursor-pointer font-semibold text-yellow-800 mb-4">
-								🔍 Debug Information (Click to expand)
-							</summary>
-							<div className="space-y-4">
-								<div>
-									<h4 className="font-semibold text-gray-700">Request Details:</h4>
-									<div className="bg-gray-100 p-3 rounded text-sm font-mono">
-										<p><strong>API URL:</strong> {debugInfo.apiUrl}</p>
-										<p><strong>Company Slug:</strong> {debugInfo.companySlug || 'None'}</p>
-										<p><strong>Survey Slug:</strong> {debugInfo.slug}</p>
-										<p><strong>Current URL:</strong> {debugInfo.currentUrl}</p>
-										<p><strong>Timestamp:</strong> {debugInfo.timestamp}</p>
-									</div>
-								</div>
-								
-								{debugInfo.error && (
-									<div>
-										<h4 className="font-semibold text-red-700">Error Details:</h4>
-										<div className="bg-red-50 p-3 rounded text-sm font-mono">
-											<p><strong>Status:</strong> {debugInfo.error.status || 'N/A'}</p>
-											<p><strong>Status Text:</strong> {debugInfo.error.statusText || 'N/A'}</p>
-											<p><strong>Message:</strong> {debugInfo.error.message}</p>
-										</div>
-									</div>
-								)}
-								
-								{debugInfo.responseData && (
-									<div>
-										<h4 className="font-semibold text-gray-700">Response Data:</h4>
-										<div className="bg-blue-50 p-3 rounded text-sm font-mono max-h-60 overflow-auto">
-											{typeof debugInfo.responseData === 'string' 
-												? debugInfo.responseData.substring(0, 500) + '...'
-												: <pre>{JSON.stringify(debugInfo.responseData, null, 2)}</pre>
-											}
-										</div>
-									</div>
-								)}
-								
-								{debugInfo.expectedType && debugInfo.actualType && (
-									<div>
-										<h4 className="font-semibold text-orange-700">Type Mismatch:</h4>
-										<div className="bg-orange-50 p-3 rounded text-sm">
-											<p><strong>Expected:</strong> {debugInfo.expectedType}</p>
-											<p><strong>Actual:</strong> {debugInfo.actualType}</p>
-										</div>
-									</div>
-								)}
-								
-								<div className="text-xs text-gray-500 mt-4">
-									<p>💡 Tip: Share this debug information with the development team to help resolve the issue.</p>
-									<p>🌐 User Agent: {debugInfo.userAgent}</p>
-								</div>
-							</div>
-						</details>
-					</div>
-				)}
 			</div>
 		);
 	}
