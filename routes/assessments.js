@@ -30,16 +30,7 @@ function maskQuestions(questions) {
  * @returns {Promise<Object|null>} Survey document or null
  */
 async function findSurveyWithCompat(slug, req) {
-	//debugLog('Starting survey search', {
-		slug,
-		company: req.company ? {
-			name: req.company.name,
-			slug: req.company.slug,
-			id: req.company._id
-		} : null,
-		url: req.originalUrl,
-		method: req.method
-	});
+	// Debug logging removed
 
 	let survey = null;
 	
@@ -50,12 +41,7 @@ async function findSurveyWithCompat(slug, req) {
 		survey = await Survey.findOne(companyQuery);
 		
 		if (survey) {
-			//debugLog('Found survey in company', {
-				surveyId: survey._id,
-				title: survey.title,
-				type: survey.type,
-				companyId: survey.companyId
-			});
+			// Survey found in company
 		}
 		
 		// If not found by slug, try by ID within company
@@ -64,16 +50,13 @@ async function findSurveyWithCompat(slug, req) {
 			//debugLog('Trying search by ID within company', idQuery);
 			survey = await Survey.findOne(idQuery);
 			if (survey) {
-				//debugLog('Found survey by ID in company', {
-					surveyId: survey._id,
-					title: survey.title
-				});
+				// Survey found by ID in company
 			}
 		}
 		
 		// Backward compatibility: if still not found, check legacy surveys (no companyId)
 		if (!survey) {
-			//debugLog(`Assessment not found in company ${req.company.slug}, checking legacy surveys...`);
+			// Assessment not found in company, checking legacy surveys
 			const legacyQuery = { 
 				slug, 
 				status: SURVEY_STATUS.ACTIVE, 
@@ -85,24 +68,13 @@ async function findSurveyWithCompat(slug, req) {
 			//debugLog('Searching legacy surveys', legacyQuery);
 			survey = await Survey.findOne(legacyQuery);
 			if (survey) {
-				//debugLog(`Found legacy survey: ${survey.title}, consider migrating to company ${req.company.slug}`, {
-					surveyId: survey._id,
-					title: survey.title,
-					companyId: survey.companyId
-				});
+				// Found legacy survey
 			} else {
 				//debugLog('No legacy surveys found');
 				
 				// Debug: Show all surveys with this slug to help troubleshoot
 				const allSurveysWithSlug = await Survey.find({ slug }).select('_id title slug companyId status type');
-				//debugLog('All surveys with this slug in database', allSurveysWithSlug.map(s => ({
-					id: s._id,
-					title: s.title,
-					slug: s.slug,
-					companyId: s.companyId,
-					status: s.status,
-					type: s.type
-				})));
+				// Log all surveys with this slug
 			}
 		}
 	} else {
@@ -119,22 +91,13 @@ async function findSurveyWithCompat(slug, req) {
 		}
 		
 		if (survey) {
-			//debugLog('Found survey in global search', {
-				surveyId: survey._id,
-				title: survey.title,
-				companyId: survey.companyId
-			});
+			// Found survey in global search
 		} else {
 			//debugLog('No survey found in global search');
 		}
 	}
 	
-	//debugLog('Survey search completed', {
-		found: !!survey,
-		surveyId: survey?._id,
-		title: survey?.title,
-		type: survey?.type
-	});
+	// Survey search completed
 	
 	return survey;
 }
@@ -145,27 +108,17 @@ router.get(
 	asyncHandler(async (req, res) => {
 		const { slug } = req.params;
 		
-		//debugLog('GET /assessment/:slug called', {
-			slug,
-			originalUrl: req.originalUrl,
-			company: req.company?.slug,
-			userAgent: req.get('User-Agent'),
-			ip: req.ip
-		});
+		// GET /assessment/:slug called
 		
 		let survey = await findSurveyWithCompat(slug, req);
 		if (!survey) {
-			//debugLog('Survey not found - throwing 404', { slug });
+			// Survey not found
 			throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
 		}
 
 		// Ensure it is an assessment-type survey
 		if (survey.type !== SURVEY_TYPE.ASSESSMENT) {
-			//debugLog('Survey found but not assessment type', {
-				surveyId: survey._id,
-				actualType: survey.type,
-				expectedType: SURVEY_TYPE.ASSESSMENT
-			});
+			// Survey found but not assessment type
 			throw new AppError('Not an assessment', HTTP_STATUS.BAD_REQUEST);
 		}
 
@@ -193,12 +146,7 @@ router.get(
 			});
 		}
 		
-		//debugLog('Returning assessment metadata', {
-			surveyId: survey._id,
-			title: survey.title,
-			type: survey.type,
-			hasQuestions: (survey.questions || []).length > 0
-		});
+		// Returning assessment metadata
 		
 		res.json(response);
 	})
@@ -211,31 +159,20 @@ router.post(
 		const { slug } = req.params;
 		const { name, email, attempt, resume } = req.body || {};
 
-		//debugLog('POST /assessment/:slug/start called', {
-			slug,
-			originalUrl: req.originalUrl,
-			company: req.company?.slug,
-			body: { name, email, attempt, resume },
-			userAgent: req.get('User-Agent'),
-			ip: req.ip
-		});
+		// POST /assessment/:slug/start called
 
 		if (!email || !name) {
-			//debugLog('Missing required fields', { email: !!email, name: !!name });
+			// Missing required fields
 			throw new AppError('Missing required fields: name, email', HTTP_STATUS.BAD_REQUEST);
 		}
 
 		const survey = await findSurveyWithCompat(slug, req);
 		if (!survey) {
-			//debugLog('Survey not found for start endpoint', { slug });
+			// Survey not found for start endpoint
 			throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
 		}
 		if (survey.type !== SURVEY_TYPE.ASSESSMENT) {
-			//debugLog('Survey found but not assessment type for start', {
-				surveyId: survey._id,
-				actualType: survey.type,
-				expectedType: SURVEY_TYPE.ASSESSMENT
-			});
+			// Survey found but not assessment type for start
 			throw new AppError('Not an assessment', HTTP_STATUS.BAD_REQUEST);
 		}
 
