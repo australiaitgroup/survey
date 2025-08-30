@@ -13,7 +13,7 @@ const surveySchema = new mongoose.Schema({
 	description: String,
 	slug: {
 		type: String,
-		unique: true,
+		unique: false, // Changed: not globally unique, will use compound index
 		required: false,
 		index: true,
 	},
@@ -317,6 +317,12 @@ const surveySchema = new mongoose.Schema({
 			default: false,
 		},
 	},
+	// Multi-tenant support: reference to company (optional for backward compatibility)
+	companyId: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'Company',
+		default: null,
+	},
 	createdBy: {
 		type: String,
 		required: true,
@@ -387,6 +393,25 @@ surveySchema.virtual('scoringDescription').get(function () {
 		return `Percentage scoring, max score 100, passing threshold ${threshold}`;
 	} else {
 		return `Accumulated scoring, max score ${totalPoints}, passing threshold ${threshold}`;
+	}
+});
+
+// Create compound index to ensure slug uniqueness within each company
+// This allows different companies to have surveys with the same slug
+surveySchema.index({ slug: 1, companyId: 1 }, { 
+	unique: true,
+	partialFilterExpression: { 
+		slug: { $exists: true, $type: 'string' },
+		companyId: { $exists: true }
+	}
+});
+
+// For backward compatibility with surveys without companyId
+surveySchema.index({ slug: 1 }, { 
+	unique: true,
+	partialFilterExpression: { 
+		slug: { $exists: true, $type: 'string' },
+		companyId: { $exists: false }
 	}
 });
 

@@ -90,6 +90,27 @@ app.use('/api', contactRouter);
 // Webhooks API (must be before JSON parser middleware)
 app.use('/api/webhooks', webhooksRouter);
 
+// Health check endpoint for deployment verification
+app.get('/api/health', (req, res) => {
+	const healthCheck = {
+		uptime: process.uptime(),
+		message: 'OK',
+		timestamp: new Date().toISOString(),
+		environment: process.env.NODE_ENV || 'development',
+		version: require('./package.json').version,
+	};
+	
+	// Basic database connectivity check
+	if (mongoose.connection.readyState === 1) {
+		healthCheck.database = 'connected';
+	} else {
+		healthCheck.database = 'disconnected';
+		return res.status(503).json(healthCheck);
+	}
+	
+	res.status(200).json(healthCheck);
+});
+
 app.use(errorHandler);
 
 // Serve uploaded images

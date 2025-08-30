@@ -164,7 +164,7 @@ router.get(
 			return {
 				...company,
 				status: isActive ? 'active' : 'inactive',
-				email: company.contactEmail || adminEmails[0] || '',
+				email: adminEmails[0] || company.contactEmail || '',
 				userCount: userCountMap[id] || 0,
 				adminEmails,
 				adminCount: adminEmails.length,
@@ -387,7 +387,7 @@ router.get(
 		const userIdStrings = companyUsers.map(u => u._id.toString());
 
 		const surveys = await Survey.find({ createdBy: { $in: userIdStrings } })
-			.select('_id title type status createdAt updatedAt questions')
+			.select('_id title description type status timeLimit maxAttempts instructions navigationMode createdAt updatedAt questions')
 			.sort({ createdAt: -1 })
 			.lean();
 
@@ -398,6 +398,108 @@ router.get(
 		}));
 
 		res.json({ success: true, data: surveysWithQuestionCount });
+	})
+);
+
+/**
+ * @route   GET /sa/surveys/:id
+ * @desc    Get detailed information about a specific survey
+ * @access  SuperAdmin only
+ */
+router.get(
+	'/surveys/:id',
+	asyncHandler(async (req, res) => {
+		const surveyId = req.params.id;
+
+		const survey = await Survey.findById(surveyId)
+			.populate('questionBankId', 'name description')
+			.lean();
+
+		if (!survey) {
+			return res.status(404).json({ success: false, error: 'Survey not found' });
+		}
+
+		// Get response count
+		const responseCount = await Response.countDocuments({ surveyId: survey._id });
+
+		// Get last activity (most recent response)
+		const lastResponse = await Response.findOne({ surveyId: survey._id })
+			.sort({ createdAt: -1 })
+			.select('createdAt')
+			.lean();
+
+		const surveyWithStats = {
+			...survey,
+			responseCount,
+			lastActivity: lastResponse ? lastResponse.createdAt : null,
+		};
+
+		res.json({ success: true, data: surveyWithStats });
+	})
+);
+
+/**
+ * @route   PUT /sa/surveys/:id
+ * @desc    Update a survey (super admin can edit any survey)
+ * @access  SuperAdmin only
+ */
+router.put(
+	'/surveys/:id',
+	asyncHandler(async (req, res) => {
+		const surveyId = req.params.id;
+		const updateData = req.body;
+
+		// Find the survey
+		const survey = await Survey.findById(surveyId);
+		if (!survey) {
+			return res.status(404).json({
+				success: false,
+				error: 'Survey not found',
+			});
+		}
+
+		// Store old values for audit
+		const oldValues = { ...survey.toObject() };
+
+		// Update allowed fields
+		const allowedFields = [
+			'title',
+			'description',
+			'type',
+			'status',
+			'timeLimit',
+			'maxAttempts',
+			'instructions',
+			'navigationMode',
+			'isActive',
+			'securitySettings',
+			'scoringSettings'
+		];
+
+		allowedFields.forEach(field => {
+			if (updateData[field] !== undefined) {
+				survey[field] = updateData[field];
+			}
+		});
+
+		// Ensure isActive and status are in sync
+		if (updateData.status) {
+			survey.isActive = updateData.status === 'active';
+		} else if (updateData.isActive !== undefined) {
+			survey.status = updateData.isActive ? 'active' : 'draft';
+		}
+
+		await survey.save();
+
+		// Audit the change
+		await audit(req, 'survey_updated', {
+			surveyId: survey._id,
+			oldValues,
+			newValues: survey.toObject(),
+			companyId: survey.companyId,
+		});
+
+		res.json({ success: true, data: survey });
 	})
 );
 

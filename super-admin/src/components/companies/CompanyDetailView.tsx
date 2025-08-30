@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SurveyDetailModal from './SurveyDetailModal';
 
 interface Company {
 	_id: string;
@@ -66,8 +67,23 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 	// Company assets
 	const [companyBanks, setCompanyBanks] = useState<Array<{ _id: string; name: string; description?: string; questionCount: number; createdAt: string }>>([]);
 	const [companyBanksLoading, setCompanyBanksLoading] = useState(true);
-	const [companySurveys, setCompanySurveys] = useState<Array<{ _id: string; title: string; type: string; status: string; createdAt: string; questionCount: number }>>([]);
+	const [companySurveys, setCompanySurveys] = useState<Array<{ 
+		_id: string; 
+		title: string; 
+		type: string; 
+		status: string; 
+		createdAt: string; 
+		questionCount: number;
+		description?: string;
+		timeLimit?: number;
+		maxAttempts?: number;
+		instructions?: string;
+		navigationMode?: string;
+		updatedAt: string;
+	}>>([]);
 	const [companySurveysLoading, setCompanySurveysLoading] = useState(true);
+	const [selectedSurvey, setSelectedSurvey] = useState<any>(null);
+	const [showSurveyModal, setShowSurveyModal] = useState(false);
 
 	useEffect(() => {
 		setFormData(company);
@@ -227,6 +243,18 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 		} finally {
 			setCompanySurveysLoading(false);
 		}
+	};
+
+	const handleSurveyClick = async (survey: any) => {
+		setSelectedSurvey(survey);
+		setShowSurveyModal(true);
+	};
+
+	const handleSurveyUpdate = (updatedSurvey: any) => {
+		// Update the survey in the local state
+		setCompanySurveys(prev => 
+			prev.map(s => s._id === updatedSurvey._id ? { ...s, ...updatedSurvey } : s)
+		);
 	};
 
 	const loadCompanyUsers = async () => {
@@ -1436,7 +1464,11 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 							</thead>
 							<tbody className="bg-white divide-y divide-gray-200">
 								{companySurveys.map(s => (
-									<tr key={s._id}>
+									<tr 
+										key={s._id} 
+										onClick={() => handleSurveyClick(s)}
+										className="cursor-pointer hover:bg-gray-50 transition-colors duration-150"
+									>
 										<td className="px-6 py-4 whitespace-nowrap">
 											<div className="text-sm font-medium text-gray-900">{s.title || s._id}</div>
 										</td>
@@ -1588,6 +1620,17 @@ const CompanyDetailView: React.FC<CompanyDetailViewProps> = ({ company, onBack, 
 					</div>
 				</div>
 			)}
+
+			{/* Survey Detail Modal */}
+			<SurveyDetailModal
+				survey={selectedSurvey}
+				isOpen={showSurveyModal}
+				onClose={() => {
+					setShowSurveyModal(false);
+					setSelectedSurvey(null);
+				}}
+				onUpdate={handleSurveyUpdate}
+			/>
 		</div>
 	);
 };

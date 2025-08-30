@@ -22,22 +22,72 @@ function maskQuestions(questions) {
 	});
 }
 
+/**
+ * Find survey with multi-tenant support and backward compatibility
+ * @param {string} slug - Survey slug or ID
+ * @param {Object} req - Express request object (for company info)
+ * @returns {Promise<Object|null>} Survey document or null
+ */
+async function findSurveyWithCompat(slug, req) {
+	let survey = null;
+	
+	if (req.company) {
+		// Multi-tenant mode: search within company first
+		const companyQuery = { slug, status: SURVEY_STATUS.ACTIVE, companyId: req.company._id };
+		survey = await Survey.findOne(companyQuery);
+		
+		// If not found by slug, try by ID within company
+		if (!survey && mongoose.Types.ObjectId.isValid(slug)) {
+			const idQuery = { _id: slug, status: SURVEY_STATUS.ACTIVE, companyId: req.company._id };
+			survey = await Survey.findOne(idQuery);
+		}
+		
+		// Backward compatibility: if still not found, check legacy surveys (no companyId)
+		if (!survey) {
+			console.log(`Assessment not found in company ${req.company.slug}, checking legacy surveys...`);
+			const legacyQuery = { 
+				slug, 
+				status: SURVEY_STATUS.ACTIVE, 
+				$or: [
+					{ companyId: { $exists: false } },
+					{ companyId: null }
+				]
+			};
+			survey = await Survey.findOne(legacyQuery);
+			if (survey) {
+				console.log(`Found legacy survey: ${survey.title}, consider migrating to company ${req.company.slug}`);
+			}
+		}
+	} else {
+		// Non-tenant mode: search globally (backward compatibility)
+		const globalQuery = { slug, status: SURVEY_STATUS.ACTIVE };
+		survey = await Survey.findOne(globalQuery);
+		
+		if (!survey && mongoose.Types.ObjectId.isValid(slug)) {
+			const idQuery = { _id: slug, status: SURVEY_STATUS.ACTIVE };
+			survey = await Survey.findOne(idQuery);
+		}
+	}
+	
+	return survey;
+}
+
 // GET /assessment/:slug - metadata only (no questions)
 router.get(
 	'/assessment/:slug',
 	asyncHandler(async (req, res) => {
 		const { slug } = req.params;
-
-		let survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE }).lean();
-		if (!survey && mongoose.Types.ObjectId.isValid(slug)) {
-			survey = await Survey.findOne({ _id: slug, status: SURVEY_STATUS.ACTIVE }).lean();
-		}
+		
+		let survey = await findSurveyWithCompat(slug, req);
 		if (!survey) throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
 
 		// Ensure it is an assessment-type survey
 		if (survey.type !== SURVEY_TYPE.ASSESSMENT) {
 			throw new AppError('Not an assessment', HTTP_STATUS.BAD_REQUEST);
 		}
+
+		// Convert to lean object if it's not already
+		survey = survey.toObject ? survey.toObject() : survey;
 
 		// Never include questions in this metadata response
 		survey.questions = [];
@@ -65,10 +115,7 @@ router.post(
 			throw new AppError('Missing required fields: name, email', HTTP_STATUS.BAD_REQUEST);
 		}
 
-		let survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE });
-		if (!survey && mongoose.Types.ObjectId.isValid(slug)) {
-			survey = await Survey.findOne({ _id: slug, status: SURVEY_STATUS.ACTIVE });
-		}
+		const survey = await findSurveyWithCompat(slug, req);
 		if (!survey) throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
 		if (survey.type !== SURVEY_TYPE.ASSESSMENT) {
 			throw new AppError('Not an assessment', HTTP_STATUS.BAD_REQUEST);
@@ -305,10 +352,7 @@ router.post(
 			throw new AppError('Missing responseId', HTTP_STATUS.BAD_REQUEST);
 		}
 
-		let survey = await Survey.findOne({ slug, status: SURVEY_STATUS.ACTIVE });
-		if (!survey && mongoose.Types.ObjectId.isValid(slug)) {
-			survey = await Survey.findOne({ _id: slug, status: SURVEY_STATUS.ACTIVE });
-		}
+		const survey = await findSurveyWithCompat(slug, req);
 		if (!survey) throw new AppError(ERROR_MESSAGES.SURVEY_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
 		if (survey.type !== SURVEY_TYPE.ASSESSMENT) {
 			throw new AppError('Not an assessment', HTTP_STATUS.BAD_REQUEST);
